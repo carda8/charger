@@ -45,7 +45,13 @@ const Notification = () => {
   };
   return (
     <SafeAreaView style={{...GlobalStyles.safeAreaStyle}}>
-      <HeaderCenter title="알림" leftBack rightBack backTitle="닫기" />
+      <HeaderCenter
+        title="알림"
+        leftBack
+        rightBack
+        backTitle="닫기"
+        backTitleStyle={{fontSize: 16, fontFamily: FontList.PretendardRegular}}
+      />
       <FlatList
         data={data}
         keyExtractor={(item, index) => String(index)}

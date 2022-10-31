@@ -24,7 +24,13 @@ const HomeMain = () => {
 
   return (
     <SafeAreaView style={{...GlobalStyles.safeAreaStyle}}>
-      <HeaderCenter title="집으로 안내" leftBack rightBack backTitle="닫기" />
+      <HeaderCenter
+        title="집으로 안내"
+        leftBack
+        rightBack
+        backTitle="닫기"
+        backTitleStyle={{fontSize: 16, fontFamily: FontList.PretendardRegular}}
+      />
       <View
         style={{
           borderBottomWidth: 4,

@@ -19,6 +19,13 @@ const AroundFilter = () => {
   const [pickedBusi, setPickedBusi] = useState<string[]>([]);
   const [busiList, setBusiList] = useState<busiType[]>();
 
+  const [speed, setSpeed] = useState<number>();
+  const [fee, setFee] = useState<number>();
+  const [parking, setParking] = useState<boolean>();
+  const [area, setArea] = useState<number>();
+  const [road, setRoad] = useState<number>();
+  const [chargerType, setChargerType] = useState<number>();
+
   const dummy = [
     {충전속도: ['완속', '급속', '초고속']},
     {'충전소 유무료': ['유료 충전소, 무료 충전소']},
@@ -87,7 +94,13 @@ const AroundFilter = () => {
 
   return (
     <SafeAreaView style={{...GlobalStyles.safeAreaStyle}}>
-      <HeaderCenter title="상세필터" leftBack rightBack backTitle="닫기" />
+      <HeaderCenter
+        title="상세필터"
+        leftBack
+        rightBack
+        backTitle="닫기"
+        backTitleStyle={{fontSize: 16, fontFamily: FontList.PretendardRegular}}
+      />
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: 16,
@@ -155,7 +168,8 @@ const AroundFilter = () => {
             <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
               {item[Object.keys(item)[0]].length > 0 &&
                 item[Object.keys(item)[0]]?.map((item2: any, idx2: any) => (
-                  <View
+                  <Pressable
+                    onPress={() => {}}
                     key={idx2}
                     style={{
                       alignSelf: 'flex-start',
@@ -174,30 +188,8 @@ const AroundFilter = () => {
                       }}>
                       {item2?.key ? item2.key : item2}
                     </Text>
-                  </View>
+                  </Pressable>
                 ))}
-              {/* {idx === dummy.length - 1 && (
-                <View
-                  style={{
-                    // height: 32,
-                    alignSelf: 'flex-start',
-                    paddingHorizontal: 13,
-                    paddingVertical: 6.5,
-                    borderWidth: 1,
-                    borderRadius: 24,
-                    marginRight: 6,
-                    marginBottom: 10,
-                  }}>
-                  <Text
-                    style={{
-                      fontFamily: FontList.PretendardRegular,
-                      fontSize: 16,
-                      color: '#333333',
-                    }}>
-                    일반
-                  </Text>
-                </View>
-              )} */}
             </View>
           </View>
         ))}

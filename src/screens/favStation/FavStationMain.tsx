@@ -141,6 +141,10 @@ const FavStationMain = () => {
               leftBack
               rightBack
               backTitle="닫기"
+              backTitleStyle={{
+                fontSize: 16,
+                fontFamily: FontList.PretendardRegular,
+              }}
             />
           </View>
           <NaverMapView
