@@ -1,0 +1,379 @@
+import React, {useState} from 'react';
+import {SafeAreaView} from 'react-native-safe-area-context';
+import GlobalStyles from 'styles/GlobalStyles';
+import Header from '@components/Header';
+import ServiceString from '@components/ServiceString';
+import FontList from 'constants/FontList';
+import FastImage from 'react-native-fast-image';
+import BottomButton from '@components/BottomButton';
+import routertype from '@router/routertype';
+import {_getHeight, _getWidth} from 'constants/utils';
+import {
+  Image,
+  Pressable,
+  ScrollView,
+  Text,
+  useWindowDimensions,
+  View,
+} from 'react-native';
+import ModelList from 'constants/ModelList';
+import ChargerType from 'constants/ChargerType';
+
+interface props {
+  text: string;
+}
+
+const AccountCarInfo = () => {
+  const [showModel, setShowModel] = useState(false);
+  const [selectedModel, setSelectedModel] = useState('');
+  const [selectedBrand, setSelectedBrand] = useState<number>();
+  const [type, setType] = useState<number>();
+  const arrTest = [
+    'bmw',
+    'bmw',
+    'bmw',
+    'bmw',
+    'bmw',
+    'bmw',
+    'kia',
+    'kia',
+    'kia',
+    'kia',
+    'kia',
+    'kia',
+    'kia',
+    'kia',
+  ];
+  const arrType = [
+    'DC콤보',
+    'DC차데모',
+    'AC3상',
+    'DC콤보',
+    'DC차데모',
+    'AC3상',
+    'DC콤보',
+    'DC차데모',
+    'AC3상',
+  ];
+
+  const modelList = [
+    'GM대우',
+    'GM대우',
+    'GM대우',
+    'GM대우',
+    'GM대우',
+    'GM대우',
+    'GM대우',
+    'GM대우',
+    'GM대우',
+    'GM대우',
+    'GM대우',
+    'GM대우',
+    'GM대우',
+    'GM대우',
+    'GM대우',
+    'GM대우',
+    'GM대우',
+    'GM대우',
+    'GM대우',
+  ];
+
+  const Title = ({text}: props) => {
+    return (
+      <Text
+        style={{
+          fontFamily: FontList.PretendardSemiBold,
+          fontSize: 16,
+          color: '#4A4A4A',
+          includeFontPadding: false,
+        }}>
+        {text}
+      </Text>
+    );
+  };
+
+  // const renderItem: ListRenderItem<any> = item => {
+  //   return (
+  //     <View style={{flexDirection: 'row'}}>
+  //       <View>
+  //         <Pressable
+  //           onPress={() => {
+  //             setSelectedBrand(item.index);
+  //           }}
+  //           style={{
+  //             // flex: 1,
+  //             padding: 7,
+  //             width: _getWidth(59),
+  //             height: _getHeight(59),
+  //             borderWidth: 1,
+  //             borderColor: selectedBrand === item.index ? '#333333' : '#DBDBDB',
+  //             borderRadius: 5,
+  //             alignItems: 'center',
+  //             justifyContent: 'center',
+  //           }}>
+  //           <FastImage
+  //             source={require('@assets/bmw.png')}
+  //             style={{width: _getWidth(45), height: _getHeight(45)}}
+  //             resizeMode={'contain'}
+  //           />
+  //         </Pressable>
+  //         <View style={{alignSelf: 'center', marginTop: 4}}>
+  //           <Text>{item.item}</Text>
+  //         </View>
+  //       </View>
+  //       {item.index === arrTest?.length - 1 && arrTest?.length % 5 !== 0 && (
+  //         <View
+  //           style={{
+  //             padding: 7,
+  //             width: _getWidth(59) * (5 - (arrTest?.length % 5)),
+  //             height: _getHeight(59),
+  //             // borderWidth: 1,
+  //             borderColor: '#DBDBDB',
+  //             borderRadius: 5,
+  //             alignItems: 'center',
+  //             justifyContent: 'center',
+  //             marginLeft: _getWidth(9) * (5 - (arrTest?.length % 5)),
+  //           }}></View>
+  //       )}
+  //     </View>
+  //   );
+  // };-
+  // 테슬라, 현대, 기아, bmw, 아우디, 벤츠, 제네시스,
+  // 기타 : 기타: GM, 르노코리아자동차, 쌍용자동차, Nissan, JAGUAR, CITROEN, PEUGEOT
+
+  const modelIconList = [
+    require('@assets/model_tesla.png'),
+    require('@assets/model_hy.png'),
+    require('@assets/model_kia.png'),
+    require('@assets/model_genesis.png'),
+    require('@assets/model_che.png'),
+    require('@assets/model_bez.png'),
+    require('@assets/model_bmw.png'),
+    require('@assets/model_audi.png'),
+    require('@assets/model_etc.png'),
+  ];
+  const modelName = [
+    '테슬라',
+    '현대',
+    '기아',
+    '제네시스',
+    '쉐보레',
+    '벤츠',
+    'BMW',
+    '아우디',
+    '기타',
+  ];
+  const layout = useWindowDimensions();
+  return (
+    <SafeAreaView style={{...GlobalStyles.safeAreaStyle}}>
+      <Header title="차량정보를 등록해주세요" goBack backTitle="취소" />
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <View style={{paddingHorizontal: 16, marginBottom: 20}}>
+          <ServiceString />
+          <View style={{marginTop: 30, marginBottom: 10}}>
+            <Title text="차량 브랜드" />
+          </View>
+          {/* <FlatList
+            data={arrTest}
+            renderItem={item => renderItem(item)}
+            keyExtractor={(item: string, idx: number) => idx + item}
+            numColumns={5}
+            // contentContainerStyle={{justifyContent: 'space-between'}}
+            columnWrapperStyle={{
+              justifyContent: 'space-between',
+              marginBottom: 13,
+              // alignSelf: 'center',
+            }}
+          /> */}
+          <View
+            style={{
+              marginTop: 2,
+              // alignItems: 'center',
+              // justifyContent: 'space-between',
+              flexDirection: 'row',
+              flexWrap: 'wrap',
+            }}>
+            {ModelList.modelLogo.map((item, idx) => (
+              <View
+                style={{
+                  marginBottom: 15,
+                  marginLeft:
+                    idx % 5 !== 0
+                      ? layout.width - _getWidth(59) * 6 + _getWidth(16 / 6)
+                      : undefined,
+                }}
+                key={idx}>
+                <Pressable
+                  onPress={() => {
+                    setSelectedBrand(idx);
+                  }}
+                  style={{
+                    width: _getWidth(59),
+                    height: _getHeight(59),
+                    borderRadius: 4,
+                    borderWidth: 1,
+                    borderColor: selectedBrand === idx ? '#333333' : '#DBDBDB',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                  <Image
+                    source={item}
+                    style={{
+                      width:
+                        idx === ModelList.modelLogo.length - 1
+                          ? _getWidth(45) * 0.6
+                          : _getWidth(45),
+                      height: _getHeight(45),
+                    }}
+                    resizeMode={'contain'}
+                  />
+                </Pressable>
+                <View style={{alignSelf: 'center'}}>
+                  <Text>{ModelList.modelName[idx]}</Text>
+                </View>
+              </View>
+            ))}
+          </View>
+
+          <View style={{marginTop: 17}}>
+            <Title text="차량 모델" />
+            <Pressable
+              onPress={() => setShowModel(!showModel)}
+              style={{
+                width: '100%',
+                height: 51,
+                borderWidth: 1,
+                borderRadius: 4,
+                borderColor: showModel ? '#EEEEEE' : '#DBDBDB',
+                marginTop: 10,
+                paddingHorizontal: 12,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}>
+              <Text
+                style={{
+                  fontFamily: FontList.PretendardRegular,
+                  fontSize: 16,
+                  color: '#838383',
+                }}>
+                {selectedModel ? selectedModel : '차량모델명을 선택하세요    '}
+              </Text>
+              <Image
+                source={require('@assets/bottom_arrow.png')}
+                style={{width: 10, height: 6}}
+              />
+            </Pressable>
+          </View>
+          {showModel && (
+            <View
+              style={{
+                width: '100%',
+                height: _getHeight(216),
+                borderWidth: 1,
+                borderColor: '#EEEEEE',
+                top: -5,
+                zIndex: 100,
+                backgroundColor: 'white',
+                borderBottomRightRadius: 5,
+                borderBottomLeftRadius: 5,
+              }}>
+              <ScrollView nestedScrollEnabled={true}>
+                {modelList.map((item, idx) => (
+                  <Pressable
+                    onPress={() => {
+                      setShowModel(false);
+                      setSelectedModel(item + idx);
+                    }}
+                    style={{
+                      paddingHorizontal: 16,
+                      paddingVertical: 9,
+                      borderBottomWidth: 1,
+                      borderBottomColor: '#F6F6F6',
+                    }}>
+                    <Text
+                      style={{
+                        fontFamily: FontList.PretendardMedium,
+                        color: '#959595',
+                        fontSize: 13,
+                      }}>
+                      {item}
+                      {idx}
+                    </Text>
+                  </Pressable>
+                ))}
+              </ScrollView>
+            </View>
+          )}
+
+          <View style={{marginTop: 30}}>
+            <Title text="충전기 타입" />
+            <View
+              style={{
+                marginTop: 2,
+                alignItems: 'center',
+                // justifyContent: 'space-between',
+                flexDirection: 'row',
+                flexWrap: 'wrap',
+              }}>
+              {ChargerType.chargerLogo.map((item, idx) => (
+                <>
+                  <View
+                    style={{
+                      marginBottom: 15,
+                      marginRight:
+                        idx % 3 !== 0 || idx == 0
+                          ? (layout.width - (32 + _getWidth(72) * 4)) / 3
+                          : undefined,
+                    }}
+                    key={idx}>
+                    <Pressable
+                      onPress={() => {
+                        setType(idx);
+                      }}
+                      style={{
+                        width: _getWidth(72),
+                        height: _getHeight(72),
+                        borderRadius: 4,
+                        borderWidth: 1,
+                        borderColor: type === idx ? '#333333' : '#DBDBDB',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}>
+                      <Image
+                        source={item}
+                        style={{width: '85%', height: '85%'}}
+                        resizeMode={'contain'}
+                      />
+                    </Pressable>
+                    <View style={{alignSelf: 'center'}}>
+                      <Text>{ChargerType.chargerType[idx]}</Text>
+                    </View>
+                  </View>
+                  {/* {(idx % ChargerType.chargerLogo.length) - 1 === 0 && (
+                    <>
+                    {}
+                      <View
+                        style={{
+                          width: _getWidth(72),
+                          height: _getHeight(72),
+                        }}></View>
+                    </>
+                  )} */}
+                </>
+              ))}
+            </View>
+          </View>
+        </View>
+      </ScrollView>
+      <View style={{marginHorizontal: 16}}>
+        <BottomButton
+          screen={routertype.AccountCarInfoFinish}
+          text="저장하기"
+        />
+      </View>
+    </SafeAreaView>
+  );
+};
+
+export default AccountCarInfo;
