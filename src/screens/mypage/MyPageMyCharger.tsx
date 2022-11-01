@@ -21,6 +21,8 @@ import routertype from '@router/routertype';
 import {_getHeight, _getWidth} from 'constants/utils';
 import HeaderCenter from '@components/HeaderCenter';
 import ModelList from 'constants/ModelList';
+import modules from 'constants/utils/modules';
+import ChargerType from 'constants/ChargerType';
 
 interface props {
   text: string;
@@ -28,58 +30,10 @@ interface props {
 
 const MyPageMyCharger = () => {
   const [showModel, setShowModel] = useState(false);
+  // const [showModelList, setShowModelList] = useState<string[]>();
   const [selectedModel, setSelectedModel] = useState('');
-  const [selectedBrand, setSelectedBrand] = useState<number>();
+  const [selectedBrand, setSelectedBrand] = useState('');
   const [type, setType] = useState<number>();
-  const arrTest = [
-    'bmw',
-    'bmw',
-    'bmw',
-    'bmw',
-    'bmw',
-    'bmw',
-    'kia',
-    'kia',
-    'kia',
-    'kia',
-    'kia',
-    'kia',
-    'kia',
-    'kia',
-  ];
-  const arrType = [
-    'DC콤보',
-    'DC차데모',
-    'AC3상',
-    'DC콤보',
-    'DC차데모',
-    'AC3상',
-    'DC콤보',
-    'DC차데모',
-    'AC3상',
-  ];
-
-  const modelList = [
-    'GM대우',
-    'GM대우',
-    'GM대우',
-    'GM대우',
-    'GM대우',
-    'GM대우',
-    'GM대우',
-    'GM대우',
-    'GM대우',
-    'GM대우',
-    'GM대우',
-    'GM대우',
-    'GM대우',
-    'GM대우',
-    'GM대우',
-    'GM대우',
-    'GM대우',
-    'GM대우',
-    'GM대우',
-  ];
 
   const Title = ({text}: props) => {
     return (
@@ -101,56 +55,61 @@ const MyPageMyCharger = () => {
       {/* <Header title="차량정보를 들록해주세요" goBack backTitle="취소" /> */}
       <HeaderCenter title="마이차저 설정" leftBack />
       <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={{paddingHorizontal: 16}}>
-          <View style={{marginTop: 12, marginBottom: 10}}>
+        <View style={{paddingHorizontal: 16, marginBottom: 20}}>
+          <ServiceString />
+          <View style={{marginTop: 30, marginBottom: 10}}>
             <Title text="차량 브랜드" />
           </View>
-
           <View
             style={{
               marginTop: 2,
+              alignItems: 'center',
               flexDirection: 'row',
               flexWrap: 'wrap',
             }}>
             {ModelList.modelLogo.map((item, idx) => (
-              <View
-                style={{
-                  marginBottom: 15,
-                  marginLeft:
-                    idx % 5 !== 0
-                      ? layout.width - _getWidth(59) * 6 + _getWidth(16 / 6)
-                      : undefined,
-                }}
-                key={idx}>
-                <Pressable
-                  onPress={() => {
-                    setSelectedBrand(idx);
-                  }}
+              <>
+                <View
                   style={{
-                    width: _getWidth(59),
-                    height: _getHeight(59),
-                    borderRadius: 4,
-                    borderWidth: 1,
-                    borderColor: selectedBrand === idx ? '#333333' : '#DBDBDB',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}>
-                  <Image
-                    source={item}
-                    style={{
-                      width:
-                        idx === ModelList.modelLogo.length - 1
-                          ? _getWidth(45) * 0.6
-                          : _getWidth(45),
-                      height: _getHeight(45),
+                    marginBottom: 15,
+                    marginRight:
+                      idx % 4 !== 0 || idx == 0
+                        ? (layout.width - (32 + 56 * 5)) / 4
+                        : undefined,
+                  }}
+                  key={idx}>
+                  <Pressable
+                    onPress={() => {
+                      setSelectedBrand(ModelList.modelName[idx]);
                     }}
-                    resizeMode={'contain'}
-                  />
-                </Pressable>
-                <View style={{alignSelf: 'center'}}>
-                  <Text>{ModelList.modelName[idx]}</Text>
+                    style={{
+                      width: 56,
+                      height: 56,
+                      borderRadius: 4,
+                      borderWidth: 1,
+                      borderColor:
+                        ModelList.modelName[idx] === selectedBrand
+                          ? '#333333'
+                          : '#DBDBDB',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}>
+                    <Image
+                      source={item}
+                      style={{
+                        width:
+                          ModelList.modelName[idx] === '기타' ? '60%' : '85%',
+                        height:
+                          ModelList.modelName[idx] === '기타' ? '60%' : '85%',
+                      }}
+                      resizeMode={'contain'}
+                    />
+                  </Pressable>
+                  <View style={{alignSelf: 'center'}}>
+                    <Text>{ModelList.modelName[idx]}</Text>
+                  </View>
                 </View>
-              </View>
+              </>
             ))}
           </View>
 
@@ -176,7 +135,7 @@ const MyPageMyCharger = () => {
                   fontSize: 16,
                   color: '#838383',
                 }}>
-                {selectedModel ? selectedModel : '차량모델명을 선택하세요    '}
+                {selectedModel ? selectedModel : '차량모델명을 선택하세요'}
               </Text>
               <Image
                 source={require('@assets/bottom_arrow.png')}
@@ -184,83 +143,92 @@ const MyPageMyCharger = () => {
               />
             </Pressable>
           </View>
-          {showModel && (
-            <View
-              style={{
-                width: '100%',
-                height: _getHeight(216),
-                borderWidth: 1,
-                borderColor: '#EEEEEE',
-                top: -5,
-                zIndex: 100,
-                backgroundColor: 'white',
-                borderBottomRightRadius: 5,
-                borderBottomLeftRadius: 5,
-              }}>
-              <ScrollView nestedScrollEnabled={true}>
-                {modelList.map((item, idx) => (
-                  <Pressable
-                    onPress={() => {
-                      setShowModel(false);
-                      setSelectedModel(item + idx);
-                    }}
-                    style={{
-                      paddingHorizontal: 16,
-                      paddingVertical: 9,
-                      borderBottomWidth: 1,
-                      borderBottomColor: '#F6F6F6',
-                    }}>
-                    <Text
+          {showModel &&
+            selectedBrand &&
+            modules._getCarModel(selectedBrand)?.length > 0 && (
+              <View
+                style={{
+                  width: '100%',
+                  maxHeight: _getHeight(216),
+                  borderWidth: 1,
+                  borderColor: '#EEEEEE',
+                  top: -5,
+                  zIndex: 100,
+                  backgroundColor: 'white',
+                  borderBottomRightRadius: 5,
+                  borderBottomLeftRadius: 5,
+                }}>
+                <ScrollView nestedScrollEnabled={true}>
+                  {modules._getCarModel(selectedBrand)?.map((item, idx) => (
+                    <Pressable
+                      onPress={() => {
+                        setShowModel(false);
+                        setSelectedModel(item);
+                      }}
                       style={{
-                        fontFamily: FontList.PretendardMedium,
-                        color: '#959595',
-                        fontSize: 13,
+                        paddingHorizontal: 16,
+                        paddingVertical: 9,
+                        borderBottomWidth: 1,
+                        borderBottomColor: '#F6F6F6',
                       }}>
-                      {item}
-                      {idx}
-                    </Text>
-                  </Pressable>
-                ))}
-              </ScrollView>
-            </View>
-          )}
+                      <Text
+                        style={{
+                          fontFamily: FontList.PretendardMedium,
+                          color: '#959595',
+                          fontSize: 13,
+                        }}>
+                        {item}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
 
           <View style={{marginTop: 30}}>
             <Title text="충전기 타입" />
-            {/* <Text>hi</Text> */}
             <View
               style={{
                 marginTop: 2,
                 alignItems: 'center',
-                justifyContent: 'space-between',
                 flexDirection: 'row',
                 flexWrap: 'wrap',
               }}>
-              {arrType.map((item, idx) => (
-                <View style={{marginBottom: 15}} key={idx}>
-                  <Pressable
-                    onPress={() => {
-                      setType(idx);
-                    }}
+              {ChargerType.chargerLogo.map((item, idx) => (
+                <>
+                  <View
                     style={{
-                      width: _getWidth(72),
-                      height: _getHeight(72),
-                      borderRadius: 4,
-                      borderWidth: 1,
-                      borderColor: type === idx ? '#333333' : '#DBDBDB',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}>
-                    <Image
-                      source={require('@assets/dc_combo.png')}
-                      style={{width: '85%', height: '85%'}}
-                      resizeMode={'contain'}
-                    />
-                  </Pressable>
-                  <View style={{alignSelf: 'center'}}>
-                    <Text>DC콤보</Text>
+                      marginBottom: 15,
+                      marginRight:
+                        idx % 3 !== 0 || idx == 0
+                          ? (layout.width - (32 + 72 * 4)) / 3
+                          : undefined,
+                    }}
+                    key={idx}>
+                    <Pressable
+                      onPress={() => {
+                        setType(idx);
+                      }}
+                      style={{
+                        width: 72,
+                        height: 72,
+                        borderRadius: 4,
+                        borderWidth: 1,
+                        borderColor: type === idx ? '#333333' : '#DBDBDB',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}>
+                      <Image
+                        source={item}
+                        style={{width: '85%', height: '85%'}}
+                        resizeMode={'contain'}
+                      />
+                    </Pressable>
+                    <View style={{alignSelf: 'center'}}>
+                      <Text>{ChargerType.chargerType[idx]}</Text>
+                    </View>
                   </View>
-                </View>
+                </>
               ))}
             </View>
           </View>

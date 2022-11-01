@@ -7,6 +7,7 @@ import {
   ImageSourcePropType,
   ToastAndroid,
   BackHandler,
+  ScrollView,
 } from 'react-native';
 import React, {useState, useEffect, useRef} from 'react';
 import {_getHeight, _getWidth} from 'constants/utils';
@@ -55,8 +56,6 @@ const Home = () => {
   ];
 
   const _route = (index: number) => {
-    console.log(index);
-    // return;
     switch (index) {
       case 0:
         return nav.navigate('AroundMain');
@@ -71,34 +70,6 @@ const Home = () => {
     }
   };
 
-  // useEffect(() => {
-  //   const backAction = () => {
-  //     let timeout;
-  //     if (!ref.current && bottomIdx === 0) {
-  //       ToastAndroid.show(
-  //         '한번 더 뒤로가면 앱이 종료됩니다.',
-  //         ToastAndroid.SHORT,
-  //       );
-  //       ref.current = true;
-
-  //       timeout = setTimeout(() => {
-  //         ref.current = false;
-  //       }, 2000);
-  //     } else {
-  //       clearTimeout(timeout);
-  //       BackHandler.exitApp();
-  //     }
-
-  //     return true;
-  //   };
-  //   const backHandler = BackHandler.addEventListener(
-  //     'hardwareBackPress',
-  //     backAction,
-  //   );
-
-  //   return () => backHandler.remove();
-  // }, []);
-
   useEffect(() => {
     if (isFocused) {
       // ref.current = false;
@@ -112,35 +83,37 @@ const Home = () => {
   return (
     <SafeAreaView style={{...GlobalStyles.safeAreaStyle}}>
       <HomeHeader />
-      <View style={{...styles.mainButtonCtn}}>
-        {btnKeys.map((item, idx) => (
-          <Pressable
-            key={idx}
-            onPress={() => {
-              _route(idx);
-            }}
-            style={{
-              ...styles.mainButton,
-              marginBottom: idx < 2 ? 20 : undefined,
-            }}>
-            <View style={{...styles.mainImgCtn}}>
-              <Image
-                source={imgPath[btnKeys[idx]]}
-                style={{width: _getWidth(24), height: _getHeight(21)}}
-                resizeMode="contain"
-              />
-            </View>
-            <Text
+      <ScrollView contentContainerStyle={{backgroundColor: '#F5F5F5', flex: 1}}>
+        <View style={{...styles.mainButtonCtn}}>
+          {btnKeys.map((item, idx) => (
+            <Pressable
+              key={idx}
+              onPress={() => {
+                _route(idx);
+              }}
               style={{
-                fontFamily: FontList.PretendardSemiBold,
-                fontSize: 18,
-                color: '#333333',
+                ...styles.mainButton,
+                marginBottom: idx < 2 ? 20 : undefined,
               }}>
-              {btnStr[idx]}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
+              <View style={{...styles.mainImgCtn}}>
+                <Image
+                  source={imgPath[btnKeys[idx]]}
+                  style={{width: 24, height: 21}}
+                  resizeMode="contain"
+                />
+              </View>
+              <Text
+                style={{
+                  fontFamily: FontList.PretendardSemiBold,
+                  fontSize: 18,
+                  color: '#333333',
+                }}>
+                {btnStr[idx]}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+      </ScrollView>
       <MyModal
         title="집 등록하기"
         text={
@@ -163,7 +136,6 @@ const styles = StyleSheet.create({
   mainButtonCtn: {
     flex: 1,
     paddingTop: 30,
-    // paddingBottom: 85,
     paddingHorizontal: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -171,17 +143,17 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   mainButton: {
-    width: _getWidth(156),
-    height: _getHeight(163),
-    backgroundColor: 'white',
+    width: 156,
+    height: 163,
     borderRadius: 12,
     paddingHorizontal: 19,
+    backgroundColor: 'white',
     paddingTop: 47,
   },
   mainImgCtn: {
-    width: _getWidth(36),
-    height: _getHeight(36),
-    borderRadius: _getWidth(36) / 2,
+    width: 36,
+    height: 36,
+    borderRadius: 36 / 2,
     backgroundColor: '#00239C',
     alignItems: 'center',
     justifyContent: 'center',

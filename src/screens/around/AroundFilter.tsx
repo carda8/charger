@@ -13,33 +13,36 @@ interface busiType {
   value: number;
 }
 
+interface optionView {
+  title: any;
+  data: any;
+}
+
 const AroundFilter = () => {
   const [showAvailable, setShowAvailable] = useState(false);
   const [pickAll, setPickAll] = useState(false);
   const [pickedBusi, setPickedBusi] = useState<string[]>([]);
   const [busiList, setBusiList] = useState<busiType[]>();
 
-  const [speed, setSpeed] = useState<number>();
-  const [fee, setFee] = useState<number>();
-  const [parking, setParking] = useState<boolean>();
-  const [area, setArea] = useState<number>();
-  const [road, setRoad] = useState<number>();
-  const [chargerType, setChargerType] = useState<number>();
+  const [speed, setSpeed] = useState<string[]>();
+  const [fee, setFee] = useState<string>();
+  const [parking, setParking] = useState<string>();
+  const [area, setArea] = useState<string>();
+  const [road, setRoad] = useState<string>();
+  const [chargerType, setChargerType] = useState<string>();
 
-  const dummy = [
-    {충전속도: ['완속', '급속', '초고속']},
-    {'충전소 유무료': ['유료 충전소, 무료 충전소']},
-    {주차여부: ['무료주차', '입주민 전용']},
-    {'충전기 설치 장소': ['실내충전소', '실외충전소', '캐노피']},
-    {도로: ['일반도로', '고속도로']},
-    {'충전기 타입': ['DC콤보', 'AC3상', '완속', 'DC콤보', 'AC3상', '완속']},
-  ];
+  const dumSpeed = ['완속', '급속', '초고속'];
+  const dumFee = ['유료 충전소', '무료 충전소'];
+  const dumPark = ['무료주차', '입주민 전용'];
+  const dumArea = ['실내충전소', '실외충전소', '캐노피'];
+  const dumRoad = ['일반도로', '고속도로'];
+  const dumType = ['DC콤보', 'AC3상', '완속', 'DC콤보', 'AC3상', '완속'];
 
   const _getInfo = async () => {
     await API.get('filters')
       .then(res => {
         if (res.data) {
-          console.log(res.data);
+          console.log('api res', res.data);
           setBusiList(res.data.busiNm);
         }
       })
@@ -85,6 +88,14 @@ const AroundFilter = () => {
       setPickAll(!pickAll);
     }
   };
+
+  const _setOption = (key: any) => {};
+
+  // 충전속도, 충전소 유무료, 충전기 설치 장소, 도로, 충전기 타입, 주차여부,
+  // 충전기 사업자,
+  useEffect(() => {
+    console.log('speed', speed);
+  }, [speed]);
 
   useEffect(() => {
     if (!busiList) {
@@ -146,53 +157,251 @@ const AroundFilter = () => {
           </View>
         </Pressable>
 
-        {dummy.map((item: any, idx) => (
-          <View
-            key={idx}
-            style={{
-              // height: _getHeight(106),
-              justifyContent: 'center',
-              marginTop: 23,
-            }}>
-            <View style={{marginBottom: 14.5}}>
-              <Text
-                style={{
-                  fontFamily: FontList.PretendardRegular,
-                  fontSize: 16,
-                  color: '#333333',
-                }}>
-                {Object.keys(item)[0]}
-              </Text>
-            </View>
-
-            <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
-              {item[Object.keys(item)[0]].length > 0 &&
-                item[Object.keys(item)[0]]?.map((item2: any, idx2: any) => (
-                  <Pressable
-                    onPress={() => {}}
-                    key={idx2}
-                    style={{
-                      alignSelf: 'flex-start',
-                      paddingHorizontal: 13,
-                      paddingVertical: 6.5,
-                      borderWidth: 1,
-                      borderRadius: 24,
-                      marginRight: 6,
-                      marginBottom: 10,
-                    }}>
-                    <Text
-                      style={{
-                        fontFamily: FontList.PretendardRegular,
-                        fontSize: 16,
-                        color: '#333333',
-                      }}>
-                      {item2?.key ? item2.key : item2}
-                    </Text>
-                  </Pressable>
-                ))}
-            </View>
+        {/* 충전속도 */}
+        <View
+          style={{
+            justifyContent: 'center',
+            marginTop: 23,
+          }}>
+          <View style={{marginBottom: 14.5}}>
+            <Text
+              style={{
+                fontFamily: FontList.PretendardRegular,
+                fontSize: 16,
+                color: '#333333',
+              }}>
+              충전속도
+            </Text>
           </View>
-        ))}
+          <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
+            {dumSpeed.map((item, index) => (
+              <Pressable
+                onPress={() => {}}
+                style={{
+                  alignSelf: 'flex-start',
+                  paddingHorizontal: 13,
+                  paddingVertical: 6.5,
+                  borderWidth: 1,
+                  borderRadius: 24,
+                  marginRight: 6,
+                  marginBottom: 10,
+                }}>
+                <Text
+                  style={{
+                    fontFamily: FontList.PretendardRegular,
+                    fontSize: 16,
+                  }}>
+                  {item}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
+        {/* 충전소 유무료 */}
+        <View
+          style={{
+            justifyContent: 'center',
+            marginTop: 23,
+          }}>
+          <View style={{marginBottom: 14.5}}>
+            <Text
+              style={{
+                fontFamily: FontList.PretendardRegular,
+                fontSize: 16,
+                color: '#333333',
+              }}>
+              충전소 유무료
+            </Text>
+          </View>
+          <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
+            {dumFee.map((item, index) => (
+              <Pressable
+                onPress={() => {}}
+                style={{
+                  alignSelf: 'flex-start',
+                  paddingHorizontal: 13,
+                  paddingVertical: 6.5,
+                  borderWidth: 1,
+                  borderRadius: 24,
+                  marginRight: 6,
+                  marginBottom: 10,
+                }}>
+                <Text
+                  style={{
+                    fontFamily: FontList.PretendardRegular,
+                    fontSize: 16,
+                  }}>
+                  {item}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
+        {/* 주차여부 */}
+        <View
+          style={{
+            justifyContent: 'center',
+            marginTop: 23,
+          }}>
+          <View style={{marginBottom: 14.5}}>
+            <Text
+              style={{
+                fontFamily: FontList.PretendardRegular,
+                fontSize: 16,
+                color: '#333333',
+              }}>
+              주차여부
+            </Text>
+          </View>
+          <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
+            {dumPark.map((item, index) => (
+              <Pressable
+                onPress={() => {}}
+                style={{
+                  alignSelf: 'flex-start',
+                  paddingHorizontal: 13,
+                  paddingVertical: 6.5,
+                  borderWidth: 1,
+                  borderRadius: 24,
+                  marginRight: 6,
+                  marginBottom: 10,
+                }}>
+                <Text
+                  style={{
+                    fontFamily: FontList.PretendardRegular,
+                    fontSize: 16,
+                  }}>
+                  {item}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
+        {/* 충전기 설치장소 */}
+        <View
+          style={{
+            justifyContent: 'center',
+            marginTop: 23,
+          }}>
+          <View style={{marginBottom: 14.5}}>
+            <Text
+              style={{
+                fontFamily: FontList.PretendardRegular,
+                fontSize: 16,
+                color: '#333333',
+              }}>
+              충전기 설치장소
+            </Text>
+          </View>
+          <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
+            {dumArea.map((item, index) => (
+              <Pressable
+                onPress={() => {}}
+                style={{
+                  alignSelf: 'flex-start',
+                  paddingHorizontal: 13,
+                  paddingVertical: 6.5,
+                  borderWidth: 1,
+                  borderRadius: 24,
+                  marginRight: 6,
+                  marginBottom: 10,
+                }}>
+                <Text
+                  style={{
+                    fontFamily: FontList.PretendardRegular,
+                    fontSize: 16,
+                  }}>
+                  {item}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
+        {/* 도로 */}
+        <View
+          style={{
+            justifyContent: 'center',
+            marginTop: 23,
+          }}>
+          <View style={{marginBottom: 14.5}}>
+            <Text
+              style={{
+                fontFamily: FontList.PretendardRegular,
+                fontSize: 16,
+                color: '#333333',
+              }}>
+              도로
+            </Text>
+          </View>
+          <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
+            {dumRoad.map((item, index) => (
+              <Pressable
+                onPress={() => {}}
+                style={{
+                  alignSelf: 'flex-start',
+                  paddingHorizontal: 13,
+                  paddingVertical: 6.5,
+                  borderWidth: 1,
+                  borderRadius: 24,
+                  marginRight: 6,
+                  marginBottom: 10,
+                }}>
+                <Text
+                  style={{
+                    fontFamily: FontList.PretendardRegular,
+                    fontSize: 16,
+                  }}>
+                  {item}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
+        {/* 충전기 타입 */}
+        <View
+          style={{
+            justifyContent: 'center',
+            marginTop: 23,
+          }}>
+          <View style={{marginBottom: 14.5}}>
+            <Text
+              style={{
+                fontFamily: FontList.PretendardRegular,
+                fontSize: 16,
+                color: '#333333',
+              }}>
+              충전기 타입
+            </Text>
+          </View>
+          <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
+            {dumType.map((item, index) => (
+              <Pressable
+                onPress={() => {}}
+                style={{
+                  alignSelf: 'flex-start',
+                  paddingHorizontal: 13,
+                  paddingVertical: 6.5,
+                  borderWidth: 1,
+                  borderRadius: 24,
+                  marginRight: 6,
+                  marginBottom: 10,
+                }}>
+                <Text
+                  style={{
+                    fontFamily: FontList.PretendardRegular,
+                    fontSize: 16,
+                  }}>
+                  {item}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
 
         <View
           style={{

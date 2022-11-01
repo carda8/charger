@@ -17,6 +17,7 @@ import {useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {commonTypes} from '@types';
 import SnsList from 'constants/SnsList';
+import {_getHeight} from 'constants/utils';
 
 const Login = () => {
   const navigation = useNavigation<commonTypes.navi>();
@@ -58,8 +59,8 @@ const Login = () => {
           style={{
             alignItems: 'center',
             justifyContent: 'center',
-            marginTop: 165,
-            marginBottom: 74,
+            marginTop: _getHeight(165),
+            marginBottom: _getHeight(74),
           }}>
           <Image source={require('~/assets/logo.png')} resizeMode={'contain'} />
         </View>

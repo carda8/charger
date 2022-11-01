@@ -32,11 +32,13 @@ const HomeHeader = ({title, subTitle, goBack, backTitle}: props) => {
         <View style={{flexDirection: 'row', alignItems: 'center'}}>
           <Image
             source={require('@assets/main_logo.png')}
-            style={{width: _getWidth(32), height: _getHeight(32)}}
+            style={{width: 32, height: 32}}
+            resizeMode="contain"
           />
           <Image
             source={require('@assets/main_logo_str.png')}
-            style={{width: _getWidth(71), height: _getHeight(19)}}
+            style={{width: 71, height: 19}}
+            resizeMode="contain"
           />
         </View>
         <Pressable
@@ -50,6 +52,7 @@ const HomeHeader = ({title, subTitle, goBack, backTitle}: props) => {
               width: _getWidth(22),
               height: _getHeight(22),
             }}
+            resizeMode="contain"
           />
         </Pressable>
       </View>

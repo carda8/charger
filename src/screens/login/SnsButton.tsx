@@ -35,7 +35,7 @@ const SnsButton = ({text, snsType, navigation, idx}: props) => {
   return (
     <>
       <Pressable
-        onPress={() => navigation.navigate('Account')}
+        onPress={() => navigation.navigate('AccountFinish')}
         style={{
           height: 46,
           marginHorizontal: 24,

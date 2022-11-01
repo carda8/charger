@@ -1,4 +1,3 @@
-import {View, Text} from 'react-native';
 import React from 'react';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {NavigationContainer} from '@react-navigation/native';
@@ -20,7 +19,6 @@ import MyPageMyCharger from '@screens/mypage/MyPageMyCharger';
 import MyPagePolicy from '@screens/mypage/MyPagePolicy';
 import MyPageInfo from '@screens/mypage/MyPageInfo';
 import MyPageRetire from '@screens/mypage/MyPageRetire';
-import reactNativeConfig from '../../../react-native.config';
 import AroundFilter from '@screens/around/AroundFilter';
 import SearchMain from '@screens/search/SearchMain';
 import PathSearchMain from '@screens/search/PathSearchMain';
@@ -38,12 +36,21 @@ const MainStack = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        screenOptions={{headerShown: false, animation: 'none'}}
+        screenOptions={{headerShown: false, animation: 'default'}}
         initialRouteName={'Login'}>
-        <Stack.Screen name="Login" component={Login} />
+        <Stack.Screen
+          name="Login"
+          component={Login}
+          options={{animation: 'slide_from_right'}}
+        />
         {/* 약관, 계정연동, 차량 등록 */}
+
         {/* 계정 연동 */}
-        <Stack.Screen name="Account" component={Account} />
+        <Stack.Screen
+          name="Account"
+          component={Account}
+          options={{animation: 'slide_from_right'}}
+        />
         {/* 이용 약관 */}
         <Stack.Screen name="AccountPolicy" component={AccountPolicy} />
         {/* 이용 약관 디테일 */}

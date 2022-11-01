@@ -88,14 +88,7 @@ const AroundMain = () => {
     }
   }, [isFocused]);
 
-  const arrFliter = [
-    '충전속도',
-    '충전속도',
-    '충전속도',
-    '충전속도',
-    '충전속도',
-    '충전속도',
-  ];
+  const arrFliter = ['충전속도', '충전소 유무료', '주차요금', '현재이용가능'];
 
   return (
     <GestureHandlerRootView style={{flex: 1}}>
@@ -106,14 +99,16 @@ const AroundMain = () => {
               zIndex: 100,
               alignSelf: 'center',
               position: 'absolute',
-              width: layout.width - _getWidth(20),
+              width: layout.width,
             }}>
-            <SearchBox />
+            <View style={{marginHorizontal: 10}}>
+              <SearchBox />
+            </View>
             <View
               style={{
-                // marginTop: 14,
                 flexDirection: 'row',
                 alignItems: 'center',
+                marginLeft: 10,
               }}>
               <Pressable
                 onPress={() => {
