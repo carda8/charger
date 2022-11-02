@@ -65,14 +65,24 @@ const HomeHeader = ({title, subTitle, goBack, backTitle}: props) => {
           alignItems: 'center',
         }}>
         <Image
-          source={require('@assets/carinfo_false.png')}
+          // source={require('@assets/carinfo_false.png')}
+          source={require('@assets/carinfo_true.png')}
           style={{width: _getWidth(89), height: _getHeight(89)}}
           resizeMode="contain"
         />
         <View style={{marginLeft: 24}}>
           <Text
             style={{fontFamily: FontList.PretendardLight, color: '#858585'}}>
-            등록된 정보가 없습니다.
+            {/* 등록된 정보가 없습니다. */}
+            반갑습니다
+          </Text>
+          <Text
+            style={{
+              fontFamily: FontList.PretendardMedium,
+              color: '#333333',
+              fontSize: 18,
+            }}>
+            박세라님
           </Text>
           <Pressable
             onPress={() => {

@@ -25,7 +25,7 @@ declare module commonTypes {
 
     FavStationMain: undefined;
 
-    AroundMain: undefined;
+    AroundMain: {res?: any[]} | undefined;
     AroundFilter: undefined;
 
     PathMain: {item?: boolean} | undefined;
@@ -39,6 +39,10 @@ declare module commonTypes {
     MyPageRetire: undefined;
   };
   type navi = NativeStackNavigationProp<RootStackParamList>;
+
+  type RootApiType = {
+    postAruondStation: stirng;
+  };
   // export namespace helloo {
   //   type hello = 'hi';
   // }

@@ -2,6 +2,9 @@
 {
   "extends": "@tsconfig/react-native/tsconfig.json",     /* Recommended React Native TSConfig base */
   "compilerOptions": {
+    "lib": [
+      "es5", "es6", "dom", "dom.iterable"
+      ],
     "baseUrl": "./src",
     "paths": {
       "~": ["./src"],
@@ -10,7 +13,7 @@
       "@page/*": ["page/*"],
       "@router/*": ["router/*"],
       "@screens/*": ["screens/*"],
-      "@types/*": ["types/*"],
+      "@types/*": ["/@types/*"],
 
       // "~/assets/*": ["assets/*"],
     },

@@ -47,7 +47,7 @@ const StationCount = ({bottomSheetRef}: props) => {
               fontSize: 16,
               color: 'black',
             }}>
-            주변 충전소 00개
+            주변 충전소00개
           </Text>
         </Pressable>
       </Shadow>

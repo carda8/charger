@@ -25,7 +25,7 @@ module.exports = {
           '@page': './src/page',
           '@router': './src/router',
           '@screens': './src/screens',
-          '@types': './src/types',
+          '@types': './src/@types',
         },
       },
     ],

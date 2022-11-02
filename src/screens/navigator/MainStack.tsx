@@ -37,7 +37,7 @@ const MainStack = () => {
     <NavigationContainer>
       <Stack.Navigator
         screenOptions={{headerShown: false, animation: 'default'}}
-        initialRouteName={'Login'}>
+        initialRouteName={'Home'}>
         <Stack.Screen
           name="Login"
           component={Login}

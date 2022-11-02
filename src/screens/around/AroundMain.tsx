@@ -7,6 +7,7 @@ import {
   useWindowDimensions,
   Image,
   Keyboard,
+  Dimensions,
 } from 'react-native';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -41,6 +42,7 @@ const AroundMain = () => {
   // const sheet = useBottomSheet<BottomSheetMethods & bO>();
   const layout = useWindowDimensions();
   const nav = useNavigation<commonTypes.navi>();
+  const height = Dimensions.get('window');
 
   const P0 = {latitude: 37.564362, longitude: 126.977011};
   const P1 = {latitude: 37.565051, longitude: 126.978567};
@@ -157,7 +159,7 @@ const AroundMain = () => {
             zoomControl={false}
             style={{
               width: '100%',
-              height: layout.height - _getHeight(60),
+              height: height.height - _getHeight(60),
             }}
             scaleBar={false}
             showsMyLocationButton={true}

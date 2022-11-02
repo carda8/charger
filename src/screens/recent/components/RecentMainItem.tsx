@@ -12,6 +12,7 @@ import {_getHeight, _getWidth} from 'constants/utils';
 import FontList from 'constants/FontList';
 import {useDispatch} from 'react-redux';
 import {setGoal} from 'redux/reducers/pathReducer';
+import ChargerType from 'constants/ChargerType';
 interface props {
   item?: any;
   pick?: boolean;
@@ -162,7 +163,7 @@ const RecentMainItem = ({item, style}: props) => {
               borderColor: '#6FCF24',
             }}>
             <Image
-              source={require('@assets/detail_dc_combo.png')}
+              source={ChargerType.chargerLogo[0]}
               style={{width: _getWidth(35), height: _getHeight(35)}}
               resizeMode="contain"
             />
@@ -178,7 +179,7 @@ const RecentMainItem = ({item, style}: props) => {
               borderColor: '#6FCF24',
             }}>
             <Image
-              source={require('@assets/detail_dc_demo.png')}
+              source={ChargerType.chargerLogo[1]}
               style={{width: _getWidth(30), height: _getHeight(30)}}
               resizeMode="contain"
             />
@@ -194,7 +195,7 @@ const RecentMainItem = ({item, style}: props) => {
               borderColor: '#6FCF24',
             }}>
             <Image
-              source={require('@assets/detail_dc_3top.png')}
+              source={ChargerType.chargerLogo[2]}
               style={{width: _getWidth(30), height: _getHeight(30)}}
               resizeMode="contain"
             />
@@ -211,7 +212,7 @@ const RecentMainItem = ({item, style}: props) => {
               borderColor: '#C6C6C6',
             }}>
             <Image
-              source={require('@assets/detail_etc.png')}
+              source={ChargerType.chargerLogo[3]}
               style={{width: _getWidth(33), height: _getHeight(33)}}
               resizeMode="contain"
             />

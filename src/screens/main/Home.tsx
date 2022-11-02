@@ -93,7 +93,7 @@ const Home = () => {
               }}
               style={{
                 ...styles.mainButton,
-                marginBottom: idx < 2 ? 20 : undefined,
+                marginBottom: idx < 2 ? _getHeight(20) : undefined,
               }}>
               <View style={{...styles.mainImgCtn}}>
                 <Image
@@ -134,21 +134,21 @@ const Home = () => {
 
 const styles = StyleSheet.create({
   mainButtonCtn: {
-    flex: 1,
-    paddingTop: 30,
-    paddingHorizontal: 16,
+    paddingTop: _getHeight(30),
+    paddingHorizontal: _getWidth(16),
     flexDirection: 'row',
     justifyContent: 'space-between',
     backgroundColor: '#F5F5F5',
     flexWrap: 'wrap',
   },
   mainButton: {
-    width: 156,
-    height: 163,
+    paddingTop: '5%',
+    width: _getWidth(156),
+    height: _getHeight(163),
     borderRadius: 12,
-    paddingHorizontal: 19,
+    paddingHorizontal: _getWidth(19),
     backgroundColor: 'white',
-    paddingTop: 47,
+    justifyContent: 'center',
   },
   mainImgCtn: {
     width: 36,
@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#00239C',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 9,
+    marginBottom: _getHeight(9),
   },
 });
 
