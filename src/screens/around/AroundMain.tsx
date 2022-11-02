@@ -13,8 +13,13 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import GlobalStyles from 'styles/GlobalStyles';
 import BottomNav from '@components/BottomNav';
-import {useDispatch} from 'react-redux';
-import {useIsFocused, useNavigation} from '@react-navigation/native';
+import {useDispatch, useSelector} from 'react-redux';
+import {
+  RouteProp,
+  useIsFocused,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 import {setBottomIdx} from 'redux/reducers/navReducer';
 import NaverMapView, {MapType, Marker} from 'react-native-nmap';
 import {
@@ -35,14 +40,23 @@ import NavModal from '@components/NavModal';
 import SearchBox from './Components/SearchBox';
 import {Shadow} from 'react-native-shadow-2';
 import {commonTypes} from '@types';
+import {RootState} from 'redux/store';
 
 const AroundMain = () => {
   const dispatch = useDispatch();
   const isFocused = useIsFocused();
-  // const sheet = useBottomSheet<BottomSheetMethods & bO>();
   const layout = useWindowDimensions();
   const nav = useNavigation<commonTypes.navi>();
+  const res =
+    useRoute<RouteProp<commonTypes.RootStackParamList, 'AroundMain'>>().params
+      ?.res;
+  const {currentUserLocation} = useSelector(
+    (state: RootState) => state.locationReducer,
+  );
   const height = Dimensions.get('window');
+
+  console.log('res route', res);
+  console.log('currentUserLocation', currentUserLocation);
 
   const P0 = {latitude: 37.564362, longitude: 126.977011};
   const P1 = {latitude: 37.565051, longitude: 126.978567};
@@ -156,27 +170,32 @@ const AroundMain = () => {
             </View>
           </View>
           <NaverMapView
-            zoomControl={false}
+            showsMyLocationButton
             style={{
               width: '100%',
               height: height.height - _getHeight(60),
             }}
             scaleBar={false}
-            showsMyLocationButton={true}
-            center={{...P0, zoom: 16}}
+            // showsMyLocationButton={true}
+            center={{
+              latitude: currentUserLocation.latitude ?? 0,
+              longitude: currentUserLocation.longitude ?? 0,
+              zoom: 16,
+            }}
             onTouch={(e: any) => console.log(e.navtiveEvent)}
             onCameraChange={e =>
               console.log('onCameraChange', JSON.stringify(e))
             }
             useTextureView={true}
-            mapType={MapType.Basic}
             onMapClick={e => console.log('onMapClick', JSON.stringify(e))}>
             <Marker
-              coordinate={P0}
+              coordinate={{
+                latitude: currentUserLocation.latitude ?? 0,
+                longitude: currentUserLocation.longitude ?? 0,
+              }}
               onClick={() => console.log('onClick! p0')}
             />
           </NaverMapView>
-
           <BottomSheetModal
             style={sheetStyle}
             ref={bottomSheetRef}
@@ -195,14 +214,12 @@ const AroundMain = () => {
             index={0}
             snapPoints={snapPoints}
             onChange={handleSheetChanges}>
-            {/* <View style={{...styles.contentContainer}}> */}
             <BottomSheetFlatList
               data={pick ? data2 : data}
               keyExtractor={(item, idx) => String(idx) + String(item)}
               renderItem={item => renderItem(item)}
               style={{marginBottom: pick ? undefined : 60}}
             />
-            {/* </View> */}
             {!pick && <BottomNav />}
           </BottomSheetModal>
           <StationCount bottomSheetRef={bottomSheetRef} />

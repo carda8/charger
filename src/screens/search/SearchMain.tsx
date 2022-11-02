@@ -18,7 +18,7 @@ import {commonTypes} from '@types';
 import {_getHeight} from 'constants/utils';
 import FontList from 'constants/FontList';
 import commonAPI from 'api/modules/commonAPI';
-import {API} from 'api/API';
+import MyModal from '@components/MyModal';
 
 interface keywordParam {
   keywords: string;
@@ -41,6 +41,7 @@ const SearchMain = () => {
     '서울 관악구 ',
   ]);
   const [modal, setModal] = useState(false);
+  const [modalNoRes, setModalNoRes] = useState(false);
   const layout = useWindowDimensions();
 
   const _getKeyword = async () => {
@@ -58,7 +59,9 @@ const SearchMain = () => {
         .then(res => {
           console.log('res', res?.data.data);
           if (res?.data.data.length > 0) {
-            nav.navigate('AroundMain', {});
+            nav.navigate('AroundMain', {res: res?.data.data});
+          } else {
+            setModalNoRes(!modalNoRes);
           }
         })
         .catch(err => console.log('## ERROR', err))
@@ -287,6 +290,14 @@ const SearchMain = () => {
           <ActivityIndicator size="large" />
         </View>
       </Modal>
+
+      <MyModal
+        visible={modalNoRes}
+        setVisible={setModalNoRes}
+        positive
+        positiveTitle="확인"
+        title="검색결과가 없습니다"
+      />
     </SafeAreaView>
   );
 };

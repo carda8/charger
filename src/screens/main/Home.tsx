@@ -8,6 +8,8 @@ import {
   ToastAndroid,
   BackHandler,
   ScrollView,
+  PermissionsAndroid,
+  Platform,
 } from 'react-native';
 import React, {useState, useEffect, useRef} from 'react';
 import {_getHeight, _getWidth} from 'constants/utils';
@@ -22,6 +24,8 @@ import {useIsFocused, useNavigation} from '@react-navigation/native';
 import {setBottomIdx} from 'redux/reducers/navReducer';
 import {commonTypes} from '@types';
 import MyModal from '@components/MyModal';
+import Geolocation from 'react-native-geolocation-service';
+import {setCurrentUserLocation} from 'redux/reducers/locationReducer';
 
 interface path {
   [key: string]: ImageSourcePropType;
@@ -69,6 +73,43 @@ const Home = () => {
         return;
     }
   };
+  const _geoCallback = (res: any) => {
+    console.log(res);
+    Geolocation.getCurrentPosition(
+      position => {
+        dispatch(
+          setCurrentUserLocation({
+            currentUserLocation: {
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+            },
+          }),
+        );
+        console.log(position);
+      },
+      error => {
+        // See error code charts below.
+        console.log(error.code, error.message);
+      },
+      {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
+    );
+  };
+
+  const _getPermission = async () => {
+    if (Platform.OS === 'ios') {
+      await Geolocation.requestAuthorization('always').then(res =>
+        _geoCallback(res),
+      );
+    } else {
+      await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+      ).then(res => _geoCallback(res));
+    }
+  };
+
+  useEffect(() => {
+    _getPermission();
+  }, []);
 
   useEffect(() => {
     if (isFocused) {
