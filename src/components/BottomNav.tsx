@@ -1,4 +1,12 @@
-import {View, Text, Pressable, Image} from 'react-native';
+import {
+  View,
+  Text,
+  Pressable,
+  Image,
+  StyleProp,
+  ViewProps,
+  ViewStyle,
+} from 'react-native';
 import React, {useState} from 'react';
 import {_getHeight, _getWidth} from 'constants/utils';
 import {useNavigation} from '@react-navigation/native';
@@ -9,7 +17,12 @@ import {RootState} from 'redux/store';
 import {setBottomIdx} from 'redux/reducers/navReducer';
 import {Shadow} from 'react-native-shadow-2';
 
-const BottomNav = () => {
+interface props {
+  style?: StyleProp<ViewStyle>;
+  shadowStyle?: StyleProp<ViewStyle>;
+}
+
+const BottomNav = ({style, shadowStyle}: props) => {
   const nav = useNavigation<commonTypes.navi>();
   const {bottomIdx} = useSelector((state: RootState) => state.navReducer);
   const dispatch = useDispatch();
@@ -19,20 +32,26 @@ const BottomNav = () => {
       <Shadow
         distance={1}
         style={{width: '100%', height: _getHeight(60)}}
-        containerStyle={{
-          width: '100%',
-          position: 'absolute',
-          bottom: 0,
-        }}>
-        <View
-          style={{
+        containerStyle={[
+          {
+            width: '100%',
             position: 'absolute',
             bottom: 0,
-            width: '100%',
-            backgroundColor: 'white',
-            height: _getHeight(60),
-            flexDirection: 'row',
-          }}>
+          },
+          shadowStyle,
+        ]}>
+        <View
+          style={[
+            {
+              position: 'absolute',
+              bottom: 0,
+              width: '100%',
+              backgroundColor: 'white',
+              height: _getHeight(60),
+              flexDirection: 'row',
+            },
+            style,
+          ]}>
           <Pressable
             onPress={() => {
               // setIndex(0);

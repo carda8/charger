@@ -126,7 +126,7 @@ const SearchMain = () => {
       {history.map((item, idx) => (
         <Pressable
           onPress={() => {
-            _delelteItem(history, setHistory, idx);
+            nav.goBack();
           }}
           key={idx}
           style={{
@@ -167,16 +167,22 @@ const SearchMain = () => {
                 }}>
                 10.01
               </Text>
-              <Image
-                source={require('@assets/search_close.png')}
-                style={{
-                  width: 12,
-                  height: 12,
-                  marginLeft: 10,
-                  tintColor: '#959595',
-                }}
-                resizeMode="contain"
-              />
+              <Pressable
+                hitSlop={10}
+                onPress={() => {
+                  _delelteItem(history, setHistory, idx);
+                }}>
+                <Image
+                  source={require('@assets/search_close.png')}
+                  style={{
+                    width: 12,
+                    height: 12,
+                    marginLeft: 10,
+                    tintColor: '#959595',
+                  }}
+                  resizeMode="contain"
+                />
+              </Pressable>
             </View>
           </View>
         </Pressable>
@@ -204,8 +210,9 @@ const SearchMain = () => {
       )}
       {recent.map((item, index) => (
         <Pressable
+          hitSlop={10}
           onPress={() => {
-            _delelteItem(recent, setRecent, index);
+            nav.goBack();
           }}
           key={index}
           style={{
@@ -238,7 +245,10 @@ const SearchMain = () => {
                 </Text>
               </View>
               <Pressable
-                onPress={() => {}}
+                hitSlop={10}
+                onPress={() => {
+                  _delelteItem(recent, setRecent, index);
+                }}
                 style={{flexDirection: 'row', alignItems: 'center'}}>
                 <Text
                   style={{

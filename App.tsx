@@ -9,6 +9,8 @@ import {Provider} from 'react-redux';
 import store from './src/redux/store';
 import {StatusBar} from 'react-native';
 import MainStack from '@screens/navigator/MainStack';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
+import {BottomSheetModalProvider} from '@gorhom/bottom-sheet';
 
 const qeuryClient = new QueryClient({
   queryCache: new QueryCache({

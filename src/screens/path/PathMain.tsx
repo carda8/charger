@@ -97,7 +97,7 @@ const PathMain = () => {
               height: layout.height - _getHeight(60),
             }}
             scaleBar={false}
-            showsMyLocationButton={true}
+            showsMyLocationButton={false}
             center={{...P0, zoom: 16}}
             onTouch={(e: any) => console.log(e.navtiveEvent)}
             useTextureView={true}

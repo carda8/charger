@@ -1,4 +1,12 @@
-import {View, Text, Modal, Pressable, Image, Linking} from 'react-native';
+import {
+  View,
+  Text,
+  Modal,
+  Pressable,
+  Image,
+  Linking,
+  Platform,
+} from 'react-native';
 import React, {useCallback} from 'react';
 import FontList from 'constants/FontList';
 import {_getHeight, _getWidth} from 'constants/utils';
@@ -24,6 +32,13 @@ const NavModal = ({visible, text, title, setVisible}: props) => {
   const T_MAP_SCHEMA =
     'tmap://route?startx=129.0756416&starty=35.1795543&goalx=127.005515&goaly=37.537229';
 
+  const GOOGLE_STORE_KAKAO_MAP = 'market://details?id=net.daum.android.map';
+  const GOOGLE_STORE_T_MAP = 'market://details?id=com.skt.tmap.ku';
+  const APPLE_STORE_KAKAO_MAP =
+    'itms-apps://itunes.apple.com/us/app/id304608425?mt=8';
+  const APPLE_STORE_T_MAP =
+    'itms-apps://itunes.apple.com/us/app/id431589174?mt=8';
+
   //   const GOOGLE_PLAY_STORE_LINK =
   //     'tmap://route?rGoX=127.005515&rGoY=37.537229&rGoName=스벅';
 
@@ -36,19 +51,33 @@ const NavModal = ({visible, text, title, setVisible}: props) => {
     }
   }, []);
 
+  const _routeMarket = async (url: any) => {
+    console.log(url);
+    if (Platform.OS === 'android') {
+      if (url === KAKAO_MAP_SCHEMA)
+        await Linking.openURL(GOOGLE_STORE_KAKAO_MAP);
+      if (url === T_MAP_SCHEMA) await Linking.openURL(GOOGLE_STORE_T_MAP);
+    } else {
+      if (url === KAKAO_MAP_SCHEMA)
+        await Linking.openURL(APPLE_STORE_KAKAO_MAP);
+      if (url === T_MAP_SCHEMA) await Linking.openURL(APPLE_STORE_T_MAP);
+    }
+  };
+
   const handlePress = useCallback(async (url: string) => {
     // 만약 어플이 설치되어 있으면 true, 없으면 false
     const supported = await Linking.canOpenURL(url);
 
-    const res = await Linking.openURL(url);
-    console.log(url, supported, res);
-    if (supported) {
-      await Linking.openURL(url);
-    }
+    await Linking.openURL(url)
+      .then(res => console.log('true res', res))
+      .catch(err => {
+        _routeMarket(url);
+      });
   }, []);
 
   return (
     <Modal
+      statusBarTranslucent
       visible={visible}
       transparent
       onRequestClose={() => {

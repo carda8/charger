@@ -21,7 +21,11 @@ import {
 } from '@gorhom/bottom-sheet';
 import BottomButton from '@components/BottomButton';
 import {useIsFocused} from '@react-navigation/native';
-import {GestureHandlerRootView} from 'react-native-gesture-handler';
+import {
+  FlatList,
+  GestureHandlerRootView,
+  ScrollView,
+} from 'react-native-gesture-handler';
 import FontList from 'constants/FontList';
 
 const FavStationMain = () => {
@@ -132,97 +136,82 @@ const FavStationMain = () => {
   }, []);
 
   return (
-    <GestureHandlerRootView style={{flex: 1}}>
-      <BottomSheetModalProvider>
-        <SafeAreaView style={{...GlobalStyles.safeAreaStyle}}>
-          <View style={{position: 'absolute', zIndex: 100, width: '100%'}}>
-            <HeaderCenter
-              title="즐겨찾는 충전소"
-              leftBack
-              rightBack
-              backTitle="닫기"
-              backTitleStyle={{
-                fontSize: 16,
-                fontFamily: FontList.PretendardRegular,
-              }}
-            />
-          </View>
-          <NaverMapView
-            zoomControl={false}
-            style={{
-              width: '100%',
-              height: layout.height - _getHeight(60),
-            }}
-            scaleBar={false}
-            showsMyLocationButton={true}
-            center={{...P0, zoom: 16}}
-            onTouch={(e: any) => console.log(e.nativeEvent)}
-            onCameraChange={e =>
-              console.log('onCameraChange', JSON.stringify(e))
-            }
-            useTextureView={true}
-            mapType={MapType.Basic}
-            onMapClick={e => console.log('onMapClick', JSON.stringify(e))}>
-            <Marker
-              coordinate={P0}
-              onClick={() => console.log('onClick! p0')}
-            />
-            {/* <Marker
-              coordinate={P1}
-              pinColor="blue"
-              onClick={() => console.log('onClick! p1')}
-            />
-            <Marker
-              coordinate={P2}
-              pinColor="red"
-              onClick={() => console.log('onClick! p2')}
-            /> */}
-          </NaverMapView>
-          <BottomSheetModal
-            style={sheetStyle}
-            ref={bottomSheetRef}
-            animateOnMount={true}
-            index={0}
-            snapPoints={snapPoints}
-            onChange={handleSheetChanges}>
-            {/* <View style={{...styles.contentContainer}}> */}
-            <BottomSheetFlatList
-              data={data}
-              keyExtractor={(item, idx) => String(idx) + String(item)}
-              numColumns={3}
-              columnWrapperStyle={{marginHorizontal: 6, marginBottom: 12}}
-              ListHeaderComponent={
-                <Pressable
-                  style={{
-                    alignSelf: 'flex-end',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    marginBottom: 12,
-                  }}>
-                  <Text
-                    style={{
-                      fontFamily: FontList.PretendardRegular,
-                      color: 'black',
-                    }}>
-                    즐겨찾기 한 순
-                  </Text>
-                  <Image
-                    source={require('@assets/arrow_bottom.png')}
-                    style={{width: 9, height: 5, marginRight: 8, marginLeft: 6}}
-                    resizeMode="contain"
-                  />
-                </Pressable>
-              }
-              // ListFooterComponent={<BottomNav />}
-              renderItem={item => renderItem(item)}
-            />
-
-            {/* </View> */}
-          </BottomSheetModal>
-          <BottomNav />
-        </SafeAreaView>
-      </BottomSheetModalProvider>
-    </GestureHandlerRootView>
+    <SafeAreaView style={{...GlobalStyles.safeAreaStyle}}>
+      <View style={{position: 'absolute', zIndex: 100, width: '100%'}}>
+        <HeaderCenter
+          title="즐겨찾는 충전소"
+          leftBack
+          rightBack
+          backTitle="닫기"
+          backTitleStyle={{
+            fontSize: 16,
+            fontFamily: FontList.PretendardRegular,
+          }}
+        />
+      </View>
+      <NaverMapView
+        zoomControl={false}
+        style={{
+          zIndex: -1,
+          width: '100%',
+          height: layout.height - 60,
+        }}
+        scaleBar={false}
+        showsMyLocationButton={true}
+        center={{...P0, zoom: 16}}
+        onTouch={(e: any) => console.log(e.nativeEvent)}
+        onCameraChange={e => console.log('onCameraChange', JSON.stringify(e))}
+        useTextureView={true}
+        mapType={MapType.Basic}
+        onMapClick={e => console.log('onMapClick', JSON.stringify(e))}>
+        <Marker coordinate={P0} onClick={() => console.log('onClick! p0')} />
+      </NaverMapView>
+      <BottomSheetModal
+        style={sheetStyle}
+        ref={bottomSheetRef}
+        animateOnMount={true}
+        index={0}
+        snapPoints={snapPoints}
+        onChange={handleSheetChanges}>
+        <BottomSheetFlatList
+          data={data}
+          initialNumToRender={3}
+          keyExtractor={(item, idx) => String(idx)}
+          numColumns={3}
+          scrollEnabled={true}
+          columnWrapperStyle={{
+            flex: 1,
+            marginHorizontal: 6,
+            marginBottom: 12,
+          }}
+          ListHeaderComponent={
+            <Pressable
+              style={{
+                alignSelf: 'flex-end',
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginBottom: 12,
+              }}>
+              <Text
+                style={{
+                  fontFamily: FontList.PretendardRegular,
+                  color: 'black',
+                }}>
+                즐겨찾기 한 순
+              </Text>
+              <Image
+                source={require('@assets/arrow_bottom.png')}
+                style={{width: 9, height: 5, marginRight: 8, marginLeft: 6}}
+                resizeMode="contain"
+              />
+            </Pressable>
+          }
+          // ListFooterComponent={<BottomNav />}
+          renderItem={item => renderItem(item)}
+        />
+      </BottomSheetModal>
+      <BottomNav />
+    </SafeAreaView>
   );
 };
 

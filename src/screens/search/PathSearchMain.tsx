@@ -7,7 +7,7 @@ import {
   Image,
   ListRenderItem,
 } from 'react-native';
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import GlobalStyles from 'styles/GlobalStyles';
 import BottomNav from '@components/BottomNav';
@@ -19,11 +19,41 @@ import PathSearchBox from '@screens/path/components/PathSearchBox';
 import {FlatList} from 'react-native-gesture-handler';
 import {useDispatch} from 'react-redux';
 import {setGoal} from 'redux/reducers/pathReducer';
+import Loading from '@components/Loading';
 
 const PathSearchMain = () => {
   const nav = useNavigation<commonTypes.navi>();
-  const history = ['선릉역', '이마트 트레이더스', '코스트코'];
-  const historyRecent = ['서문여자고등학교', '이마트 트레이더스', '홈플러스'];
+  const [history, setHistory] = useState([
+    '선릉역',
+    '이마트 트레이더스',
+    '코스트코',
+  ]);
+  const [historyRecent, setHistoryRecent] = useState([
+    '서문여자고등학교',
+    '이마트 트레이더스',
+    '홈플러스',
+    '스타벅스',
+    '서울시청',
+    '부산시청',
+    '코스트코',
+    '인천국제공항',
+    '서문여자고등학교',
+    '이마트 트레이더스',
+    '홈플러스',
+    '스타벅스',
+    '서울시청',
+    '부산시청',
+    '코스트코',
+    '인천국제공항',
+    '서문여자고등학교',
+    '이마트 트레이더스',
+    '홈플러스',
+    '스타벅스',
+    '서울시청',
+    '부산시청',
+    '코스트코',
+    '인천국제공항',
+  ]);
   const dispatch = useDispatch();
 
   const _onPress = () => {
@@ -31,11 +61,54 @@ const PathSearchMain = () => {
     nav.navigate('PathMain');
   };
 
+  const _delelteItem = (target: any[], setTarget: any, index: any) => {
+    let temp = [...target];
+    temp = target.filter((item, idx) => idx !== index);
+    setTarget(temp);
+  };
+
+  const _onEndReached = () => {
+    const data = [
+      '서문여자고등학교',
+      '이마트 트레이더스',
+      '홈플러스',
+      '스타벅스',
+      '서울시청',
+      '부산시청',
+      '코스트코',
+      '인천국제공항',
+      '서문여자고등학교',
+      '이마트 트레이더스',
+      '홈플러스',
+      '스타벅스',
+      '서울시청',
+      '부산시청',
+      '코스트코',
+      '인천국제공항',
+      '서문여자고등학교',
+      '이마트 트레이더스',
+      '홈플러스',
+      '스타벅스',
+      '서울시청',
+      '부산시청',
+      '코스트코',
+      '인천국제공항',
+    ];
+    let temp = [...historyRecent];
+    temp.push(...data);
+    console.log('temp', temp);
+    setHistoryRecent(temp);
+  };
+
   const renderItem: ListRenderItem<any> = item => {
     return (
       <>
         {item.index === 0 && (
-          <View style={{paddingHorizontal: 18, paddingTop: 15}}>
+          <View
+            style={{
+              paddingHorizontal: 18,
+              paddingTop: history.length > 0 ? 15 : 0,
+            }}>
             <Text
               style={{
                 lineHeight: 28,
@@ -89,16 +162,21 @@ const PathSearchMain = () => {
                 }}>
                 10.01
               </Text>
-              <Image
-                source={require('@assets/search_close.png')}
-                style={{
-                  width: 12,
-                  height: 12,
-                  marginLeft: 10,
-                  tintColor: '#959595',
-                }}
-                resizeMode="contain"
-              />
+              <Pressable
+                onPress={() => {
+                  _delelteItem(historyRecent, setHistoryRecent, item.index);
+                }}>
+                <Image
+                  source={require('@assets/search_close.png')}
+                  style={{
+                    width: 12,
+                    height: 12,
+                    marginLeft: 10,
+                    tintColor: '#959595',
+                  }}
+                  resizeMode="contain"
+                />
+              </Pressable>
             </View>
           </View>
           <View style={{marginTop: 12}}>
@@ -127,18 +205,24 @@ const PathSearchMain = () => {
       </View>
       <FlatList
         renderItem={item => renderItem(item)}
+        style={{paddingBottom: 60, marginBottom: 60}}
+        onEndReached={() => {
+          _onEndReached();
+        }}
         ListHeaderComponent={() => (
           <>
             <View style={{paddingHorizontal: 18, paddingTop: 15}}>
-              <Text
-                style={{
-                  lineHeight: 28,
-                  fontFamily: FontList.PretendardRegular,
-                  fontSize: 16,
-                  color: '#333333',
-                }}>
-                최근 검색지
-              </Text>
+              {history.length > 0 && (
+                <Text
+                  style={{
+                    lineHeight: 28,
+                    fontFamily: FontList.PretendardRegular,
+                    fontSize: 16,
+                    color: '#333333',
+                  }}>
+                  최근 검색지
+                </Text>
+              )}
             </View>
             {history.map((item, idx) => (
               <Pressable
@@ -180,16 +264,19 @@ const PathSearchMain = () => {
                       }}>
                       10.01
                     </Text>
-                    <Image
-                      source={require('@assets/search_close.png')}
-                      style={{
-                        width: 12,
-                        height: 12,
-                        marginLeft: 10,
-                        tintColor: '#959595',
-                      }}
-                      resizeMode="contain"
-                    />
+                    <Pressable
+                      onPress={() => _delelteItem(history, setHistory, idx)}>
+                      <Image
+                        source={require('@assets/search_close.png')}
+                        style={{
+                          width: 12,
+                          height: 12,
+                          marginLeft: 10,
+                          tintColor: '#959595',
+                        }}
+                        resizeMode="contain"
+                      />
+                    </Pressable>
                   </View>
                 </View>
               </Pressable>
@@ -199,7 +286,6 @@ const PathSearchMain = () => {
         data={historyRecent}
         keyExtractor={(item, idx) => String(idx) + String(item)}
       />
-
       <BottomNav />
     </SafeAreaView>
   );

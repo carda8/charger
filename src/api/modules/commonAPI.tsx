@@ -27,4 +27,9 @@ export default {
     const res = await _postAPI('search/autocomplete', params);
     return res;
   },
+
+  _postSearchStationCoor: async (params: any) => {
+    const res = await _postAPI('search/stations', params);
+    return res;
+  },
 };
