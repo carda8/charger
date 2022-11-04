@@ -6,6 +6,7 @@ import {
   ListRenderItem,
   Pressable,
   Image,
+  ImageBackground,
 } from 'react-native';
 import React, {useMemo, useEffect, useCallback, useRef, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -35,10 +36,30 @@ const FavStationMain = () => {
   const snapPoints = useMemo(() => ['82%'], []);
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const data = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
+  const dumCoor = [
+    {latitude: 37.3598560266063, longitude: 126.866019306938},
+    {latitude: 37.4498560266063, longitude: 126.926019306938},
+    {latitude: 37.5398560266063, longitude: 127.166019306938},
+    {latitude: 37.4298560266063, longitude: 126.966019306938},
+    {latitude: 37.5198560266063, longitude: 126.966019306938},
+    {latitude: 37.8598560266063, longitude: 126.426019306938},
+    {latitude: 37.5598560266063, longitude: 126.916019306938},
+    {latitude: 37.5598560266063, longitude: 126.926019306938},
+    {latitude: 37.5198560266063, longitude: 126.546019306938},
+    {latitude: 37.5598560266063, longitude: 126.966019306938},
+    {latitude: 37.7398560266063, longitude: 126.566019306938},
+    {latitude: 37.1098560266063, longitude: 126.762019306938},
+  ];
+
+  const [center, setCenter] = useState({
+    latitude: 37.564362,
+    longitude: 126.977011,
+    zoom: 13,
+  });
 
   // callbacks
   const handleSheetChanges = useCallback((index: number) => {
-    console.log('handleSheetChanges', index);
+    // console.log('handleSheetChanges', index);
   }, []);
   const isFocused = useIsFocused();
   const sheetStyle = useMemo(
@@ -53,6 +74,14 @@ const FavStationMain = () => {
     return (
       <>
         <Pressable
+          onPress={() => {
+            setCenter({
+              latitude: item.item.latitude,
+              longitude: item.item.longitude,
+              zoom: 13,
+            });
+            bottomSheetRef.current?.close();
+          }}
           key={item.index}
           style={{
             flex: 1,
@@ -72,7 +101,7 @@ const FavStationMain = () => {
           />
           <Text
             style={{fontFamily: FontList.PretendardMedium, color: '#333333'}}>
-            판교 테크노 밸리 주차장
+            판교 테크노 밸리 주차장 {item.index}
           </Text>
           <View style={{marginTop: 5}}>
             <Text
@@ -125,15 +154,12 @@ const FavStationMain = () => {
   };
 
   useEffect(() => {
-    bottomSheetRef.current?.present();
+    if (isFocused) bottomSheetRef.current?.present();
+    else bottomSheetRef.current?.close();
     return () => {
-      // bottomSheetRef.current?.close();
+      bottomSheetRef.current?.close();
     };
   }, [isFocused]);
-
-  useEffect(() => {
-    bottomSheetRef.current?.present();
-  }, []);
 
   return (
     <SafeAreaView style={{...GlobalStyles.safeAreaStyle}}>
@@ -144,28 +170,74 @@ const FavStationMain = () => {
           rightBack
           backTitle="닫기"
           backTitleStyle={{
-            fontSize: 16,
+            fontSize: 15,
             fontFamily: FontList.PretendardRegular,
           }}
         />
       </View>
       <NaverMapView
         zoomControl={false}
+        tiltGesturesEnabled={false}
         style={{
           zIndex: -1,
           width: '100%',
           height: layout.height - 60,
         }}
         scaleBar={false}
-        showsMyLocationButton={true}
-        center={{...P0, zoom: 16}}
+        showsMyLocationButton={false}
+        center={center}
         onTouch={(e: any) => console.log(e.nativeEvent)}
-        onCameraChange={e => console.log('onCameraChange', JSON.stringify(e))}
         useTextureView={true}
         mapType={MapType.Basic}
-        onMapClick={e => console.log('onMapClick', JSON.stringify(e))}>
-        <Marker coordinate={P0} onClick={() => console.log('onClick! p0')} />
+        onMapClick={e => {
+          // console.log('onMapClick', e);
+          bottomSheetRef.current?.present();
+        }}>
+        <Marker
+          pinColor="blue"
+          zIndex={100}
+          coordinate={{...P0}}
+          image={require('@assets/my_location.png')}
+          width={20}
+          height={20}
+          onClick={() => console.log('onClick! p0')}></Marker>
+
+        {dumCoor.map((item, index) => (
+          <Marker
+            key={index}
+            width={32}
+            height={37.7}
+            coordinate={item}
+            onClick={() => {
+              setCenter({
+                latitude: item.latitude,
+                longitude: item.longitude,
+                zoom: 16,
+              });
+            }}>
+            <ImageBackground
+              source={require('@assets/marker_green.png')}
+              style={{
+                width: 32,
+                height: 38,
+                alignItems: 'center',
+                justifyContent: 'center',
+                paddingBottom: '20%',
+              }}
+              resizeMode="contain"></ImageBackground>
+          </Marker>
+        ))}
       </NaverMapView>
+      {/*      <Marker
+            coordinate={item}
+            onClick={() => {
+              setCenter({
+                latitude: item.latitude,
+                longitude: item.longitude,
+                zoom: 16,
+              });
+            }}
+          /> */}
       <BottomSheetModal
         style={sheetStyle}
         ref={bottomSheetRef}
@@ -174,7 +246,7 @@ const FavStationMain = () => {
         snapPoints={snapPoints}
         onChange={handleSheetChanges}>
         <BottomSheetFlatList
-          data={data}
+          data={dumCoor}
           initialNumToRender={3}
           keyExtractor={(item, idx) => String(idx)}
           numColumns={3}

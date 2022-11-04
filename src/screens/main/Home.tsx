@@ -36,12 +36,13 @@ interface path {
 }
 
 const Home = () => {
+  const {userInfo} = useSelector((state: RootState) => state.authReducer);
+  console.log('userInfo', userInfo);
   const nav = useNavigation<commonTypes.navi>();
   const dispatch = useDispatch();
   const {bottomIdx} = useSelector((state: RootState) => state.navReducer);
   const isFocused = useIsFocused();
   const [visible, setVisible] = useState(false);
-  // const ref = useRef(false);
 
   const imgPath: path = {
     main1: require('@assets/main_near.png'),
@@ -108,7 +109,7 @@ const Home = () => {
   };
 
   useEffect(() => {
-    _getPermission();
+    // _getPermission();
   }, []);
 
   useEffect(() => {
@@ -124,6 +125,7 @@ const Home = () => {
   return (
     <SafeAreaView style={{...GlobalStyles.safeAreaStyle}}>
       <HomeHeader />
+
       <ScrollView contentContainerStyle={{backgroundColor: '#F5F5F5', flex: 1}}>
         <View style={{...styles.mainButtonCtn}}>
           {btnKeys.map((item, idx) => (
@@ -133,6 +135,7 @@ const Home = () => {
                 _route(idx);
               }}
               style={{
+                elevation: 4,
                 ...styles.mainButton,
                 marginBottom: idx < 2 ? _getHeight(20) : undefined,
               }}>

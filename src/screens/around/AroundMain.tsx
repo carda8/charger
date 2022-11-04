@@ -81,11 +81,6 @@ const AroundMain = () => {
   console.log('currentUserLocation', currentUserLocation);
 
   const P0 = {latitude: 37.5246544, longitude: 126.8881368};
-  // const P1 = {latitude: 37.565051, longitude: 126.978567};
-  // const P2 = {latitude: 37.565383, longitude: 126.976292};
-
-  const data = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-  const [data2, setData2] = useState([1]);
 
   const [visible, setVisible] = useState(false);
 
@@ -93,7 +88,6 @@ const AroundMain = () => {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const [pick, setPick] = useState<any>();
   // variables
-  // /layout.height * 0.3 + 60
   const snapPoints = useMemo(() => [pick ? '40%' : '80%'], [pick]);
 
   // callbacks
@@ -141,6 +135,7 @@ const AroundMain = () => {
   const renderItem: ListRenderItem<any> = item => {
     return (
       <StationListItem
+        setClickedMarker={setClickedMarker}
         item={item.item}
         setPick={setPick}
         pick={pick}
@@ -239,6 +234,7 @@ const AroundMain = () => {
       </View>
       <NaverMapView
         compass={false}
+        tiltGesturesEnabled={false}
         showsMyLocationButton={false}
         style={{
           flex: 1,
@@ -382,7 +378,10 @@ const AroundMain = () => {
               zoom: 14,
             });
           }}
-          style={{alignItems: 'center', justifyContent: 'center'}}>
+          style={{
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
           <Image
             source={require('@assets/location.png')}
             style={{width: 20, height: 20}}
@@ -395,7 +394,12 @@ const AroundMain = () => {
       <StationCount bottomSheetRef={bottomSheetRef} stationList={stationList} />
 
       {/* 길안내 연결 모달 */}
-      <NavModal visible={visible} setVisible={setVisible} title="길안내 연결" />
+      <NavModal
+        visible={visible}
+        setVisible={setVisible}
+        title="길안내 연결"
+        coor={clickedMarker}
+      />
 
       {/* 빠른 필터 모달 */}
       <MyModal

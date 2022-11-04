@@ -13,13 +13,17 @@ import FontList from 'constants/FontList';
 import {useDispatch} from 'react-redux';
 import {setGoal} from 'redux/reducers/pathReducer';
 import ChargerType from 'constants/ChargerType';
+import {BottomSheetModalMethods} from '@gorhom/bottom-sheet/lib/typescript/types';
 interface props {
   item?: any;
   pick?: boolean;
   setPick?: Dispatch<SetStateAction<any>>;
   style: StyleProp<ViewStyle>;
-  goal?: boolean;
+  goal?: string;
   isRecent?: boolean;
+  clickedMarker?: any;
+  setClickedMarker?: Dispatch<SetStateAction<any>>;
+  bottomSheetRef?: React.RefObject<BottomSheetModalMethods>;
 }
 
 const StationListItem = ({
@@ -28,6 +32,9 @@ const StationListItem = ({
   setPick,
   style,
   goal,
+  bottomSheetRef,
+  clickedMarker,
+  setClickedMarker,
   isRecent,
 }: props) => {
   const [favorite, setFavorite] = useState(false);
@@ -38,6 +45,13 @@ const StationListItem = ({
       onPress={() => {
         if (item) {
           console.log('item', item);
+          console.log('2', item.location);
+          setClickedMarker &&
+            setClickedMarker({
+              latitude: Number(item.location.lat),
+              longitude: Number(item.location.lon),
+              zoom: 16,
+            });
           setPick && setPick([item]);
         }
       }}
@@ -58,13 +72,6 @@ const StationListItem = ({
           flexDirection: 'row',
           alignItems: 'center',
         }}>
-        {/* <View
-          style={{
-            width: _getWidth(20),
-            height: _getHeight(20),
-            backgroundColor: '#D9D9D9',
-          }}
-        /> */}
         <Image
           source={require('@assets/main_bt_union2.png')}
           style={{width: 20, height: 20}}
@@ -84,7 +91,7 @@ const StationListItem = ({
                 fontSize: 16,
                 color: '#333333',
               }}>
-              {item?.statNm}
+              {item?.statNm ? item?.statNm : '서문여자고등학교'}
               {'  '}
               <Text
                 style={{
@@ -127,7 +134,10 @@ const StationListItem = ({
             hitSlop={10}
             onPress={() => {
               setPick && setPick(false);
-              goal && dispatch(setGoal(false));
+              if (goal) {
+                dispatch(setGoal(''));
+                bottomSheetRef?.current?.close();
+              }
             }}>
             <Image
               source={
@@ -153,7 +163,7 @@ const StationListItem = ({
             fontFamily: FontList.PretendardRegular,
             color: '#959595',
           }}>
-          {item?.addr}
+          {item?.addr ? item?.addr : '강남구 서초동 방배로 33-3'}
         </Text>
       </View>
       {item?.parkingFree && (

@@ -56,12 +56,19 @@ const PathSearchMain = () => {
   ]);
   const dispatch = useDispatch();
 
-  const _onPress = () => {
-    dispatch(setGoal(true));
-    nav.navigate('PathMain');
+  const _onPress = (item: any) => {
+    console.log('item', item);
+    const data: commonTypes.item = {
+      addr: '강남구 서초동 방배로 33-3',
+      statNm: item,
+      parkingFree: true,
+    };
+    dispatch(setGoal('강남구 서초동 방배로 33-3'));
+    nav.navigate('PathMain', {item: data});
   };
 
   const _delelteItem = (target: any[], setTarget: any, index: any) => {
+    console.log('index', index);
     let temp = [...target];
     temp = target.filter((item, idx) => idx !== index);
     setTarget(temp);
@@ -121,7 +128,7 @@ const PathSearchMain = () => {
           </View>
         )}
         <Pressable
-          onPress={() => _onPress()}
+          onPress={() => _onPress(item.item)}
           style={{
             width: '100%',
             height: _getHeight(78),
@@ -136,22 +143,20 @@ const PathSearchMain = () => {
               alignItems: 'center',
               justifyContent: 'space-between',
             }}>
-            <View>
-              <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                <Image
-                  source={require('@assets/search_goal.png')}
-                  style={{width: 16, height: 16, marginRight: 6}}
-                  resizeMode="contain"
-                />
-                <Text
-                  style={{
-                    fontFamily: FontList.PretendardMedium,
-                    fontSize: 16,
-                    color: '#333333',
-                  }}>
-                  {item.item}
-                </Text>
-              </View>
+            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+              <Image
+                source={require('@assets/search_goal.png')}
+                style={{width: 16, height: 16, marginRight: 6}}
+                resizeMode="contain"
+              />
+              <Text
+                style={{
+                  fontFamily: FontList.PretendardMedium,
+                  fontSize: 16,
+                  color: '#333333',
+                }}>
+                {item.item}
+              </Text>
             </View>
 
             <View style={{flexDirection: 'row', alignItems: 'center'}}>
@@ -163,6 +168,7 @@ const PathSearchMain = () => {
                 10.01
               </Text>
               <Pressable
+                hitSlop={15}
                 onPress={() => {
                   _delelteItem(historyRecent, setHistoryRecent, item.index);
                 }}>
@@ -226,6 +232,7 @@ const PathSearchMain = () => {
             </View>
             {history.map((item, idx) => (
               <Pressable
+                onPress={() => _onPress(item)}
                 key={idx}
                 style={{
                   width: '100%',

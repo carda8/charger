@@ -41,7 +41,7 @@ const MainStack = () => {
         <BottomSheetModalProvider>
           <Stack.Navigator
             screenOptions={{headerShown: false, animation: 'default'}}
-            initialRouteName={'Home'}>
+            initialRouteName={'Login'}>
             <Stack.Screen
               name="Login"
               component={Login}

@@ -1,11 +1,25 @@
-import {createSlice} from '@reduxjs/toolkit';
+import {createSlice, PayloadAction} from '@reduxjs/toolkit';
+
+interface initialState {
+  userInfo?: {carBrand: string; carName: string; chargerType: string};
+  autoLogin?: false;
+  fcmToken?: string;
+  isGuest?: false;
+}
+
+const initialState: initialState = {
+  userInfo: {carBrand: '', carName: '', chargerType: ''},
+  autoLogin: false,
+  fcmToken: '',
+  isGuest: false,
+};
 
 const authSlice = createSlice({
   name: 'auth',
-  initialState: {userInfo: '', autoLogin: false, fcmToken: '', isGuest: false},
+  initialState,
   reducers: {
-    setUserInfo: (state, action) => {
-      state.userInfo = action.payload;
+    setUserInfo: (state, action: PayloadAction<initialState>) => {
+      state.userInfo = action.payload.userInfo;
     },
     setFcmToken: (state, action) => {
       state.fcmToken = action.payload;

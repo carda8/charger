@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, Dispatch, SetStateAction} from 'react';
 import {_getHeight, _getWidth} from 'constants/utils';
 import {commonTypes} from '@types';
 import {useNavigation} from '@react-navigation/native';
@@ -12,15 +12,27 @@ import {
   View,
 } from 'react-native';
 import FontList from 'constants/FontList';
+import {useDispatch, useSelector} from 'react-redux';
+import {setGoal, setPath, setStart} from 'redux/reducers/pathReducer';
+import {RootState} from 'redux/store';
+import {BottomSheetModalMethods} from '@gorhom/bottom-sheet/lib/typescript/types';
 
 interface props {
   editable?: boolean;
+  showOnlyMap?: boolean;
+  setShowOnlyMap?: Dispatch<SetStateAction<boolean>>;
+  sheetRef?: React.RefObject<BottomSheetModalMethods>;
 }
 
-const PathSearchBox = ({editable}: props) => {
+const PathSearchBox = ({
+  editable,
+  showOnlyMap,
+  setShowOnlyMap,
+  sheetRef,
+}: props) => {
   const nav = useNavigation<commonTypes.navi>();
-  const [start, setStart] = useState('');
-  const [goal, setGoal] = useState('');
+  const dispatch = useDispatch();
+  const {goal, start} = useSelector((state: RootState) => state.pathReducer);
   const [home, setHome] = useState(false);
 
   const userInfo = {
@@ -31,19 +43,19 @@ const PathSearchBox = ({editable}: props) => {
     const copyStart = JSON.parse(JSON.stringify(start));
     const copyGoal = JSON.parse(JSON.stringify(goal));
     console.log('hi');
-    setStart(copyGoal);
-    setGoal(copyStart);
+    dispatch(setStart(copyGoal));
+    dispatch(setGoal(copyStart));
   };
 
   const _resetLocation = () => {
-    setStart('');
-    setGoal('');
+    dispatch(setStart(''));
+    dispatch(setGoal(''));
   };
 
   const _putHome = () => {
     if (!home) {
       setHome(true);
-      setGoal(userInfo.addr);
+      dispatch(setGoal(userInfo.addr));
     } else {
       setHome(false);
     }
@@ -89,9 +101,11 @@ const PathSearchBox = ({editable}: props) => {
                   현위치
                 </Text>
                 <TextInput
-                  onSubmitEditing={() => Keyboard.dismiss()}
+                  onSubmitEditing={() => {
+                    Keyboard.dismiss();
+                  }}
                   value={start}
-                  onChangeText={setStart}
+                  onChangeText={str => dispatch(setStart(str))}
                   editable={editable ? true : false}
                   style={{
                     flex: 1,
@@ -124,8 +138,12 @@ const PathSearchBox = ({editable}: props) => {
                   editable={editable ? true : false}
                   autoCapitalize="none"
                   value={goal}
-                  onChangeText={setGoal}
-                  onSubmitEditing={() => Keyboard.dismiss()}
+                  onChangeText={str => dispatch(setGoal(str))}
+                  onSubmitEditing={() => {
+                    Keyboard.dismiss();
+                    // dispatch(setPath({start: start, goal: goal}));
+                    nav.navigate('PathMain');
+                  }}
                   style={{
                     flex: 1,
                     height: 39,
@@ -137,10 +155,17 @@ const PathSearchBox = ({editable}: props) => {
             </View>
           </Pressable>
         </View>
-
         <Pressable
           hitSlop={5}
-          onPress={() => _resetLocation()}
+          onPress={() => {
+            if (setShowOnlyMap) {
+              setShowOnlyMap(!showOnlyMap);
+              sheetRef?.current?.close();
+              _resetLocation();
+            } else {
+              _resetLocation();
+            }
+          }}
           style={{top: 15}}>
           <Image
             source={require('@assets/close_star.png')}

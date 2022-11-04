@@ -23,6 +23,8 @@ import ChargerType from 'constants/ChargerType';
 import MyModal from '@components/MyModal';
 import {useNavigation} from '@react-navigation/native';
 import {commonTypes} from '@types';
+import {useDispatch} from 'react-redux';
+import {setUserInfo} from 'redux/reducers/authReducer';
 
 interface props {
   text: string;
@@ -36,6 +38,8 @@ const AccountCarInfo = () => {
   const [selectedBrand, setSelectedBrand] = useState('');
   const [type, setType] = useState('');
   const [isReady, setIsReady] = useState(false);
+
+  const dispatch = useDispatch();
 
   const Title = ({text}: props) => {
     return (
@@ -253,14 +257,17 @@ const AccountCarInfo = () => {
                     key={idx}>
                     <Pressable
                       onPress={() => {
-                        setType(item);
+                        setType(ChargerType.chargerType[idx]);
                       }}
                       style={{
                         width: 72,
                         height: 72,
                         borderRadius: 4,
                         borderWidth: 1,
-                        borderColor: type === item ? '#333333' : '#DBDBDB',
+                        borderColor:
+                          type === ChargerType.chargerType[idx]
+                            ? '#333333'
+                            : '#DBDBDB',
                         alignItems: 'center',
                         justifyContent: 'center',
                       }}>
@@ -286,6 +293,15 @@ const AccountCarInfo = () => {
             if (!isReady) {
               setModal(!modal);
             } else {
+              dispatch(
+                setUserInfo({
+                  userInfo: {
+                    carBrand: selectedBrand,
+                    carName: selectedModel,
+                    chargerType: type,
+                  },
+                }),
+              );
               nav.navigate('Home');
             }
           }}

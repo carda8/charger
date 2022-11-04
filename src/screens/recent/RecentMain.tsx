@@ -1,5 +1,5 @@
 import {View, Text, ListRenderItem} from 'react-native';
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import BottomNav from '@components/BottomNav';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import GlobalStyles from 'styles/GlobalStyles';
@@ -15,7 +15,18 @@ import RecentMainItem from './components/RecentMainItem';
 const RecentMain = () => {
   const dispatch = useDispatch();
   const isFocused = useIsFocused();
-  const data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 23, 4];
+  const [recent, setRecent] = useState([
+    '선릉역',
+    '강남역 1번 출구',
+    '서면역',
+    '서문여자고등학교',
+    '강남역 12번 출구 ',
+    '코스트코',
+    '트레이더스',
+    '이케아',
+    '홈플러스',
+    '한화포레나 3단지',
+  ]);
   useEffect(() => {
     if (isFocused) {
       dispatch(setBottomIdx(3));
@@ -25,7 +36,12 @@ const RecentMain = () => {
   const renderItem: ListRenderItem<any> = item => {
     return (
       <View>
-        <RecentMainItem item={item} />
+        <RecentMainItem
+          item={item.item}
+          index={item.index}
+          recentData={recent}
+          setRecentData={setRecent}
+        />
       </View>
     );
   };
@@ -34,7 +50,7 @@ const RecentMain = () => {
     <SafeAreaView style={{...GlobalStyles.safeAreaStyle}}>
       <HeaderCenter title="최근 충전소" />
       <FlatList
-        data={data}
+        data={recent}
         keyExtractor={(item, index) => String(index)}
         renderItem={item => renderItem(item)}
         style={{marginBottom: 60}}

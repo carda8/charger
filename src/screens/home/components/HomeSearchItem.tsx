@@ -32,12 +32,17 @@ const HomeSearchItem = ({setVisible, visible}: props) => {
           flexDirection: 'row',
           alignItems: 'center',
         }}>
-        <View
+        {/* <View
           style={{
             width: _getWidth(20),
             height: _getHeight(20),
             backgroundColor: '#D9D9D9',
           }}
+        /> */}
+        <Image
+          source={require('@assets/main_bt_union2.png')}
+          style={{width: 20, height: 20}}
+          resizeMode="contain"
         />
         <View style={{marginLeft: 4, marginRight: 6}}>
           <Text

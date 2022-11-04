@@ -4,6 +4,7 @@ import {
   useWindowDimensions,
   Pressable,
   Text,
+  ImageBackground,
 } from 'react-native';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -36,12 +37,47 @@ const PathMain = () => {
   const dispatch = useDispatch();
   const isFocused = useIsFocused();
   const [showRecomend, setShowRecomend] = useState(false);
-  const goal = useSelector((state: RootState) => state.pathReducer.goal);
-  const recomendList = [1, 2, 3, 4, 5, 6];
+  const {goal, start} = useSelector((state: RootState) => state.pathReducer);
+  const recomendList = [1, 2, 3, 4];
   const [pickedRecomend, setPickedRecomend] = useState<number>();
-  // const sheet = useBottomSheet<BottomSheetMethods & bO>();
   const layout = useWindowDimensions();
   const P0 = {latitude: 37.564362, longitude: 126.977011};
+
+  const P1 = {
+    latitude: 37.573563090476725,
+    longitude: 126.98308669525267,
+    zoom: 15,
+  };
+  const P2 = {
+    latitude: 37.561682976455955,
+    longitude: 126.99405480283474,
+    zoom: 15,
+  };
+  const P3 = {
+    latitude: 37.54731262277241,
+    longitude: 126.96262053836222,
+    zoom: 15,
+  };
+  const P4 = {
+    latitude: 37.66135049861896,
+    longitude: 126.86227420843852,
+    zoom: 15,
+  };
+  const [showOnlyMap, setShowOnlyMap] = useState(false);
+
+  const [center, setCenter] = useState<any>({
+    latitude: 37.564362,
+    longitude: 126.977011,
+    zoom: 16,
+  });
+
+  const route =
+    useRoute<RouteProp<commonTypes.RootStackParamList, 'PathMain'>>().params
+      ?.item;
+
+  console.log('route', route);
+  console.log('goal', goal);
+  console.log('start', start);
 
   const [visible, setVisible] = useState(false);
   // ref
@@ -59,8 +95,9 @@ const PathMain = () => {
       ...styles.sheetContainer,
       shadowColor: 'black',
     }),
-    ['linen'],
+    [],
   );
+
   useEffect(() => {
     if (isFocused) {
       dispatch(setBottomIdx(2));
@@ -73,43 +110,139 @@ const PathMain = () => {
     } else {
       bottomSheetRef.current?.close();
     }
-    return () => {
-      dispatch(setGoal(false));
-    };
-  }, [isFocused, goal]);
+  }, [isFocused]);
+
+  useEffect(() => {
+    switch (pickedRecomend) {
+      case 0:
+        return setCenter(P1);
+      case 1:
+        return setCenter(P2);
+      case 2:
+        return setCenter(P3);
+      case 3:
+        return setCenter(P4);
+      default:
+        return;
+    }
+  }, [pickedRecomend]);
 
   return (
     <GestureHandlerRootView style={{flex: 1}}>
       <BottomSheetModalProvider>
         <SafeAreaView style={{...GlobalStyles.safeAreaStyle}}>
-          <View
-            style={{
-              position: 'absolute',
-              zIndex: 100,
-              width: '100%',
-            }}>
-            <PathSearchBox />
-          </View>
+          {!showOnlyMap && (
+            <View
+              style={{
+                position: 'absolute',
+                zIndex: 100,
+                width: '100%',
+              }}>
+              <PathSearchBox
+                showOnlyMap={showOnlyMap}
+                setShowOnlyMap={setShowOnlyMap}
+                sheetRef={bottomSheetRef}
+              />
+            </View>
+          )}
+
           <NaverMapView
+            compass={false}
+            onMapClick={e => {
+              console.log('coor', e);
+              if (showOnlyMap) {
+                setShowOnlyMap(!showOnlyMap);
+                if (start && goal) bottomSheetRef.current?.present();
+              }
+            }}
             zoomControl={false}
+            useTextureView={true}
             style={{
               width: '100%',
               height: layout.height - _getHeight(60),
             }}
             scaleBar={false}
             showsMyLocationButton={false}
-            center={{...P0, zoom: 16}}
-            onTouch={(e: any) => console.log(e.navtiveEvent)}
-            useTextureView={true}
-            // onCameraChange={e =>
-            //   console.log('onCameraChange', JSON.stringify(e))
-            // }
-            // onMapClick={e => console.log('onMapClick', JSON.stringify(e))}
-          >
+            tiltGesturesEnabled={false}
+            center={center}
+            onTouch={(e: any) => console.log(e.navtiveEvent)}>
             <Marker
-              coordinate={P0}
+              pinColor="blue"
+              coordinate={{...P0}}
+              image={require('@assets/my_location.png')}
+              width={20}
+              height={20}
               onClick={() => console.log('onClick! p0')}
             />
+
+            {showRecomend && (
+              <>
+                <Marker
+                  coordinate={{...P1}}
+                  width={32}
+                  height={37.7}
+                  onClick={() => console.log('onClick! p0')}>
+                  <ImageBackground
+                    source={require('@assets/marker_green.png')}
+                    style={{
+                      width: 32,
+                      height: 38,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      paddingBottom: '20%',
+                    }}
+                    resizeMode="contain"></ImageBackground>
+                </Marker>
+                <Marker
+                  coordinate={{...P2}}
+                  width={32}
+                  height={37.7}
+                  onClick={() => console.log('onClick! p0')}>
+                  <ImageBackground
+                    source={require('@assets/marker_green.png')}
+                    style={{
+                      width: 32,
+                      height: 38,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      paddingBottom: '20%',
+                    }}
+                    resizeMode="contain"></ImageBackground>
+                </Marker>
+                <Marker
+                  coordinate={{...P3}}
+                  width={32}
+                  height={37.7}
+                  onClick={() => console.log('onClick! p0')}>
+                  <ImageBackground
+                    source={require('@assets/marker_green.png')}
+                    style={{
+                      width: 32,
+                      height: 38,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      paddingBottom: '20%',
+                    }}
+                    resizeMode="contain"></ImageBackground>
+                </Marker>
+                <Marker
+                  coordinate={{...P4}}
+                  width={32}
+                  height={37.7}
+                  onClick={() => console.log('onClick! p0')}>
+                  <ImageBackground
+                    source={require('@assets/marker_green.png')}
+                    style={{
+                      width: 32,
+                      height: 38,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      paddingBottom: '20%',
+                    }}
+                    resizeMode="contain"></ImageBackground>
+                </Marker>
+              </>
+            )}
           </NaverMapView>
           {!showRecomend && (
             <BottomSheetModal
@@ -128,12 +261,13 @@ const PathMain = () => {
               snapPoints={snapPoints}
               onChange={handleSheetChanges}>
               <StationListItem
+                bottomSheetRef={bottomSheetRef}
+                item={route}
                 setPick={setPick}
                 pick={pick}
-                style={{borderBottomWidth: 0}}
                 goal={goal}
+                style={{borderBottomWidth: 0}}
               />
-              {/* </View> */}
             </BottomSheetModal>
           )}
 
@@ -198,7 +332,7 @@ const PathMain = () => {
                               color: 'black',
                               lineHeight: 24,
                             }}>
-                            낙동강 휴게소
+                            낙동강 휴게소 {index}
                           </Text>
                           <Text
                             style={{
