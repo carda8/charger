@@ -1,4 +1,4 @@
-import {View, Text, Pressable, Image} from 'react-native';
+import {View, Text, Pressable, Image, StyleProp, TextStyle} from 'react-native';
 import React from 'react';
 import FontList from 'constants/FontList';
 import {commonTypes} from '@types';
@@ -8,12 +8,19 @@ import {_getHeight, _getWidth} from 'constants/utils';
 interface props {
   title?: string;
   backTitle?: string;
+  backTitleStyle?: StyleProp<TextStyle>;
   // navi?: commonTypes.navi;
   leftBack?: boolean;
   rightBack?: boolean;
 }
 
-const HeaderCenter = ({title, backTitle, leftBack, rightBack}: props) => {
+const HeaderCenter = ({
+  title,
+  backTitle,
+  backTitleStyle,
+  leftBack,
+  rightBack,
+}: props) => {
   const navi = useNavigation<commonTypes.navi>();
   return (
     <View style={{backgroundColor: 'white'}}>
@@ -36,7 +43,12 @@ const HeaderCenter = ({title, backTitle, leftBack, rightBack}: props) => {
             </Pressable>
           )}
         </View>
-        <View style={{flex: 12, alignItems: 'center', justifyContent: 'center'}}>
+        <View
+          style={{
+            flex: 4,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
           <Text style={{fontFamily: FontList.PretendardSemiBold, fontSize: 18}}>
             {title}
           </Text>
@@ -47,11 +59,18 @@ const HeaderCenter = ({title, backTitle, leftBack, rightBack}: props) => {
           disabled={!rightBack}
           onPress={() => navi?.goBack()}
           hitSlop={10}
-          style={{flex: 1, alignItems: 'flex-end', justifyContent: 'center'}}>
+          style={{
+            flex: 1,
+            alignItems: 'flex-end',
+            justifyContent: 'center',
+          }}>
           <Text
-            style={{
-              fontFamily: FontList.PretendardSemiBold,
-            }}>
+            style={[
+              {
+                fontFamily: FontList.PretendardSemiBold,
+              },
+              backTitleStyle,
+            ]}>
             {backTitle}
           </Text>
         </Pressable>

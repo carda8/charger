@@ -17,9 +17,12 @@ import {useNavigation} from '@react-navigation/native';
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {commonTypes} from '@types';
 import SnsList from 'constants/SnsList';
+import {_getHeight} from 'constants/utils';
+import MyModal from '@components/MyModal';
 
 const Login = () => {
   const navigation = useNavigation<commonTypes.navi>();
+  const [modal, setModal] = useState(false);
   const ref = useRef(false);
 
   useEffect(() => {
@@ -58,14 +61,23 @@ const Login = () => {
           style={{
             alignItems: 'center',
             justifyContent: 'center',
-            marginTop: 165,
-            marginBottom: 74,
-          }}>
+            marginTop: _getHeight(165),
+            marginBottom: _getHeight(74),
+          }}
+        >
           <Image source={require('~/assets/logo.png')} resizeMode={'contain'} />
         </View>
         {SnsList.snsList.map((item, idx) => (
           <View key={idx}>
-            {Platform.OS !== 'ios' && idx !== 3 && (
+            {Platform.OS === 'android' && idx !== 3 && (
+              <SnsButton
+                text={SnsList.snsListText[idx]}
+                snsType={item}
+                navigation={navigation}
+                idx={idx}
+              />
+            )}
+            {Platform.OS === 'ios' && (
               <SnsButton
                 text={SnsList.snsListText[idx]}
                 snsType={item}
@@ -83,10 +95,19 @@ const Login = () => {
             alignItems: 'center',
             justifyContent: 'center',
             marginTop: 14,
-          }}>
+          }}
+        >
           <Text style={{fontWeight: '400'}}>먼저 둘러보기</Text>
         </Pressable>
       </ScrollView>
+      <MyModal
+        visible={modal}
+        setVisible={setModal}
+        positive
+        positiveTitle="확인"
+        title="로그인 실패"
+        text="현재 해당 기능을 사용 할 수 없습니다"
+      />
     </SafeAreaView>
   );
 };

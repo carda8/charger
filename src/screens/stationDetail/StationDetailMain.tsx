@@ -28,6 +28,7 @@ import {
 } from '@gorhom/bottom-sheet';
 import NavModal from '@components/NavModal';
 import {commonTypes} from '@types';
+import ChargerType from 'constants/ChargerType';
 
 const StationDetailMain = () => {
   const data = [1, 2, 3, 4, 5, 5];
@@ -96,7 +97,7 @@ const StationDetailMain = () => {
                   justifyContent: 'center',
                 }}>
                 <Image
-                  source={require('@assets/detail_dc_combo.png')}
+                  source={ChargerType.chargerLogo[0]}
                   style={{
                     width: _getWidth(40),
                     height: _getHeight(40),
@@ -123,7 +124,7 @@ const StationDetailMain = () => {
                   opacity: 0.3,
                 }}>
                 <Image
-                  source={require('@assets/detail_dc_demo.png')}
+                  source={ChargerType.chargerLogo[0]}
                   style={{
                     width: _getWidth(40),
                     height: _getHeight(40),
@@ -150,7 +151,7 @@ const StationDetailMain = () => {
                   opacity: 0.3,
                 }}>
                 <Image
-                  source={require('@assets/detail_dc_3top.png')}
+                  source={ChargerType.chargerLogo[0]}
                   style={{
                     width: _getWidth(40),
                     height: _getHeight(40),
@@ -177,7 +178,7 @@ const StationDetailMain = () => {
                   opacity: 0.3,
                 }}>
                 <Image
-                  source={require('@assets/detail_etc.png')}
+                  source={ChargerType.chargerLogo[0]}
                   style={{
                     width: _getWidth(40),
                     height: _getHeight(40),

@@ -12,13 +12,18 @@ import {_getHeight, _getWidth} from 'constants/utils';
 import FontList from 'constants/FontList';
 import {useDispatch} from 'react-redux';
 import {setGoal} from 'redux/reducers/pathReducer';
+import ChargerType from 'constants/ChargerType';
+import {BottomSheetModalMethods} from '@gorhom/bottom-sheet/lib/typescript/types';
 interface props {
   item?: any;
   pick?: boolean;
-  setPick?: Dispatch<SetStateAction<boolean>>;
+  setPick?: Dispatch<SetStateAction<any>>;
   style: StyleProp<ViewStyle>;
-  goal?: boolean;
+  goal?: string;
   isRecent?: boolean;
+  clickedMarker?: any;
+  setClickedMarker?: Dispatch<SetStateAction<any>>;
+  bottomSheetRef?: React.RefObject<BottomSheetModalMethods>;
 }
 
 const StationListItem = ({
@@ -27,14 +32,28 @@ const StationListItem = ({
   setPick,
   style,
   goal,
+  bottomSheetRef,
+  clickedMarker,
+  setClickedMarker,
   isRecent,
 }: props) => {
   const [favorite, setFavorite] = useState(false);
   const dispatch = useDispatch();
+
   return (
     <Pressable
       onPress={() => {
-        setPick && setPick(true);
+        if (item) {
+          console.log('item', item);
+          console.log('2', item.location);
+          setClickedMarker &&
+            setClickedMarker({
+              latitude: Number(item.location.lat),
+              longitude: Number(item.location.lon),
+              zoom: 16,
+            });
+          setPick && setPick([item]);
+        }
       }}
       style={[
         {
@@ -53,24 +72,38 @@ const StationListItem = ({
           flexDirection: 'row',
           alignItems: 'center',
         }}>
+        <Image
+          source={require('@assets/main_bt_union2.png')}
+          style={{width: 20, height: 20}}
+          resizeMode="contain"
+        />
         <View
           style={{
-            width: _getWidth(20),
-            height: _getHeight(20),
-            backgroundColor: '#D9D9D9',
-          }}
-        />
-        <View style={{marginLeft: 4, marginRight: 6}}>
-          <Text
-            style={{
-              fontFamily: FontList.PretendardMedium,
-              fontSize: 16,
-              color: '#333333',
-            }}>
-            강남역 12번 출구
-          </Text>
+            marginLeft: 4,
+            marginRight: 6,
+            flexDirection: 'row',
+            flex: 1,
+          }}>
+          <View style={{flex: 4}}>
+            <Text
+              style={{
+                fontFamily: FontList.PretendardMedium,
+                fontSize: 16,
+                color: '#333333',
+              }}>
+              {item?.statNm ? item?.statNm : '서문여자고등학교'}
+              {'  '}
+              <Text
+                style={{
+                  fontFamily: FontList.PretendardRegular,
+                  fontSize: 14,
+                  color: '#333333',
+                }}>
+                1.5km
+              </Text>
+            </Text>
+          </View>
         </View>
-        <Text>1.5km</Text>
         <Pressable
           style={{
             marginLeft: 'auto',
@@ -101,7 +134,10 @@ const StationListItem = ({
             hitSlop={10}
             onPress={() => {
               setPick && setPick(false);
-              goal && dispatch(setGoal(false));
+              if (goal) {
+                dispatch(setGoal(''));
+                bottomSheetRef?.current?.close();
+              }
             }}>
             <Image
               source={
@@ -127,49 +163,32 @@ const StationListItem = ({
             fontFamily: FontList.PretendardRegular,
             color: '#959595',
           }}>
-          {'경기도 성남시 분당구 판교로227번길 6'}
+          {item?.addr ? item?.addr : '강남구 서초동 방배로 33-3'}
         </Text>
       </View>
-      <View style={{flexDirection: 'row', marginTop: 10}}>
-        <View
-          style={{
-            marginRight: 4,
-            width: 54,
-            height: 20,
-            backgroundColor: '#07B3FD',
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: 3,
-          }}>
-          <Text
+      {item?.parkingFree && (
+        <View style={{flexDirection: 'row', marginTop: 10}}>
+          <View
             style={{
-              fontFamily: FontList.PretendardRegular,
-              fontSize: 12,
-              color: 'white',
+              marginRight: 4,
+              width: 54,
+              height: 20,
+              backgroundColor: '#07B3FD',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 3,
             }}>
-            무료주차
-          </Text>
+            <Text
+              style={{
+                fontFamily: FontList.PretendardRegular,
+                fontSize: 12,
+                color: 'white',
+              }}>
+              무료주차
+            </Text>
+          </View>
         </View>
-        <View
-          style={{
-            marginRight: 4,
-            width: 54,
-            height: 20,
-            backgroundColor: '#07B3FD',
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: 3,
-          }}>
-          <Text
-            style={{
-              fontFamily: FontList.PretendardRegular,
-              fontSize: 12,
-              color: 'white',
-            }}>
-            무료주차
-          </Text>
-        </View>
-      </View>
+      )}
 
       <View
         style={{
@@ -216,7 +235,7 @@ const StationListItem = ({
                 fontFamily: FontList.PretendardRegular,
                 color: '#333333',
               }}>
-              급속 1
+              완속 1
             </Text>
           </View>
         </View>
@@ -237,7 +256,7 @@ const StationListItem = ({
               borderColor: '#6FCF24',
             }}>
             <Image
-              source={require('@assets/detail_dc_combo.png')}
+              source={ChargerType.chargerLogo[0]}
               style={{width: _getWidth(35), height: _getHeight(35)}}
               resizeMode="contain"
             />
@@ -253,7 +272,7 @@ const StationListItem = ({
               borderColor: '#6FCF24',
             }}>
             <Image
-              source={require('@assets/detail_dc_demo.png')}
+              source={ChargerType.chargerLogo[1]}
               style={{width: _getWidth(30), height: _getHeight(30)}}
               resizeMode="contain"
             />
@@ -269,7 +288,7 @@ const StationListItem = ({
               borderColor: '#6FCF24',
             }}>
             <Image
-              source={require('@assets/detail_dc_3top.png')}
+              source={ChargerType.chargerLogo[2]}
               style={{width: _getWidth(30), height: _getHeight(30)}}
               resizeMode="contain"
             />
@@ -286,7 +305,7 @@ const StationListItem = ({
               borderColor: '#C6C6C6',
             }}>
             <Image
-              source={require('@assets/detail_etc.png')}
+              source={ChargerType.chargerLogo[3]}
               style={{width: _getWidth(33), height: _getHeight(33)}}
               resizeMode="contain"
             />

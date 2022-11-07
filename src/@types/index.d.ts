@@ -1,6 +1,11 @@
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 
 declare module commonTypes {
+  type item = {
+    addr?: string;
+    statNm?: string;
+    parkingFree?: boolean;
+  };
   //Stack Navigation Types
   type RootStackParamList = {
     Login: undefined;
@@ -25,10 +30,10 @@ declare module commonTypes {
 
     FavStationMain: undefined;
 
-    AroundMain: undefined;
+    AroundMain: {res?: any[]} | undefined;
     AroundFilter: undefined;
 
-    PathMain: {item?: boolean} | undefined;
+    PathMain: {item?: item; goal?: string; start?: string} | undefined;
     RecentMain: undefined;
 
     MyPageMain: undefined;
@@ -39,6 +44,10 @@ declare module commonTypes {
     MyPageRetire: undefined;
   };
   type navi = NativeStackNavigationProp<RootStackParamList>;
+
+  type RootApiType = {
+    postAruondStation: stirng;
+  };
   // export namespace helloo {
   //   type hello = 'hi';
   // }

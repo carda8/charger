@@ -12,20 +12,40 @@ import {_getHeight, _getWidth} from 'constants/utils';
 import FontList from 'constants/FontList';
 import {useDispatch} from 'react-redux';
 import {setGoal} from 'redux/reducers/pathReducer';
+import ChargerType from 'constants/ChargerType';
 interface props {
   item?: any;
-  pick?: boolean;
-  setPick?: Dispatch<SetStateAction<boolean>>;
+  // pick?: boolean;
+  // setPick?: Dispatch<SetStateAction<boolean>>;
   style?: StyleProp<ViewStyle>;
-  goal?: boolean;
-  isRecent?: boolean;
+  // goal?: boolean;
+  // isRecent?: boolean;
+  recentData?: any;
+  setRecentData?: Dispatch<SetStateAction<any>>;
+  index?: number;
 }
 
-const RecentMainItem = ({item, style}: props) => {
+const RecentMainItem = ({
+  item,
+  style,
+  recentData,
+  setRecentData,
+  index,
+}: props) => {
   const [favorite, setFavorite] = useState(false);
   const dispatch = useDispatch();
+
+  const _deleteItem = (target: any[], setTarget: any, index: any) => {
+    console.log('index', index);
+    let temp = [...target];
+    temp = target.filter((item, idx) => idx !== index);
+    console.log('temp', temp);
+    setTarget(temp);
+  };
+
   return (
     <Pressable
+      hitSlop={15}
       onPress={() => {}}
       style={[
         {
@@ -44,12 +64,17 @@ const RecentMainItem = ({item, style}: props) => {
           flexDirection: 'row',
           alignItems: 'center',
         }}>
-        <View
+        {/* <View
           style={{
             width: _getWidth(20),
             height: _getHeight(20),
             backgroundColor: '#D9D9D9',
           }}
+        /> */}
+        <Image
+          source={require('@assets/main_bt_union2.png')}
+          style={{width: 20, height: 20}}
+          resizeMode="contain"
         />
         <View style={{marginLeft: 4, marginRight: 6}}>
           <Text
@@ -58,7 +83,7 @@ const RecentMainItem = ({item, style}: props) => {
               fontSize: 16,
               color: '#333333',
             }}>
-            강남역 12번 출구
+            {item}
           </Text>
         </View>
         <Text>1.5km</Text>
@@ -73,7 +98,7 @@ const RecentMainItem = ({item, style}: props) => {
             alignItems: 'center',
           }}
           hitSlop={10}
-          onPress={() => setFavorite(!favorite)}>
+          onPress={() => _deleteItem(recentData, setRecentData, index)}>
           <Image
             source={require('@assets/close_star.png')}
             style={{
@@ -162,7 +187,7 @@ const RecentMainItem = ({item, style}: props) => {
               borderColor: '#6FCF24',
             }}>
             <Image
-              source={require('@assets/detail_dc_combo.png')}
+              source={ChargerType.chargerLogo[0]}
               style={{width: _getWidth(35), height: _getHeight(35)}}
               resizeMode="contain"
             />
@@ -178,7 +203,7 @@ const RecentMainItem = ({item, style}: props) => {
               borderColor: '#6FCF24',
             }}>
             <Image
-              source={require('@assets/detail_dc_demo.png')}
+              source={ChargerType.chargerLogo[1]}
               style={{width: _getWidth(30), height: _getHeight(30)}}
               resizeMode="contain"
             />
@@ -194,7 +219,7 @@ const RecentMainItem = ({item, style}: props) => {
               borderColor: '#6FCF24',
             }}>
             <Image
-              source={require('@assets/detail_dc_3top.png')}
+              source={ChargerType.chargerLogo[2]}
               style={{width: _getWidth(30), height: _getHeight(30)}}
               resizeMode="contain"
             />
@@ -211,7 +236,7 @@ const RecentMainItem = ({item, style}: props) => {
               borderColor: '#C6C6C6',
             }}>
             <Image
-              source={require('@assets/detail_etc.png')}
+              source={ChargerType.chargerLogo[3]}
               style={{width: _getWidth(33), height: _getHeight(33)}}
               resizeMode="contain"
             />

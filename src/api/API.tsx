@@ -15,7 +15,8 @@ const axiosConfig: AxiosRequestConfig = {
   transformRequest: (data, headers) => {
     // data.encodeJson = true;
     if (data) console.log('data', data);
-    return data;
+    const parsedData = JSON.stringify(data);
+    return parsedData;
   },
   transformResponse: data => {
     if (data) {

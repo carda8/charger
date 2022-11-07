@@ -22,8 +22,8 @@ const SearchBox = () => {
       }}
       style={{
         flexDirection: 'row',
-        height: _getHeight(42),
-        marginTop: _getHeight(7.8),
+        height: 42,
+        marginTop: 7.8,
         backgroundColor: 'white',
         // position: 'absolute',
         // zIndex: 100,

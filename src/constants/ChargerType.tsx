@@ -1,11 +1,18 @@
 export default {
   chargerLogo: [
-    require('@assets/charger_type_dc_combo.png'),
-    require('@assets/charger_type_demo.png'),
-    require('@assets/charger_type_ac3.png'),
-    require('@assets/charger_type_ac5.png'),
-    require('@assets/charger_etc2.png'),
-    require('@assets/charger_etc2.png'),
+    require('@assets/charger_dc_combo.png'),
+    require('@assets/charger_dc_demo.png'),
+    require('@assets/charger_dc_3top.png'),
+    require('@assets/charger_wan.png'),
+    require('@assets/charger_super.png'),
+    require('@assets/charger_des.png'),
   ],
-  chargerType: ['DC콤보', 'DC차데모', 'AC3상', '완속', 'DC콤보', 'DC차데모'],
+  chargerType: [
+    'DC콤보',
+    'DC차데모',
+    'AC3상',
+    '완속',
+    '슈퍼차저',
+    '데스티네이션',
+  ],
 };

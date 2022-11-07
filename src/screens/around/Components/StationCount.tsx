@@ -7,8 +7,14 @@ import {BottomSheetModal} from '@gorhom/bottom-sheet';
 import {BottomSheetModalMethods} from '@gorhom/bottom-sheet/lib/typescript/types';
 interface props {
   bottomSheetRef: React.RefObject<BottomSheetModalMethods>;
+  stationList: any[];
 }
-const StationCount = ({bottomSheetRef}: props) => {
+
+const StationCount = ({bottomSheetRef, stationList}: props) => {
+  const _getListCount = () => {
+    return stationList.length;
+  };
+
   return (
     <View
       style={{
@@ -47,7 +53,17 @@ const StationCount = ({bottomSheetRef}: props) => {
               fontSize: 16,
               color: 'black',
             }}>
-            주변 충전소 00개
+            주변 충전소{' '}
+            <Text
+              style={{
+                includeFontPadding: false,
+                fontFamily: FontList.PretendardBold,
+                fontSize: 16,
+                color: 'black',
+              }}>
+              {_getListCount()}
+            </Text>
+            개
           </Text>
         </Pressable>
       </Shadow>
