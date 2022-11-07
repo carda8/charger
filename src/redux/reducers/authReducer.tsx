@@ -36,8 +36,8 @@ const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    setUserInfo: (state, action: PayloadAction<initialState>) => {
-      state.userInfo = action.payload.userInfo;
+    setUserInfo: (state, action: PayloadAction<userInfo>) => {
+      state.userInfo = action.payload;
     },
     setFcmToken: (state, action) => {
       state.fcmToken = action.payload;

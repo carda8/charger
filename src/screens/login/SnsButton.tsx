@@ -7,6 +7,15 @@ import NaverLogin, {
   NaverLoginResponse,
   GetProfileResponse,
 } from '@react-native-seoul/naver-login';
+import {
+  login,
+  KakaoOAuthToken,
+  getProfile,
+  KakaoProfile,
+} from '@react-native-seoul/kakao-login';
+import {useDispatch, useSelector} from 'react-redux';
+import {RootState} from 'redux/store';
+import {setUserInfo} from 'redux/reducers/authReducer';
 
 interface props {
   text: string;
@@ -16,6 +25,9 @@ interface props {
 }
 
 const SnsButton = ({text, snsType, navigation, idx}: props) => {
+  const {userInfo} = useSelector((state: RootState) => state.authReducer);
+  const dispatch = useDispatch();
+
   const _getColor = (type: string) => {
     if (type === SnsList.apple || type === SnsList.naver) return 'white';
     if (type === SnsList.kakao) return '#392020';
@@ -34,7 +46,7 @@ const SnsButton = ({text, snsType, navigation, idx}: props) => {
     require('@assets/apple.png'),
   ];
 
-  // naver start
+  // ########## naver start ##########
   const [success, setSuccessResponse] =
     useState<NaverLoginResponse['successResponse']>();
   const [failure, setFailureResponse] =
@@ -46,7 +58,7 @@ const SnsButton = ({text, snsType, navigation, idx}: props) => {
   const appName = 'mycharger';
   const serviceUrlScheme = 'mycharger';
 
-  const login = async () => {
+  const loginNaver = async () => {
     const {failureResponse, successResponse} = await NaverLogin.login({
       consumerKey,
       consumerSecret,
@@ -59,16 +71,19 @@ const SnsButton = ({text, snsType, navigation, idx}: props) => {
   };
 
   useEffect(() => {
-    if (success?.accessToken) {
-      getProfile();
+    if (success?.accessToken && snsType === SnsList.naver) {
+      getNaverProfile();
     }
   }, [success]);
 
-  const getProfile = async () => {
+  const getNaverProfile = async () => {
     try {
       const profileResult = await NaverLogin.getProfile(success!.accessToken);
       console.log('profileResult', profileResult);
-      if (profileResult) {
+      if (profileResult?.message === 'success') {
+        const id = profileResult.response.id;
+        const name = profileResult.response.name;
+        dispatch(setUserInfo({...userInfo, id: id, name: name}));
         navigation.navigate('AccountFinish');
       }
       setGetProfileRes(profileResult);
@@ -76,14 +91,35 @@ const SnsButton = ({text, snsType, navigation, idx}: props) => {
       setGetProfileRes(undefined);
     }
   };
-  // naver end
+  //########## naver end ##########
+
+  // ########## kakao start ##########
+  const getKakaoProfile = async (token: string): Promise<void> => {
+    const profile: KakaoProfile = await getProfile(token);
+    console.log('profile', profile);
+    // setResult(JSON.stringify(profile));
+
+    // setResult(JSON.stringify(profile));
+  };
+
+  const signInWithKakao = async () => {
+    await login()
+      .then((res: KakaoOAuthToken) => {
+        getKakaoProfile(res.accessToken);
+        console.log('res', res);
+      })
+      .catch(err => console.log(err));
+
+    // setResult(JSON.stringify(token));
+  };
+  // ########## kakao end ##########
 
   const _onPressLogin = (snsType: string) => {
     switch (snsType) {
       case SnsList.naver:
-        return login();
+        return loginNaver();
       case SnsList.kakao:
-        return;
+        return signInWithKakao();
       case SnsList.google:
         return;
       case SnsList.apple:

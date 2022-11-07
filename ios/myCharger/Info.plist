@@ -30,11 +30,20 @@
 			<key>CFBundleURLSchemes</key>
 			<array>
 				<string>mycharger</string>
+				<string>kakao88d23f96a850039b90165f95ed67f01b</string>
 			</array>
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>1</string>
+	<key>KAKAO_APP_KEY</key>
+	<string>88d23f96a850039b90165f95ed67f01b</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>kakaokompassauth</string>
+		<string>storykompassauth</string>
+		<string>kakaolink</string>
+	</array>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>naversearchapp</string>
