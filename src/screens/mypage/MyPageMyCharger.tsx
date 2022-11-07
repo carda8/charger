@@ -291,9 +291,9 @@ const MyPageMyCharger = () => {
               dispatch(
                 setUserInfo({
                   userInfo: {
-                    carBrand: selectedBrand,
-                    carName: selectedModel,
-                    chargerType: type,
+                    car_brand: selectedBrand,
+                    car_model: selectedModel,
+                    chgerType: [type],
                   },
                 }),
               );

@@ -1,4 +1,4 @@
-package com.myCharger.newarchitecture;
+package com.evsolution.mycharger.newarchitecture;
 
 import android.app.Application;
 import androidx.annotation.NonNull;
@@ -19,9 +19,9 @@ import com.facebook.react.fabric.CoreComponentsRegistry;
 import com.facebook.react.fabric.FabricJSIModuleProvider;
 import com.facebook.react.fabric.ReactNativeConfig;
 import com.facebook.react.uimanager.ViewManagerRegistry;
-import com.myCharger.BuildConfig;
-import com.myCharger.newarchitecture.components.MainComponentsRegistry;
-import com.myCharger.newarchitecture.modules.MainApplicationTurboModuleManagerDelegate;
+import com.evsolution.mycharger.BuildConfig;
+import com.evsolution.mycharger.newarchitecture.components.MainComponentsRegistry;
+import com.evsolution.mycharger.newarchitecture.modules.MainApplicationTurboModuleManagerDelegate;
 import java.util.ArrayList;
 import java.util.List;
 

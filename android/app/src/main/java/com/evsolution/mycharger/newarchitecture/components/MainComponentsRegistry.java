@@ -1,4 +1,4 @@
-package com.myCharger.newarchitecture.components;
+package com.evsolution.mycharger.newarchitecture.components;
 
 import com.facebook.jni.HybridData;
 import com.facebook.proguard.annotations.DoNotStrip;

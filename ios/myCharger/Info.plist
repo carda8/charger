@@ -58,5 +58,25 @@
 		<string>Pretendard-Regular.otf</string>
 		<string>Pretendard-SemiBold.otf</string>
 	</array>
+	<!-- added 11 07  -->
+	<!-- naver login  -->
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+	<string>naversearchapp</string>
+	<string>naversearchthirdlogin</string>
+	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>naver</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>mycharger</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

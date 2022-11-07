@@ -1,8 +1,12 @@
 import {View, Text, Pressable, Image} from 'react-native';
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import SnsList from 'constants/SnsList';
 import {commonTypes} from '@types';
 import {_getHeight, _getWidth} from 'constants/utils';
+import NaverLogin, {
+  NaverLoginResponse,
+  GetProfileResponse,
+} from '@react-native-seoul/naver-login';
 
 interface props {
   text: string;
@@ -30,12 +34,69 @@ const SnsButton = ({text, snsType, navigation, idx}: props) => {
     require('@assets/apple.png'),
   ];
 
-  const _onPressLogin = (snsType: string) => {};
+  // naver start
+  const [success, setSuccessResponse] =
+    useState<NaverLoginResponse['successResponse']>();
+  const [failure, setFailureResponse] =
+    useState<NaverLoginResponse['failureResponse']>();
+  const [getProfileRes, setGetProfileRes] = useState<GetProfileResponse>();
+
+  const consumerKey = 'PuyVQenslddH8uGlDgQk';
+  const consumerSecret = 'bGFcedprkH';
+  const appName = 'mycharger';
+  const serviceUrlScheme = 'mycharger';
+
+  const login = async () => {
+    const {failureResponse, successResponse} = await NaverLogin.login({
+      consumerKey,
+      consumerSecret,
+      appName,
+      serviceUrlScheme,
+    });
+    console.log('naver res::', failureResponse, successResponse);
+    setSuccessResponse(successResponse);
+    setFailureResponse(failureResponse);
+  };
+
+  useEffect(() => {
+    if (success?.accessToken) {
+      getProfile();
+    }
+  }, [success]);
+
+  const getProfile = async () => {
+    try {
+      const profileResult = await NaverLogin.getProfile(success!.accessToken);
+      console.log('profileResult', profileResult);
+      if (profileResult) {
+        navigation.navigate('AccountFinish');
+      }
+      setGetProfileRes(profileResult);
+    } catch (e) {
+      setGetProfileRes(undefined);
+    }
+  };
+  // naver end
+
+  const _onPressLogin = (snsType: string) => {
+    switch (snsType) {
+      case SnsList.naver:
+        return login();
+      case SnsList.kakao:
+        return;
+      case SnsList.google:
+        return;
+      case SnsList.apple:
+        return;
+      default:
+        return navigation.navigate('AccountFinish');
+    }
+  };
 
   return (
     <>
       <Pressable
-        onPress={() => navigation.navigate('AccountFinish')}
+        onPress={() => _onPressLogin(snsType)}
         style={{
           height: 46,
           marginHorizontal: 24,
