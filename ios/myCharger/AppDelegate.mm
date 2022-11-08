@@ -1,4 +1,5 @@
 #import "AppDelegate.h"
+#import <RNKakaoLogins.h>
 
 #import <React/RCTBridge.h>
 #import <React/RCTBundleURLProvider.h>
@@ -129,12 +130,21 @@ static NSString *const kRNConcurrentRoot = @"concurrentRoot";
   return RCTAppSetupDefaultModuleFromClass(moduleClass);
 }
 
+
+
 - (BOOL)application:(UIApplication *)application
             openURL:(NSURL *)url
             options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options {
-   return [[NaverThirdPartyLoginConnection getSharedInstance] application:app openURL:url options:options];
-}
-
+  // naver
+  if ([url.scheme isEqualToString:@"mycharger"]) {
+    return [[NaverThirdPartyLoginConnection getSharedInstance] application:application openURL:url options:options];
+  }
+  
+  // kakao
+  if([RNKakaoLogins isKakaoTalkLoginUrl:url]) {
+    return [RNKakaoLogins handleOpenUrl: url];
+  }
+  }
 #endif
 
 @end
