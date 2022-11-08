@@ -23,4 +23,14 @@ export default {
         return [];
     }
   },
+
+  _isClosed: (item: any) => {
+    let close = false;
+    close = item.chargers.find(
+      (item, index) =>
+        item.statInfo === '충전대기' || item.statInfo === '충전중',
+    );
+    if (close) return true;
+    else return false;
+  },
 };

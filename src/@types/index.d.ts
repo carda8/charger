@@ -18,7 +18,8 @@ declare module commonTypes {
 
     Home: undefined;
     Notification: undefined;
-    StationDetailMain: undefined;
+    NotificationDetail: undefined;
+    StationDetailMain: {item?: any} | undefined;
     StationReportPage: undefined;
 
     SearchMain: undefined;
@@ -47,6 +48,14 @@ declare module commonTypes {
 
   type RootApiType = {
     postAruondStation: stirng;
+  };
+
+  type saveUserDB = {
+    user_id?: string;
+    name?: string;
+    car_brand?: string;
+    car_model?: string;
+    chgerType?: string[];
   };
   // export namespace helloo {
   //   type hello = 'hi';

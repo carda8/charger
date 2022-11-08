@@ -5,14 +5,12 @@ export default {
     require('@assets/charger_dc_3top.png'),
     require('@assets/charger_wan.png'),
     require('@assets/charger_super.png'),
-    require('@assets/charger_des.png'),
   ],
   chargerType: [
-    'DC콤보',
-    'DC차데모',
-    'AC3상',
-    '완속',
+    'DC콤보 7핀',
+    'DC차데모 10핀',
+    'AC3상 7핀',
+    'AC단상5핀',
     '슈퍼차저',
-    '데스티네이션',
   ],
 };

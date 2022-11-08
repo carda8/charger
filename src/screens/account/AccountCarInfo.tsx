@@ -23,14 +23,20 @@ import ChargerType from 'constants/ChargerType';
 import MyModal from '@components/MyModal';
 import {useNavigation} from '@react-navigation/native';
 import {commonTypes} from '@types';
-import {useDispatch} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import {setUserInfo} from 'redux/reducers/authReducer';
+import {RootState} from 'redux/store';
+import {API} from 'api/API';
+import commonAPI from 'api/modules/commonAPI';
 
 interface props {
   text: string;
+  lineHeight?: number;
 }
 
 const AccountCarInfo = () => {
+  const {userInfo} = useSelector((state: RootState) => state.authReducer);
+
   const [modal, setModal] = useState(false);
   const [showModel, setShowModel] = useState(false);
 
@@ -41,7 +47,7 @@ const AccountCarInfo = () => {
 
   const dispatch = useDispatch();
 
-  const Title = ({text}: props) => {
+  const Title = ({text, lineHeight}: props) => {
     return (
       <Text
         style={{
@@ -49,6 +55,7 @@ const AccountCarInfo = () => {
           fontSize: 16,
           color: '#4A4A4A',
           includeFontPadding: false,
+          lineHeight: lineHeight,
         }}>
         {text}
       </Text>
@@ -75,6 +82,43 @@ const AccountCarInfo = () => {
         return ModelList.BMW;
       default:
         return [];
+    }
+  };
+
+  const _onPress = () => {
+    if (!isReady) {
+      setModal(!modal);
+    } else {
+      dispatch(
+        setUserInfo({
+          ...userInfo,
+          car_brand: selectedBrand,
+          car_model: selectedModel,
+          chgerType: [type],
+        }),
+      );
+      _postUserDB();
+    }
+  };
+
+  const _postUserDB = () => {
+    const data: commonTypes.saveUserDB = {
+      car_brand: selectedBrand,
+      car_model: selectedModel,
+      chgerType: [type],
+      name: userInfo?.name,
+      user_id: userInfo?.id,
+    };
+    if (data.user_id) {
+      commonAPI
+        ._postSaveUserInfo(data)
+        .then(res => {
+          console.log('_postSaveUserInfo :: res', res);
+          nav.navigate('Home');
+        })
+        .catch(err => console.log('err', err));
+    } else {
+      nav.navigate('Home');
     }
   };
 
@@ -239,20 +283,18 @@ const AccountCarInfo = () => {
             <Title text="충전기 타입" />
             <View
               style={{
-                marginTop: 2,
-                alignItems: 'center',
+                marginTop: 8,
+                // alignItems: 'center',
                 flexDirection: 'row',
                 flexWrap: 'wrap',
+                justifyContent: 'space-between',
               }}>
               {ChargerType.chargerLogo.map((item, idx) => (
                 <View key={idx}>
                   <View
                     style={{
+                      alignItems: 'center',
                       marginBottom: 15,
-                      marginRight:
-                        idx % 3 !== 0 || idx == 0
-                          ? (layout.width - (32 + 72 * 4)) / 3
-                          : undefined,
                     }}
                     key={idx}>
                     <Pressable
@@ -273,13 +315,18 @@ const AccountCarInfo = () => {
                       }}>
                       <Image
                         source={item}
-                        style={{width: '85%', height: '85%'}}
+                        style={{
+                          width: '85%',
+                          height: '85%',
+                          opacity:
+                            type === ChargerType.chargerType[idx] ? 1 : 0.2,
+                        }}
                         resizeMode={'contain'}
                       />
                     </Pressable>
-                    <View style={{alignSelf: 'center'}}>
-                      <Text>{ChargerType.chargerType[idx]}</Text>
-                    </View>
+                    <Text style={{textAlign: 'center', width: 72}}>
+                      {ChargerType.chargerType[idx]}
+                    </Text>
                   </View>
                 </View>
               ))}
@@ -290,20 +337,7 @@ const AccountCarInfo = () => {
       <View style={{marginHorizontal: 16}}>
         <Pressable
           onPress={() => {
-            if (!isReady) {
-              setModal(!modal);
-            } else {
-              dispatch(
-                setUserInfo({
-                  userInfo: {
-                    car_brand: selectedBrand,
-                    car_model: selectedModel,
-                    chgerType: [type],
-                  },
-                }),
-              );
-              nav.navigate('Home');
-            }
+            _onPress();
           }}
           style={{
             height: 54,

@@ -22,23 +22,9 @@ import {
   useRoute,
 } from '@react-navigation/native';
 import {setBottomIdx} from 'redux/reducers/navReducer';
-import NaverMapView, {
-  Align,
-  MapType,
-  Marker,
-  MapOverlay,
-} from 'react-native-nmap';
-import {
-  BottomSheetFlatList,
-  BottomSheetModal,
-  BottomSheetModalProvider,
-} from '@gorhom/bottom-sheet';
-import {
-  FlatList,
-  GestureHandlerRootView,
-  ScrollView,
-  TextInput,
-} from 'react-native-gesture-handler';
+import NaverMapView, {Marker} from 'react-native-nmap';
+import {BottomSheetFlatList, BottomSheetModal} from '@gorhom/bottom-sheet';
+import {ScrollView} from 'react-native-gesture-handler';
 import {_getHeight, _getWidth} from 'constants/utils';
 import StationCount from './Components/StationCount';
 import StationListItem from './Components/StationListItem';
@@ -48,12 +34,12 @@ import SearchBox from './Components/SearchBox';
 import {Shadow} from 'react-native-shadow-2';
 import {commonTypes} from '@types';
 import {RootState} from 'redux/store';
-import {API} from 'api/API';
 import {_postAPI} from 'api/apiModules';
 import commonAPI from 'api/modules/commonAPI';
 import FontList from 'constants/FontList';
 import MyModal from '@components/MyModal';
 import Loading from '@components/Loading';
+import modules from 'constants/utils/modules';
 
 const AroundMain = () => {
   const dispatch = useDispatch();
@@ -71,16 +57,19 @@ const AroundMain = () => {
 
   const [stationList, setStationList] = useState([]);
   const [clickedMarker, setClickedMarker] = useState({
-    latitude: 37.5246544,
-    longitude: 126.8881368,
-    zoom: 10,
+    latitude: currentUserLocation.latitude
+      ? Number(currentUserLocation.latitude)
+      : 37.5666805,
+    longitude: currentUserLocation.longitude
+      ? Number(currentUserLocation.longitude)
+      : 126.9784147,
+    zoom: 14,
   });
   const [loading, setLoading] = useState(false);
 
-  console.log('res route', res);
-  console.log('currentUserLocation', currentUserLocation);
-
-  const P0 = {latitude: 37.5246544, longitude: 126.8881368};
+  // console.log('res route', res);
+  // console.log('currentUserLocation', currentUserLocation);
+  const [covering, setCovering] = useState<any>();
 
   const [visible, setVisible] = useState(false);
 
@@ -105,18 +94,19 @@ const AroundMain = () => {
 
   const _getAroundStation = async () => {
     const data = {
-      minx: 36.51819266068017,
-      miny: 125.88493806868793,
-      maxx: 38.529050492873274,
-      maxy: 127.89146555960178,
-      currentXY: [37.5246544, 126.8881368],
-      zcode: ['11', '50'],
-      parkingFree: 'Y',
-      busiId: ['ME'],
-      chgerTypeInfo: ['AC완속'],
-      offset: 0,
-      limit: 30,
+      minx: covering[0].latitude,
+      miny: covering[0].longitude,
+      maxx: covering[2].latitude,
+      maxy: covering[2].longitude,
+      currentXY: [currentUserLocation.latitude, currentUserLocation.longitude],
+      // zcode: ['11', '50'],
+      // parkingFree: 'Y',
+      // busiId: ['ME'],
+      // chgerTypeInfo: ['AC완속'],
+      // offset: 0,
+      limit: 50,
     };
+    console.log('#### current xy', data);
     setLoading(true);
     await commonAPI
       ._postSearchStationCoor(data)
@@ -128,14 +118,16 @@ const AroundMain = () => {
       .finally(() => {
         setTimeout(() => {
           setLoading(false);
-        }, 1200);
+        }, 500);
       });
   };
 
   const renderItem: ListRenderItem<any> = item => {
+    console.log('## item', item);
     return (
       <StationListItem
         setClickedMarker={setClickedMarker}
+        bottomSheetRef={bottomSheetRef}
         item={item.item}
         setPick={setPick}
         pick={pick}
@@ -145,8 +137,11 @@ const AroundMain = () => {
   };
 
   useEffect(() => {
-    _getAroundStation();
-  }, []);
+    if (covering) {
+      console.log('## cover', covering);
+      _getAroundStation();
+    }
+  }, [covering]);
 
   useEffect(() => {
     if (isFocused) {
@@ -154,16 +149,50 @@ const AroundMain = () => {
     }
   }, [isFocused]);
 
-  const _getCenter = () => {
-    if (clickedMarker.latitude && clickedMarker.longitude) {
-      const coor = {
-        latitude: Number(clickedMarker.latitude),
-        longitude: Number(clickedMarker.longitude),
-        zoom: 14,
-      };
-      console.log('coor', coor);
-      return coor;
-    } else return {...P0, zoom: 10};
+  useEffect(() => {
+    if (pick) {
+      bottomSheetRef.current?.present();
+    }
+    console.log('## pick ::', pick);
+  }, [pick]);
+
+  // const _getCenter = () => {
+  //   if (clickedMarker.latitude && clickedMarker.longitude) {
+  //     const coor = {
+  //       latitude: Number(clickedMarker.latitude),
+  //       longitude: Number(clickedMarker.longitude),
+  //       zoom: 14,
+  //     };
+  //     console.log('coor', coor);
+  //     return coor;
+  //   } else return {...P0, zoom: 10};
+  // };
+
+  const _getMarkerImg = (item: any) => {
+    let isAc = false;
+    let isDc = false;
+    let close = modules._isClosed(item);
+
+    // console.log('is CLOSED? ::', close);
+    item.chargers.map((item, index) => {
+      if (
+        item.chgerTypeInfo === 'DC차데모+AC3상+DC콤보' ||
+        item.chgerTypeInfo === 'DC차데모+AC3상'
+      ) {
+        isAc = true;
+        isDc = true;
+      }
+
+      if (item.chgerTypeInfo === 'AC완속' || item.chgerTypeInfo === 'AC3상')
+        isAc = true;
+      else isDc = true;
+    });
+    if (!item) return;
+    if (!close) return require('@assets/marker_close.png');
+    if (isAc && isDc) return require('@assets/marker_mix.png');
+    if (isAc && !isDc) return require('@assets/marker_normal.png');
+    if (isDc && !isAc) return require('@assets/marker_fast.png');
+    if (!isAc && !isDc) return require('@assets/marker_normal.png');
   };
 
   const arrFliter = ['충전속도', '충전소 유무료', '주차요금', '현재이용가능'];
@@ -239,50 +268,53 @@ const AroundMain = () => {
         style={{
           flex: 1,
         }}
+        useTextureView={true}
         zoomControl={false}
         scaleBar={false}
-        // showsMyLocationButton={true}
         center={{...clickedMarker}}
-        onTouch={(e: any) => console.log(e.navtiveEvent)}
-        // onCameraChange={e =>
-        //   console.log('onCameraChange', JSON.stringify(e))
-        // }
-        useTextureView={true}
-        onMapClick={e => console.log('onMapClick', JSON.stringify(e))}>
+        // onTouch={(e: any) => console.log(e.navtiveEvent)}
+        onCameraChange={e => {
+          console.log('### covering', covering);
+          setCovering(e.coveringRegion);
+        }}
+        // useTextureView={true}
+        onMapClick={e => bottomSheetRef.current?.close()}>
         <Marker
           pinColor="blue"
-          coordinate={{...P0}}
+          zIndex={100}
+          coordinate={currentUserLocation}
           image={require('@assets/my_location.png')}
           width={20}
           height={20}
           onClick={() => console.log('onClick! p0')}
         />
-        {/* 파란색은 급속, 녹색은 완속, 회색은 충전불가를 나타냅니다. ?????*/}
         {stationList.map((item, index) => (
           <Marker
             key={index}
             width={32}
-            height={37.7}
+            height={48}
+            animated={false}
             onClick={() => {
+              console.log('## station info ::', item);
+              setPick([item]);
               setClickedMarker({
                 latitude: Number(item.location.lat),
                 longitude: Number(item.location.lon),
-                zoom: 14,
+                zoom: 16,
               });
-              console.log('hi', item);
             }}
             coordinate={{
               latitude: Number(item.location.lat),
               longitude: Number(item.location.lon),
             }}>
             <ImageBackground
-              source={require('@assets/marker_green.png')}
+              source={_getMarkerImg(item)}
               style={{
                 width: 32,
-                height: 38,
+                height: 48,
                 alignItems: 'center',
                 justifyContent: 'center',
-                paddingBottom: '20%',
+                paddingBottom: '42%',
               }}
               resizeMode="contain">
               <Text
@@ -291,7 +323,11 @@ const AroundMain = () => {
                   fontSize: 16,
                   fontFamily: FontList.PretendardBold,
                 }}>
-                {item?.chargers.length > 9 ? '9+' : item?.chargers.length}
+                {loading
+                  ? ''
+                  : item?.chargers.length > 9
+                  ? '9+'
+                  : item?.chargers.length}
               </Text>
             </ImageBackground>
           </Marker>
@@ -300,7 +336,6 @@ const AroundMain = () => {
       <BottomSheetModal
         style={sheetStyle}
         ref={bottomSheetRef}
-        animateOnMount={true}
         footerComponent={() =>
           pick ? (
             <BottomButton
@@ -373,8 +408,8 @@ const AroundMain = () => {
         <Pressable
           onPress={() => {
             setClickedMarker({
-              latitude: P0.latitude,
-              longitude: P0.longitude,
+              latitude: currentUserLocation.latitude,
+              longitude: currentUserLocation.longitude,
               zoom: 14,
             });
           }}

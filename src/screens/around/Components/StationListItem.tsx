@@ -14,6 +14,9 @@ import {useDispatch} from 'react-redux';
 import {setGoal} from 'redux/reducers/pathReducer';
 import ChargerType from 'constants/ChargerType';
 import {BottomSheetModalMethods} from '@gorhom/bottom-sheet/lib/typescript/types';
+import modules from 'constants/utils/modules';
+import {useNavigation} from '@react-navigation/native';
+import {commonTypes} from '@types';
 interface props {
   item?: any;
   pick?: boolean;
@@ -39,12 +42,81 @@ const StationListItem = ({
 }: props) => {
   const [favorite, setFavorite] = useState(false);
   const dispatch = useDispatch();
+  const isClosed = modules._isClosed(item);
+  const nav = useNavigation<commonTypes.navi>();
+  console.log('####### item', item);
+  const _sortChgerBySpeed = (item: any) => {
+    //   현 데이터에서 chgerTypeInfo 는 총 7개가 있
+    //   고 일반적으로 DC는 급속, AC는 완속으로 나누어 집니다
+    // 다만 충전기 타입에서 급속과 같이 완속도 지원하는 충전기도 있습니다.
+    // (chgerType=03, DC차데모+AC3상, 또는 chgerType=06) 예시로 statId = "CPTEST01" 경우가 참고가 되실것 같습니다
+    //03, 06인 경우
+    //dc는 급속, ac는 완속
 
+    let normal = 0;
+    let fast = 0;
+
+    item.chargers.map((item, index) => {
+      if (item.chgerTypeInfo === 'AC완속' || item.chgerTypeInfo === 'AC3상')
+        normal++;
+      else fast++;
+    });
+
+    const res = {
+      normal,
+      fast,
+    };
+    // console.warn('res', res);
+    return res;
+  };
+
+  const _getChgerImg = (item: any) => {
+    let chgerImg = {
+      dcCombo: false,
+      dcDemo: false,
+      ac3: false,
+      ac5: false,
+    };
+    item.chargers.map((item, index) => {
+      if (item.chgerTypeInfo === 'DC차데모+AC3상+DC콤보') {
+        chgerImg.ac3 = true;
+        chgerImg.dcCombo = true;
+        chgerImg.dcDemo = true;
+      }
+      if (item.chgerTypeInfo === 'AC완속') {
+        chgerImg.ac5 = true;
+      }
+      if (item.chgerTypeInfo === 'DC콤보') {
+        chgerImg.dcCombo = true;
+      }
+      if (item.chgerTypeInfo === 'DC차데모+DC콤보') {
+        chgerImg.dcCombo = true;
+        chgerImg.dcDemo = true;
+      }
+      if (item.chgerTypeInfo === 'DC차데모+AC3상') {
+        chgerImg.dcDemo = true;
+        chgerImg.ac3 = true;
+      }
+      if (item.chgerTypeInfo === 'AC3상') {
+        chgerImg.ac3 = true;
+      }
+      if (item.chgerTypeInfo === 'DC차데모') {
+        chgerImg.dcDemo = true;
+      }
+    });
+    return chgerImg;
+  };
   return (
     <Pressable
       onPress={() => {
+        if (pick) {
+          bottomSheetRef?.current?.close();
+          nav.navigate('StationDetailMain', {item: item});
+        }
+
         if (item) {
           console.log('item', item);
+          console.log('pick', pick);
           console.log('2', item.location);
           setClickedMarker &&
             setClickedMarker({
@@ -210,9 +282,9 @@ const StationListItem = ({
               style={{
                 fontFamily: FontList.PretendardMedium,
                 fontSize: 16,
-                color: '#6FCF24',
+                color: isClosed ? '#6FCF24' : '#959595',
               }}>
-              충전가능
+              {isClosed ? '충전가능' : '충전불가'}
             </Text>
           </View>
           <View style={{flexDirection: 'row'}}>
@@ -221,7 +293,7 @@ const StationListItem = ({
                 fontFamily: FontList.PretendardRegular,
                 color: '#333333',
               }}>
-              급속 1
+              급속 {_sortChgerBySpeed(item).fast}
             </Text>
             <Text
               style={{
@@ -235,7 +307,7 @@ const StationListItem = ({
                 fontFamily: FontList.PretendardRegular,
                 color: '#333333',
               }}>
-              완속 1
+              완속 {_sortChgerBySpeed(item).normal}
             </Text>
           </View>
         </View>
@@ -253,7 +325,8 @@ const StationListItem = ({
               borderWidth: 1,
               alignItems: 'center',
               justifyContent: 'center',
-              borderColor: '#6FCF24',
+              borderColor: _getChgerImg(item).dcCombo ? '#6FCF24' : '#C6C6C6',
+              opacity: _getChgerImg(item).dcCombo ? 1 : 0.3,
             }}>
             <Image
               source={ChargerType.chargerLogo[0]}
@@ -269,7 +342,8 @@ const StationListItem = ({
               borderWidth: 1,
               alignItems: 'center',
               justifyContent: 'center',
-              borderColor: '#6FCF24',
+              borderColor: _getChgerImg(item).dcDemo ? '#6FCF24' : '#C6C6C6',
+              opacity: _getChgerImg(item).dcDemo ? 1 : 0.3,
             }}>
             <Image
               source={ChargerType.chargerLogo[1]}
@@ -285,7 +359,8 @@ const StationListItem = ({
               borderWidth: 1,
               alignItems: 'center',
               justifyContent: 'center',
-              borderColor: '#6FCF24',
+              borderColor: _getChgerImg(item).ac3 ? '#6FCF24' : '#C6C6C6',
+              opacity: _getChgerImg(item).ac3 ? 1 : 0.3,
             }}>
             <Image
               source={ChargerType.chargerLogo[2]}
@@ -295,14 +370,14 @@ const StationListItem = ({
           </View>
           <View
             style={{
-              opacity: 0.3,
               width: _getWidth(40),
               height: _getHeight(40),
               borderRadius: _getWidth(40) / 2,
               borderWidth: 1,
               alignItems: 'center',
               justifyContent: 'center',
-              borderColor: '#C6C6C6',
+              borderColor: _getChgerImg(item).ac5 ? '#6FCF24' : '#C6C6C6',
+              opacity: _getChgerImg(item).ac5 ? 1 : 0.3,
             }}>
             <Image
               source={ChargerType.chargerLogo[3]}

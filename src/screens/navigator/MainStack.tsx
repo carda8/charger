@@ -31,6 +31,7 @@ import StationDetailMain from '@screens/stationDetail/StationDetailMain';
 import StationReportPage from '@screens/stationDetail/StationReportPage';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {BottomSheetModalProvider} from '@gorhom/bottom-sheet';
+import NotificationDetail from '@screens/main/NotificationDetail';
 
 const Stack = createNativeStackNavigator<commonTypes.RootStackParamList>();
 
@@ -41,7 +42,7 @@ const MainStack = () => {
         <BottomSheetModalProvider>
           <Stack.Navigator
             screenOptions={{headerShown: false, animation: 'default'}}
-            initialRouteName={'Login'}>
+            initialRouteName={'Home'}>
             <Stack.Screen
               name="Login"
               component={Login}
@@ -78,6 +79,11 @@ const MainStack = () => {
             <Stack.Screen name="Home" component={Home} />
             {/* 알림  */}
             <Stack.Screen name="Notification" component={Notification} />
+            {/* 알림 상세 */}
+            <Stack.Screen
+              name="NotificationDetail"
+              component={NotificationDetail}
+            />
             {/* 충전소 상세 보기 */}
             <Stack.Screen
               name="StationDetailMain"

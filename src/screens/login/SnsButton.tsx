@@ -76,6 +76,7 @@ const SnsButton = ({text, snsType, navigation, idx}: props) => {
     }
   }, [success]);
 
+  // get user info
   const getNaverProfile = async () => {
     try {
       const profileResult = await NaverLogin.getProfile(success!.accessToken);
@@ -83,7 +84,7 @@ const SnsButton = ({text, snsType, navigation, idx}: props) => {
       if (profileResult?.message === 'success') {
         const id = profileResult.response.id;
         const name = profileResult.response.name;
-        dispatch(setUserInfo({...userInfo, id: id, name: name}));
+        dispatch(setUserInfo({...userInfo, name: name}));
         navigation.navigate('AccountFinish');
       }
       setGetProfileRes(profileResult);
@@ -97,6 +98,15 @@ const SnsButton = ({text, snsType, navigation, idx}: props) => {
   const getKakaoProfile = async (token: string): Promise<void> => {
     const profile: KakaoProfile = await getProfile(token);
     console.log('profile', profile);
+    if (profile) {
+      dispatch(
+        setUserInfo({...userInfo, id: profile.email, name: profile.nickname}),
+      );
+      navigation.navigate('AccountFinish');
+    }
+
+    // console.log('')
+
     // setResult(JSON.stringify(profile));
 
     // setResult(JSON.stringify(profile));

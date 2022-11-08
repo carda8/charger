@@ -19,7 +19,7 @@ interface props {
 const HomeHeader = ({title, subTitle, goBack, backTitle}: props) => {
   const nav = useNavigation<commonTypes.navi>();
   const {userInfo} = useSelector((state: RootState) => state.authReducer);
-
+  console.log('User DATA ::', userInfo);
   return (
     <>
       <View
@@ -53,7 +53,7 @@ const HomeHeader = ({title, subTitle, goBack, backTitle}: props) => {
               nav.navigate('Notification');
             }}>
             <Image
-              source={require('@assets/notification.png')}
+              source={require('@assets/notification_on.png')}
               style={{
                 width: _getWidth(22),
                 height: _getHeight(22),
@@ -73,7 +73,7 @@ const HomeHeader = ({title, subTitle, goBack, backTitle}: props) => {
           <Image
             // source={require('@assets/carinfo_false.png')}
             source={
-              userInfo?.carBrand
+              userInfo?.car_brand
                 ? require('@assets/carinfo_true.png')
                 : require('@assets/carinfo_false.png')
             }
@@ -92,9 +92,9 @@ const HomeHeader = ({title, subTitle, goBack, backTitle}: props) => {
                 color: '#333333',
                 fontSize: 18,
               }}>
-              마이차저님
+              {userInfo?.name ? userInfo?.name : '마이차저'}님
             </Text>
-            {userInfo?.carBrand ? (
+            {userInfo?.car_brand ? (
               <View style={{flexDirection: 'row'}}>
                 <Text
                   style={{
@@ -102,7 +102,7 @@ const HomeHeader = ({title, subTitle, goBack, backTitle}: props) => {
                     fontSize: 16,
                     color: '#858585',
                   }}>
-                  {userInfo?.carBrand}{' '}
+                  {userInfo?.car_brand}{' '}
                 </Text>
                 <Text
                   style={{
@@ -110,7 +110,7 @@ const HomeHeader = ({title, subTitle, goBack, backTitle}: props) => {
                     fontSize: 16,
                     color: '#858585',
                   }}>
-                  {userInfo?.carName}
+                  {userInfo?.car_model}
                   {' | '}
                 </Text>
                 <Text
@@ -119,7 +119,7 @@ const HomeHeader = ({title, subTitle, goBack, backTitle}: props) => {
                     fontSize: 16,
                     color: '#858585',
                   }}>
-                  {userInfo?.chargerType}
+                  {userInfo?.chgerType}
                 </Text>
               </View>
             ) : (

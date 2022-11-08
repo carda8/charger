@@ -29,11 +29,76 @@ import {
 import NavModal from '@components/NavModal';
 import {commonTypes} from '@types';
 import ChargerType from 'constants/ChargerType';
+import {RouteProp, useRoute} from '@react-navigation/native';
 
 const StationDetailMain = () => {
   const data = [1, 2, 3, 4, 5, 5];
   const dataFee = [1, 2, 3, 4, 5, 6, , 6, 7, 8];
   const [modal, setModal] = useState(false);
+  const routeItem =
+    useRoute<RouteProp<commonTypes.RootStackParamList, 'StationDetailMain'>>()
+      .params?.item;
+  console.log('route Item ##', routeItem);
+  const _isClosed = (stat: any) => {
+    if (stat === '충전중' || stat === '충전대기') return false;
+    else return true;
+  };
+
+  const _getChgerType = (type: any) => {
+    console.log('############', type);
+    if (type === 'AC완속' || type === 'AC3상') {
+      return '완속1';
+    } else return '급속1';
+    if (type === 'AC완속' || type === 'AC3상') {
+      return '완속1';
+    }
+    if (type === 'AC완속' || type === 'AC3상') {
+      return '완속1';
+    }
+    if (type === 'AC완속' || type === 'AC3상') {
+      return '완속1';
+    }
+    if (type === 'AC완속' || type === 'AC3상') {
+      return '완속1';
+    }
+  };
+
+  const _getChgerImg = (item: any) => {
+    console.log('233123123', item);
+    let chgerImg = {
+      dcCombo: false,
+      dcDemo: false,
+      ac3: false,
+      ac5: false,
+    };
+    if (item === 'DC차데모+AC3상+DC콤보') {
+      chgerImg.ac3 = true;
+      chgerImg.dcCombo = true;
+      chgerImg.dcDemo = true;
+    }
+    if (item === 'AC완속') {
+      chgerImg.ac5 = true;
+    }
+    if (item === 'DC콤보') {
+      chgerImg.dcCombo = true;
+    }
+    if (item === 'DC차데모+DC콤보') {
+      chgerImg.dcCombo = true;
+      chgerImg.dcDemo = true;
+    }
+    if (item === 'DC차데모+AC3상') {
+      chgerImg.dcDemo = true;
+      chgerImg.ac3 = true;
+    }
+    if (item === 'AC3상') {
+      chgerImg.ac3 = true;
+    }
+    if (item === 'DC차데모') {
+      chgerImg.dcDemo = true;
+    }
+
+    return chgerImg;
+  };
 
   const renderItem: ListRenderItem<any> = item => {
     return (
@@ -63,16 +128,16 @@ const StationDetailMain = () => {
                   fontFamily: FontList.PretendardSemiBold,
                   color: '#333333',
                 }}>
-                급속2
+                {_getChgerType(item.item.chgerTypeInfo)}
               </Text>
               <Text
                 style={{
                   fontFamily: FontList.PretendardMedium,
                   fontSize: 16,
-                  color: '#6FCF24',
+                  color: _isClosed(item.item.statInfo) ? '#878686' : '#6FCF24',
                   marginVertical: _getHeight(4),
                 }}>
-                충전가능
+                {_isClosed(item.item.statInfo) ? '충전불가' : '충전가능'}
               </Text>
               <Text
                 style={{
@@ -95,6 +160,9 @@ const StationDetailMain = () => {
                 style={{
                   alignItems: 'center',
                   justifyContent: 'center',
+                  opacity: _getChgerImg(item.item.chgerTypeInfo).dcCombo
+                    ? 1
+                    : 0.3,
                 }}>
                 <Image
                   source={ChargerType.chargerLogo[0]}
@@ -121,10 +189,12 @@ const StationDetailMain = () => {
                 style={{
                   alignItems: 'center',
                   justifyContent: 'center',
-                  opacity: 0.3,
+                  opacity: _getChgerImg(item.item.chgerTypeInfo).dcDemo
+                    ? 1
+                    : 0.3,
                 }}>
                 <Image
-                  source={ChargerType.chargerLogo[0]}
+                  source={ChargerType.chargerLogo[1]}
                   style={{
                     width: _getWidth(40),
                     height: _getHeight(40),
@@ -148,10 +218,10 @@ const StationDetailMain = () => {
                 style={{
                   alignItems: 'center',
                   justifyContent: 'center',
-                  opacity: 0.3,
+                  opacity: _getChgerImg(item.item.chgerTypeInfo).ac3 ? 1 : 0.3,
                 }}>
                 <Image
-                  source={ChargerType.chargerLogo[0]}
+                  source={ChargerType.chargerLogo[2]}
                   style={{
                     width: _getWidth(40),
                     height: _getHeight(40),
@@ -175,10 +245,10 @@ const StationDetailMain = () => {
                 style={{
                   alignItems: 'center',
                   justifyContent: 'center',
-                  opacity: 0.3,
+                  opacity: _getChgerImg(item.item.chgerTypeInfo).ac5 ? 1 : 0.3,
                 }}>
                 <Image
-                  source={ChargerType.chargerLogo[0]}
+                  source={ChargerType.chargerLogo[3]}
                   style={{
                     width: _getWidth(40),
                     height: _getHeight(40),
@@ -209,13 +279,18 @@ const StationDetailMain = () => {
     return (
       <View
         style={{flexDirection: 'row', marginBottom: 24, alignItems: 'center'}}>
-        <View
+        {/* <View
           style={{
             width: 18,
             height: 18,
             backgroundColor: '#D9D9D9',
             marginRight: 4,
-          }}></View>
+          }}></View> */}
+        <Image
+          source={require('@assets/main_bt_union2.png')}
+          style={{width: 20, height: 20}}
+          resizeMode="contain"
+        />
         <View
           style={{
             flexDirection: 'row',
@@ -255,7 +330,7 @@ const StationDetailMain = () => {
           <HeaderCenter title="상세보기" leftBack />
           <View style={{marginHorizontal: 16, flex: 1}}>
             <FlatList
-              data={data}
+              data={routeItem.chargers}
               keyExtractor={(item, index) => String(index)}
               renderItem={item => renderItem(item)}
               showsVerticalScrollIndicator={false}
@@ -263,13 +338,18 @@ const StationDetailMain = () => {
               ListHeaderComponent={
                 <>
                   <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                    <View
+                    {/* <View
                       style={{
                         width: 20,
                         height: 20,
                         backgroundColor: '#D9D9D9',
                         marginRight: 4,
                       }}
+                    /> */}
+                    <Image
+                      source={require('@assets/main_bt_union2.png')}
+                      style={{width: 20, height: 20}}
+                      resizeMode="contain"
                     />
                     <Text
                       style={{
@@ -277,7 +357,7 @@ const StationDetailMain = () => {
                         fontSize: 20,
                         color: 'black',
                       }}>
-                      판교테크노밸리
+                      {routeItem?.statNm}
                     </Text>
                   </View>
                   <View style={{marginTop: 10}}>
@@ -286,10 +366,10 @@ const StationDetailMain = () => {
                         fontFamily: FontList.PretendardMedium,
                         color: '#959595',
                       }}>
-                      경기도 성남시 분당구 판교로227번길 6
+                      {routeItem?.addr}
                     </Text>
                   </View>
-                  <DashBoard bottomSheetRef={bottomSheetRef} />
+                  <DashBoard bottomSheetRef={bottomSheetRef} item={routeItem} />
                   <ReportButton modal={modal} setModal={setModal} />
                 </>
               }

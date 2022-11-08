@@ -109,7 +109,7 @@ const Home = () => {
   };
 
   useEffect(() => {
-    // _getPermission();
+    _getPermission();
   }, []);
 
   useEffect(() => {

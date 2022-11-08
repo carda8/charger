@@ -3,8 +3,8 @@ import {_getAPI, _postAPI} from 'api/apiModules';
 
 export default {
   // user
-  _postSaveUserInfo: async (params: any) => {
-    const res = await _postAPI('users', params);
+  _postSaveUserInfo: async (params: commonTypes.saveUserDB) => {
+    const res = await _postAPI('login', params);
     return res;
   },
   _getUserInfo: async (params: any) => {
