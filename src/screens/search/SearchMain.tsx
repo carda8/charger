@@ -8,8 +8,9 @@ import {
   Modal,
   ActivityIndicator,
   useWindowDimensions,
+  KeyboardAvoidingView,
 } from 'react-native';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import GlobalStyles from 'styles/GlobalStyles';
 import BottomNav from '@components/BottomNav';
@@ -19,6 +20,8 @@ import {_getHeight} from 'constants/utils';
 import FontList from 'constants/FontList';
 import commonAPI from 'api/modules/commonAPI';
 import MyModal from '@components/MyModal';
+import {ScrollView} from 'react-native-gesture-handler';
+import {BottomSheetModalMethods} from '@gorhom/bottom-sheet/lib/typescript/types';
 
 interface keywordParam {
   keywords: string;
@@ -26,7 +29,11 @@ interface keywordParam {
   limit: number;
 }
 
-const SearchMain = () => {
+interface props {
+  bottomSheetRef: React.RefObject<BottomSheetModalMethods>;
+}
+
+const SearchMain = ({bottomSheetRef}: props) => {
   const nav = useNavigation<commonTypes.navi>();
   const [input, setInput] = useState('');
   const [history, setHistory] = useState([
@@ -42,16 +49,18 @@ const SearchMain = () => {
   ]);
   const [modal, setModal] = useState(false);
   const [modalNoRes, setModalNoRes] = useState(false);
+  const [res, setRest] = useState([]);
+  const [showNoRes, setShowNoRes] = useState(false);
   const layout = useWindowDimensions();
 
   const _getKeyword = async () => {
-    setModal(true);
-
+    // setModal(true);
+    if (!(input.length > 1)) return;
     if (input) {
       const data: keywordParam = {
         keywords: input,
         offset: 0,
-        limit: 10,
+        limit: 20,
       };
 
       commonAPI
@@ -59,16 +68,20 @@ const SearchMain = () => {
         .then(res => {
           console.log('res', res?.data.data);
           if (res?.data.data.length > 0) {
-            nav.navigate('AroundMain', {res: res?.data.data});
+            setRest(res?.data.data);
+            setShowNoRes(false);
+            // nav.navigate('AroundMain', {res: res?.data.data});
           } else {
-            setModalNoRes(!modalNoRes);
+            setShowNoRes(true);
+            // setModalNoRes(!modalNoRes);
           }
         })
         .catch(err => console.log('## ERROR', err))
-        .finally(() =>
-          setTimeout(() => {
-            setModal(false);
-          }, 1200),
+        .finally(
+          () => {},
+          // setTimeout(() => {
+          //   setModal(false);
+          // }, 700),
         );
     }
   };
@@ -78,6 +91,12 @@ const SearchMain = () => {
     temp = target.filter((item, idx) => idx !== index);
     setTarget(temp);
   };
+
+  useEffect(() => {
+    if (input) {
+      _getKeyword();
+    }
+  }, [input]);
 
   return (
     <SafeAreaView style={{...GlobalStyles.safeAreaStyle}}>
@@ -90,7 +109,11 @@ const SearchMain = () => {
         }}>
         <View style={{marginHorizontal: 18}}>
           <View
-            style={{flexDirection: 'row', width: '100%', alignItems: 'center'}}>
+            style={{
+              flexDirection: 'row',
+              width: '100%',
+              alignItems: 'center',
+            }}>
             <TextInput
               onSubmitEditing={() => {
                 _getKeyword();
@@ -123,79 +146,137 @@ const SearchMain = () => {
           </View>
         </View>
       </View>
-      {history.map((item, idx) => (
-        <Pressable
-          onPress={() => {
-            nav.goBack();
-          }}
-          key={idx}
-          style={{
-            justifyContent: 'center',
-            borderColor: '#F6F6F6',
-            borderBottomWidth: idx === history.length - 1 ? 5 : undefined,
-          }}>
-          <View
+
+      {/* input 존재 시 리스트업 */}
+      {res.length === 0 && showNoRes && input.length > 1 && (
+        <View style={{margin: 16}}>
+          <Text
+            style={{fontFamily: FontList.PretendardRegular, color: '#333333'}}>
+            검색결과가 없습니다
+          </Text>
+        </View>
+      )}
+      {input && res.length > 0 && (
+        <ScrollView style={{flex: 1, marginBottom: 65}}>
+          {res.map((item, index) => (
+            <Pressable
+              onPress={() => {
+                nav.navigate('AroundMain', {res: item});
+              }}
+              key={index}
+              style={{
+                justifyContent: 'center',
+                borderColor: '#F6F6F6',
+                borderBottomWidth: 1,
+              }}>
+              <View
+                style={{
+                  height: _getHeight(48),
+                  marginHorizontal: 18,
+                  borderBottomWidth: 1,
+                  borderColor: '#F6F6F6',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}>
+                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                  <Image
+                    source={require('@assets/search.png')}
+                    style={{width: 14, height: 14, marginRight: 6}}
+                    resizeMode="contain"
+                  />
+                  <Text
+                    style={{
+                      fontFamily: FontList.PretendardMedium,
+                      fontSize: 16,
+                      color: '#333333',
+                    }}>
+                    {item?.addr}
+                  </Text>
+                </View>
+              </View>
+            </Pressable>
+          ))}
+        </ScrollView>
+      )}
+
+      {!input &&
+        history.map((item, idx) => (
+          <Pressable
+            onPress={() => {
+              nav.goBack();
+            }}
+            key={idx}
             style={{
-              height: _getHeight(48),
-              marginHorizontal: 18,
-              borderBottomWidth: 1,
+              justifyContent: 'center',
               borderColor: '#F6F6F6',
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
+              borderBottomWidth: idx === history.length - 1 ? 5 : undefined,
             }}>
-            <View style={{flexDirection: 'row', alignItems: 'center'}}>
-              <Image
-                source={require('@assets/search.png')}
-                style={{width: 14, height: 14, marginRight: 6}}
-                resizeMode="contain"
-              />
-              <Text
-                style={{
-                  fontFamily: FontList.PretendardMedium,
-                  fontSize: 16,
-                  color: '#333333',
-                }}>
-                {item}
-              </Text>
-            </View>
-            <View style={{flexDirection: 'row', alignItems: 'center'}}>
-              <Text
-                style={{
-                  fontFamily: FontList.PretendardRegular,
-                  color: '#C6C6C6',
-                }}>
-                10.01
-              </Text>
-              <Pressable
-                hitSlop={10}
-                onPress={() => {
-                  _delelteItem(history, setHistory, idx);
-                }}>
+            <View
+              style={{
+                height: _getHeight(48),
+                marginHorizontal: 18,
+                borderBottomWidth: 1,
+                borderColor: '#F6F6F6',
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}>
+              <View style={{flexDirection: 'row', alignItems: 'center'}}>
                 <Image
-                  source={require('@assets/search_close.png')}
-                  style={{
-                    width: 12,
-                    height: 12,
-                    marginLeft: 10,
-                    tintColor: '#959595',
-                  }}
+                  source={require('@assets/search.png')}
+                  style={{width: 14, height: 14, marginRight: 6}}
                   resizeMode="contain"
                 />
-              </Pressable>
+                <Text
+                  style={{
+                    fontFamily: FontList.PretendardMedium,
+                    fontSize: 16,
+                    color: '#333333',
+                  }}>
+                  {item}
+                </Text>
+              </View>
+              <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                <Text
+                  style={{
+                    fontFamily: FontList.PretendardRegular,
+                    color: '#C6C6C6',
+                  }}>
+                  10.01
+                </Text>
+                <Pressable
+                  hitSlop={10}
+                  onPress={() => {
+                    _delelteItem(history, setHistory, idx);
+                  }}>
+                  <Image
+                    source={require('@assets/search_close.png')}
+                    style={{
+                      width: 12,
+                      height: 12,
+                      marginLeft: 10,
+                      tintColor: '#959595',
+                    }}
+                    resizeMode="contain"
+                  />
+                </Pressable>
+              </View>
             </View>
-          </View>
-        </Pressable>
-      ))}
-      <Text
-        style={{
-          lineHeight: 24,
-          color: '#7A7A7A',
-          marginHorizontal: 16,
-          marginTop: 17.6,
-        }}>
-        최근 검색지
-      </Text>
+          </Pressable>
+        ))}
+      {!input && (
+        <Text
+          style={{
+            lineHeight: 24,
+            color: '#7A7A7A',
+            marginHorizontal: 16,
+            marginTop: 17.6,
+          }}>
+          최근 검색지
+        </Text>
+      )}
+
       {recent.length === 0 && (
         <Text
           style={{
@@ -208,80 +289,79 @@ const SearchMain = () => {
           최근 검색지가 없습니다
         </Text>
       )}
-      {recent.map((item, index) => (
-        <Pressable
-          hitSlop={10}
-          onPress={() => {
-            nav.goBack();
-          }}
-          key={index}
-          style={{
-            justifyContent: 'center',
-            borderColor: '#F6F6F6',
-            borderBottomWidth: 1,
-
-            // borderBottomWidth: index === history.length - 1 ? 5 : undefined,
-          }}>
-          <View
+      {!input &&
+        recent.map((item, index) => (
+          <Pressable
+            hitSlop={10}
+            onPress={() => {
+              nav.goBack();
+            }}
+            key={index}
             style={{
-              marginHorizontal: 16,
-              height: _getHeight(58),
               justifyContent: 'center',
+              borderColor: '#F6F6F6',
+              borderBottomWidth: 1,
+              // borderBottomWidth: index === history.length - 1 ? 5 : undefined,
             }}>
             <View
               style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
+                marginHorizontal: 16,
+                height: 58,
+                justifyContent: 'center',
               }}>
-              <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                <Text
-                  style={{
-                    fontFamily: FontList.PretendardMedium,
-                    fontSize: 16,
-                    color: '#333333',
-                  }}>
-                  {item}
-                </Text>
-              </View>
-              <Pressable
-                hitSlop={10}
-                onPress={() => {
-                  _delelteItem(recent, setRecent, index);
-                }}
-                style={{flexDirection: 'row', alignItems: 'center'}}>
-                <Text
-                  style={{
-                    fontFamily: FontList.PretendardRegular,
-                    color: '#C6C6C6',
-                  }}>
-                  10.01
-                </Text>
-                <Image
-                  source={require('@assets/search_close.png')}
-                  style={{
-                    width: 12,
-                    height: 12,
-                    marginLeft: 10,
-                    tintColor: '#959595',
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}>
+                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                  <Text
+                    style={{
+                      fontFamily: FontList.PretendardMedium,
+                      fontSize: 16,
+                      color: '#333333',
+                    }}>
+                    {item}
+                  </Text>
+                </View>
+                <Pressable
+                  hitSlop={10}
+                  onPress={() => {
+                    _delelteItem(recent, setRecent, index);
                   }}
-                  resizeMode="contain"
-                />
-              </Pressable>
+                  style={{flexDirection: 'row', alignItems: 'center'}}>
+                  <Text
+                    style={{
+                      fontFamily: FontList.PretendardRegular,
+                      color: '#C6C6C6',
+                    }}>
+                    10.01
+                  </Text>
+                  <Image
+                    source={require('@assets/search_close.png')}
+                    style={{
+                      width: 12,
+                      height: 12,
+                      marginLeft: 10,
+                      tintColor: '#959595',
+                    }}
+                    resizeMode="contain"
+                  />
+                </Pressable>
+              </View>
+
+              <Text
+                style={{
+                  lineHeight: 24,
+                  fontFamily: FontList.PretendardRegular,
+                  color: '#7A7A7A',
+                }}>
+                서울특별시 강남구 역삼로168길
+              </Text>
             </View>
-
-            <Text
-              style={{
-                lineHeight: 24,
-                fontFamily: FontList.PretendardRegular,
-                color: '#7A7A7A',
-              }}>
-              서울특별시 강남구 역삼로168길
-            </Text>
-          </View>
-        </Pressable>
-      ))}
-
+          </Pressable>
+        ))}
       <BottomNav />
       <Modal
         transparent

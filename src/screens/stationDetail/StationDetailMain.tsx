@@ -32,39 +32,30 @@ import ChargerType from 'constants/ChargerType';
 import {RouteProp, useRoute} from '@react-navigation/native';
 
 const StationDetailMain = () => {
-  const data = [1, 2, 3, 4, 5, 5];
   const dataFee = [1, 2, 3, 4, 5, 6, , 6, 7, 8];
   const [modal, setModal] = useState(false);
   const routeItem =
     useRoute<RouteProp<commonTypes.RootStackParamList, 'StationDetailMain'>>()
       .params?.item;
-  console.log('route Item ##', routeItem);
+  console.log('routeItem', routeItem);
+  const coor = {
+    latitude: routeItem.location.lat,
+    longitude: routeItem.location.lon,
+  };
   const _isClosed = (stat: any) => {
     if (stat === '충전중' || stat === '충전대기') return false;
     else return true;
   };
 
   const _getChgerType = (type: any) => {
-    console.log('############', type);
+    // console.log('############', type);
     if (type === 'AC완속' || type === 'AC3상') {
       return '완속1';
     } else return '급속1';
-    if (type === 'AC완속' || type === 'AC3상') {
-      return '완속1';
-    }
-    if (type === 'AC완속' || type === 'AC3상') {
-      return '완속1';
-    }
-    if (type === 'AC완속' || type === 'AC3상') {
-      return '완속1';
-    }
-    if (type === 'AC완속' || type === 'AC3상') {
-      return '완속1';
-    }
   };
 
   const _getChgerImg = (item: any) => {
-    console.log('233123123', item);
+    // console.log('233123123', item);
     let chgerImg = {
       dcCombo: false,
       dcDemo: false,
@@ -482,8 +473,12 @@ const StationDetailMain = () => {
             </View>
           </BottomSheetModal>
           <BottomNav />
-
-          <NavModal title="길안내 연결" visible={modal} setVisible={setModal} />
+          <NavModal
+            title="길안내 연결"
+            visible={modal}
+            setVisible={setModal}
+            coor={coor}
+          />
         </SafeAreaView>
       </BottomSheetModalProvider>
     </GestureHandlerRootView>

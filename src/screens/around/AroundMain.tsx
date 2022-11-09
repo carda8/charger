@@ -49,6 +49,8 @@ const AroundMain = () => {
   const res =
     useRoute<RouteProp<commonTypes.RootStackParamList, 'AroundMain'>>().params
       ?.res;
+  console.log(':::::::::: res', res);
+
   const {currentUserLocation} = useSelector(
     (state: RootState) => state.locationReducer,
   );
@@ -56,7 +58,7 @@ const AroundMain = () => {
   const [repair, setRepair] = useState(false);
 
   const [stationList, setStationList] = useState([]);
-  const [clickedMarker, setClickedMarker] = useState({
+  const [clickedMarker, setClickedMarker] = useState<any>({
     latitude: currentUserLocation.latitude
       ? Number(currentUserLocation.latitude)
       : 37.5666805,
@@ -65,6 +67,17 @@ const AroundMain = () => {
       : 126.9784147,
     zoom: 14,
   });
+
+  useEffect(() => {
+    if (res) {
+      setClickedMarker({
+        latitude: res.location.lat,
+        longitude: res.location.lon,
+        zoom: 16,
+      });
+    }
+  }, [res]);
+
   const [loading, setLoading] = useState(false);
 
   // console.log('res route', res);
@@ -93,6 +106,8 @@ const AroundMain = () => {
   );
 
   const _getAroundStation = async () => {
+    setLoading(true);
+
     const data = {
       minx: covering[0].latitude,
       miny: covering[0].longitude,
@@ -103,11 +118,10 @@ const AroundMain = () => {
       // parkingFree: 'Y',
       // busiId: ['ME'],
       // chgerTypeInfo: ['AC완속'],
-      // offset: 0,
-      limit: 50,
+      offset: 0,
+      limit: 30,
     };
     console.log('#### current xy', data);
-    setLoading(true);
     await commonAPI
       ._postSearchStationCoor(data)
       .then(res => {
@@ -150,23 +164,10 @@ const AroundMain = () => {
   }, [isFocused]);
 
   useEffect(() => {
-    if (pick) {
+    if (pick && isFocused) {
       bottomSheetRef.current?.present();
     }
-    console.log('## pick ::', pick);
   }, [pick]);
-
-  // const _getCenter = () => {
-  //   if (clickedMarker.latitude && clickedMarker.longitude) {
-  //     const coor = {
-  //       latitude: Number(clickedMarker.latitude),
-  //       longitude: Number(clickedMarker.longitude),
-  //       zoom: 14,
-  //     };
-  //     console.log('coor', coor);
-  //     return coor;
-  //   } else return {...P0, zoom: 10};
-  // };
 
   const _getMarkerImg = (item: any) => {
     let isAc = false;
@@ -207,7 +208,7 @@ const AroundMain = () => {
           width: layout.width,
         }}>
         <View style={{marginHorizontal: 10}}>
-          <SearchBox />
+          <SearchBox bottomSheetRef={bottomSheetRef} />
         </View>
         <View
           style={{
@@ -271,13 +272,12 @@ const AroundMain = () => {
         useTextureView={true}
         zoomControl={false}
         scaleBar={false}
-        center={{...clickedMarker}}
-        // onTouch={(e: any) => console.log(e.navtiveEvent)}
+        center={clickedMarker ? clickedMarker : undefined}
         onCameraChange={e => {
-          console.log('### covering', covering);
+          // console.log('### covering', covering);
           setCovering(e.coveringRegion);
+          if (clickedMarker) setClickedMarker(undefined);
         }}
-        // useTextureView={true}
         onMapClick={e => bottomSheetRef.current?.close()}>
         <Marker
           pinColor="blue"
@@ -288,12 +288,12 @@ const AroundMain = () => {
           height={20}
           onClick={() => console.log('onClick! p0')}
         />
-        {stationList.map((item, index) => (
+        {stationList?.map((item, index) => (
           <Marker
             key={index}
             width={32}
             height={48}
-            animated={false}
+            // animated={true}
             onClick={() => {
               console.log('## station info ::', item);
               setPick([item]);
@@ -408,8 +408,8 @@ const AroundMain = () => {
         <Pressable
           onPress={() => {
             setClickedMarker({
-              latitude: currentUserLocation.latitude,
-              longitude: currentUserLocation.longitude,
+              latitude: Number(currentUserLocation.latitude),
+              longitude: Number(currentUserLocation.longitude),
               zoom: 14,
             });
           }}
@@ -426,7 +426,11 @@ const AroundMain = () => {
       </Shadow>
 
       {/* 주변 충전기 버튼 */}
-      <StationCount bottomSheetRef={bottomSheetRef} stationList={stationList} />
+      <StationCount
+        bottomSheetRef={bottomSheetRef}
+        stationList={stationList}
+        setPick={setPick}
+      />
 
       {/* 길안내 연결 모달 */}
       <NavModal

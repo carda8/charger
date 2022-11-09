@@ -19,7 +19,6 @@ interface props {
 const HomeHeader = ({title, subTitle, goBack, backTitle}: props) => {
   const nav = useNavigation<commonTypes.navi>();
   const {userInfo} = useSelector((state: RootState) => state.authReducer);
-  console.log('User DATA ::', userInfo);
   return (
     <>
       <View

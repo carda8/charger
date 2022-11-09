@@ -5,6 +5,7 @@ import {
   Image,
   ScrollView,
   useWindowDimensions,
+  StyleSheet,
 } from 'react-native';
 import React, {useState, useEffect} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -30,6 +31,9 @@ const MyPageMyCharger = () => {
   const [isReady, setIsReady] = useState(false);
 
   const dispatch = useDispatch();
+
+  const layout = useWindowDimensions();
+  const WIDTH = (layout.width - 32 - 48) / 4;
 
   const [showModel, setShowModel] = useState(false);
   // const [showModelList, setShowModelList] = useState<string[]>();
@@ -74,6 +78,34 @@ const MyPageMyCharger = () => {
     }
   };
 
+  const _setOption = (state: any, data: string, setState: any) => {
+    console.log(state, data);
+    let temp = [...state];
+    const res = temp.filter((item, index) => item === data);
+    if (res.length > 0) {
+      const res = temp.filter((item, index) => item !== data);
+      setState(res);
+    } else {
+      let temp2: string[] = [...state];
+      temp2.push(data);
+      setState(temp2);
+    }
+  };
+
+  const _getColor = (state: string[], data: any) => {
+    const temp = state.filter((item, index) => item === data);
+    if (temp.length > 0) {
+      return '#07B3FD';
+    } else return '#333333';
+  };
+
+  const _getOpasity = (state: string[], data: any) => {
+    const temp = state.filter((item, index) => item === data);
+    if (temp.length > 0) {
+      return 1;
+    } else return 0.3;
+  };
+
   useEffect(() => {
     setSelectedModel('');
   }, [selectedBrand]);
@@ -85,7 +117,6 @@ const MyPageMyCharger = () => {
     } else setIsReady(false);
   }, [selectedBrand, selectedModel, type]);
 
-  const layout = useWindowDimensions();
   const nav = useNavigation<commonTypes.navi>();
   return (
     <SafeAreaView style={{...GlobalStyles.safeAreaStyle}}>
@@ -234,6 +265,158 @@ const MyPageMyCharger = () => {
             <Title text="충전기 타입" />
             <View
               style={{
+                justifyContent: 'center',
+                marginTop: 23,
+              }}>
+              <View style={{marginBottom: 14.5}}>
+                <Text
+                  style={{
+                    fontFamily: FontList.PretendardRegular,
+                    fontSize: 16,
+                    color: '#333333',
+                  }}>
+                  충전기 타입
+                </Text>
+              </View>
+              <View
+                style={{
+                  marginTop: 2,
+                  alignItems: 'center',
+                  flexDirection: 'row',
+                  flexWrap: 'wrap',
+                }}>
+                <View style={{flex: 1}}>
+                  <View
+                    style={{
+                      height: WIDTH,
+                      ...styles.warpper,
+                    }}>
+                    {ChargerType.chargerLogo.map(
+                      (item, index) =>
+                        index < 4 && (
+                          <Pressable
+                            onPress={() => {
+                              setType(ChargerType.chargerType[index]);
+                            }}
+                            style={{
+                              ...styles.innerView,
+                              borderWidth: 1,
+                              opacity:
+                                type === ChargerType.chargerType[index]
+                                  ? 1
+                                  : 0.3,
+                              borderColor:
+                                type === ChargerType.chargerType[index]
+                                  ? '#333333'
+                                  : '#DBDBDB',
+                              borderRadius: 4,
+                              marginRight: index < 3 ? 16 : 0,
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}>
+                            <Image
+                              source={item}
+                              resizeMode={'contain'}
+                              style={{width: '80%', height: '80%'}}
+                            />
+                          </Pressable>
+                        ),
+                    )}
+                  </View>
+
+                  <View
+                    style={{
+                      ...styles.warpper,
+                    }}>
+                    {ChargerType.chargerType.map(
+                      (item, index) =>
+                        index < 4 && (
+                          <View
+                            style={{
+                              ...styles.innerView,
+                              marginRight: index < 3 ? 16 : 0,
+                            }}>
+                            <Text
+                              style={{
+                                fontFamily: FontList.PretendardRegular,
+                                fontSize: 12,
+                                color: '#333333',
+                              }}>
+                              {item}
+                            </Text>
+                          </View>
+                        ),
+                    )}
+                  </View>
+                  {/* 두 번째 라인 */}
+                  <View
+                    style={{
+                      height: WIDTH,
+                      ...styles.warpper,
+                      marginTop: 15,
+                    }}>
+                    {ChargerType.chargerLogo.map(
+                      (item, index) =>
+                        index > 3 && (
+                          <Pressable
+                            onPress={() => {
+                              setType(ChargerType.chargerType[index]);
+                            }}
+                            style={{
+                              ...styles.innerView,
+                              borderWidth: 1,
+                              opacity:
+                                type === ChargerType.chargerType[index]
+                                  ? 1
+                                  : 0.3,
+                              borderColor:
+                                type === ChargerType.chargerType[index]
+                                  ? '#333333'
+                                  : '#DBDBDB',
+                              borderRadius: 4,
+                              marginRight: 48,
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}>
+                            <Image
+                              source={item}
+                              resizeMode={'contain'}
+                              style={{width: '80%', height: '80%'}}
+                            />
+                          </Pressable>
+                        ),
+                    )}
+                  </View>
+
+                  <View
+                    style={{
+                      ...styles.warpper,
+                    }}>
+                    {ChargerType.chargerType.map(
+                      (item, index) =>
+                        index > 3 && (
+                          <View
+                            style={{
+                              ...styles.innerView,
+                              marginRight: 48,
+                            }}>
+                            <Text
+                              style={{
+                                fontFamily: FontList.PretendardRegular,
+                                fontSize: 12,
+                                color: '#333333',
+                              }}>
+                              {item}
+                            </Text>
+                          </View>
+                        ),
+                    )}
+                  </View>
+                </View>
+              </View>
+            </View>
+            {/* <View
+              style={{
                 marginTop: 2,
                 alignItems: 'center',
                 flexDirection: 'row',
@@ -278,7 +461,7 @@ const MyPageMyCharger = () => {
                   </View>
                 </View>
               ))}
-            </View>
+            </View> */}
           </View>
         </View>
       </ScrollView>
@@ -290,11 +473,9 @@ const MyPageMyCharger = () => {
             } else {
               dispatch(
                 setUserInfo({
-                  userInfo: {
-                    car_brand: selectedBrand,
-                    car_model: selectedModel,
-                    chgerType: [type],
-                  },
+                  car_brand: selectedBrand,
+                  car_model: selectedModel,
+                  chgerType: [type],
                 }),
               );
               nav.navigate('Home');
@@ -331,3 +512,15 @@ const MyPageMyCharger = () => {
 };
 
 export default MyPageMyCharger;
+
+const styles = StyleSheet.create({
+  warpper: {
+    flexDirection: 'row',
+    // marginHorizontal: 16,
+  },
+  innerView: {
+    flex: 1 / 4,
+    // backgroundColor: 'gray',
+    alignItems: 'center',
+  },
+});

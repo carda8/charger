@@ -11,13 +11,19 @@ import React from 'react';
 import {_getHeight, _getWidth} from 'constants/utils';
 import {useNavigation} from '@react-navigation/native';
 import {commonTypes} from '@types';
+import {BottomSheetModalMethods} from '@gorhom/bottom-sheet/lib/typescript/types';
 
-const SearchBox = () => {
+interface props {
+  bottomSheetRef: React.RefObject<BottomSheetModalMethods>;
+}
+
+const SearchBox = ({bottomSheetRef}: props) => {
   const layout = useWindowDimensions();
   const nav = useNavigation<commonTypes.navi>();
   return (
     <Pressable
       onPress={() => {
+        bottomSheetRef.current?.close();
         nav.navigate('SearchMain');
       }}
       style={{

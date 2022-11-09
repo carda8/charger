@@ -324,7 +324,13 @@ const AccountCarInfo = () => {
                         resizeMode={'contain'}
                       />
                     </Pressable>
-                    <Text style={{textAlign: 'center', width: 72}}>
+                    <Text
+                      style={{
+                        textAlign: 'center',
+                        width: 73,
+                        fontFamily: FontList.PretendardRegular,
+                        fontSize: 12,
+                      }}>
                       {ChargerType.chargerType[idx]}
                     </Text>
                   </View>

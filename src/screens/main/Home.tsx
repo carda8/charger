@@ -11,6 +11,7 @@ import {
   PermissionsAndroid,
   Platform,
 } from 'react-native';
+import {check, PERMISSIONS, RESULTS} from 'react-native-permissions';
 import React, {useState, useEffect, useRef} from 'react';
 import {_getHeight, _getWidth} from 'constants/utils';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -26,6 +27,7 @@ import {commonTypes} from '@types';
 import MyModal from '@components/MyModal';
 import Geolocation from 'react-native-geolocation-service';
 import {setCurrentUserLocation} from 'redux/reducers/locationReducer';
+import Loading from '@components/Loading';
 
 interface path {
   [key: string]: ImageSourcePropType;
@@ -37,12 +39,15 @@ interface path {
 
 const Home = () => {
   const {userInfo} = useSelector((state: RootState) => state.authReducer);
-  console.log('userInfo', userInfo);
+  // const {bottomIdx} = useSelector((state: RootState) => state.navReducer);
+  // const {currentUserLocation} = useSelector(
+  //   (state: RootState) => state.locationReducer,
+  // );
   const nav = useNavigation<commonTypes.navi>();
   const dispatch = useDispatch();
-  const {bottomIdx} = useSelector((state: RootState) => state.navReducer);
   const isFocused = useIsFocused();
   const [visible, setVisible] = useState(false);
+  const [modal, setModal] = useState(false);
 
   const imgPath: path = {
     main1: require('@assets/main_near.png'),
@@ -74,8 +79,10 @@ const Home = () => {
         return;
     }
   };
+
   const _geoCallback = (res: any) => {
-    console.log(res);
+    console.log('_geoCallback', res);
+    setModal(true);
     Geolocation.getCurrentPosition(
       position => {
         dispatch(
@@ -87,8 +94,10 @@ const Home = () => {
           }),
         );
         console.log(position);
+        setModal(false);
       },
       error => {
+        setModal(false);
         // See error code charts below.
         console.log(error.code, error.message);
       },
@@ -104,12 +113,15 @@ const Home = () => {
     } else {
       await PermissionsAndroid.request(
         PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-      ).then(res => _geoCallback(res));
+      )
+        .then(res => _geoCallback(res))
+        .catch(err => setModal(false));
     }
   };
 
   useEffect(() => {
     _getPermission();
+    console.log('### USER INFO HOME', userInfo);
   }, []);
 
   useEffect(() => {
@@ -172,6 +184,7 @@ const Home = () => {
         negativeTitle="아니요"
       />
       <BottomNav />
+      <Loading visible={modal} />
     </SafeAreaView>
   );
 };

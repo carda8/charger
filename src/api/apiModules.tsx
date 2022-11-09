@@ -2,7 +2,7 @@ import {API} from './API';
 import {ErrorHandler} from './ErrorHandler';
 
 export const _getAPI = async (url: string, params: any) => {
-  const resGet = await API.get(url)
+  const resGet = await API.get(url, {params: params})
     .then(result => {
       return result;
     })

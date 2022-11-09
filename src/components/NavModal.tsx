@@ -10,34 +10,42 @@ import {
 import React, {useCallback} from 'react';
 import FontList from 'constants/FontList';
 import {_getHeight, _getWidth} from 'constants/utils';
-import MyModal from './MyModal';
+import {useSelector} from 'react-redux';
+import {RootState} from 'redux/store';
 interface props {
   visible: boolean;
   text?: string;
   title: string;
   coor?: any;
+  item?: any;
   //버튼이 하나인 경우 positive 사용
   setVisible: React.Dispatch<React.SetStateAction<boolean>>;
   // positivePress?: () => void;
 }
 
-const NavModal = ({visible, text, title, setVisible, coor}: props) => {
+const NavModal = ({visible, text, title, setVisible, coor, item}: props) => {
   //   const GOOGLE_PLAY_STORE_LINK = 'market://details?id=io.github.Antodo';
   //route?y=${“도착”}&x=${“도착”}&sX=${“출발”}&sY=${“출발”}
+  const {currentUserLocation} = useSelector(
+    (state: RootState) => state.locationReducer,
+  );
 
   //dummy
-  const dumLat = 37.5246544;
-  const dumLon = 126.8881368;
-  console.log('## coor', coor);
+  const USER_Lat = currentUserLocation?.latitude
+    ? currentUserLocation.latitude
+    : 37.5246544;
+  const USER_Lon = currentUserLocation?.longitude
+    ? currentUserLocation.longitude
+    : 126.8881368;
 
   // 카카오맵 스킴
   const KAKAO_MAP_SCHEMA = coor?.latitude
-    ? `kakaomap://route?sp=${dumLat},${dumLon}&ep=${coor.latitude},${coor.longitude}&by=CAR`
+    ? `kakaomap://route?sp=${USER_Lat},${USER_Lon}&ep=${coor.latitude},${coor.longitude}&by=CAR`
     : 'kakaomap://route?sp=37.537229,127.005515&ep=37.4979502,127.0276368&by=CAR';
 
   //티앱 스킴
   const T_MAP_SCHEMA = coor?.latitude
-    ? `tmap://route?startx=${dumLon}&starty=${dumLat}&goalx=${coor.longitude}&goaly=${coor.latitude}`
+    ? `tmap://route?startx=${USER_Lon}&starty=${USER_Lat}&goalx=${coor.longitude}&goaly=${coor.latitude}`
     : 'tmap://route?startx=129.0756416&starty=35.1795543&goalx=127.005515&goaly=37.537229';
 
   const GOOGLE_STORE_KAKAO_MAP = 'market://details?id=net.daum.android.map';
@@ -153,4 +161,4 @@ const NavModal = ({visible, text, title, setVisible, coor}: props) => {
   );
 };
 
-export default NavModal;
+export default React.memo(NavModal);
