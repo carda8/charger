@@ -177,6 +177,7 @@ const FavStationMain = () => {
       </View>
       <NaverMapView
         zoomControl={false}
+        rotateGesturesEnabled={false}
         tiltGesturesEnabled={false}
         style={{
           zIndex: -1,

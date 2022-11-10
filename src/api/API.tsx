@@ -20,8 +20,13 @@ const axiosConfig: AxiosRequestConfig = {
   },
   transformResponse: data => {
     if (data) {
-      const parsedReq = JSON.parse(data);
-      return parsedReq;
+      // console.log('## ORIGIN API RES DATA', data);
+      try {
+        const parsedReq = JSON.parse(data);
+        if (parsedReq) return parsedReq;
+      } catch {
+        return data;
+      }
     }
   },
 };

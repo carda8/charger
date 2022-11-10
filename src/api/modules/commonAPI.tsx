@@ -32,4 +32,19 @@ export default {
     const res = await _postAPI('search/stations', params);
     return res;
   },
+
+  _postPathRecommend: async (params: any) => {
+    const res = await _postAPI('recommend/stations', params);
+    return res;
+  },
+
+  _getPathLine: async (params: any) => {
+    const res = await _getAPI('search/route', params);
+    return res;
+  },
+
+  _getAddrByCoor: async (params: any) => {
+    const res = await _getAPI('search/address/geo', params);
+    return res;
+  },
 };

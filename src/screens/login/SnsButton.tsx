@@ -67,11 +67,12 @@ const SnsButton = ({text, snsType, navigation, idx}: props) => {
               chgerType: resData.chgerType[0],
             }),
           );
-          navigation.navigate('Home');
-        } else navigation.navigate('AccountFinish');
+        }
+        navigation.navigate('Home');
         console.log('check user res', res);
       })
       .catch(err => {
+        navigation.navigate('AccountFinish');
         console.log('check user err', err);
       });
     return;
@@ -124,7 +125,7 @@ const SnsButton = ({text, snsType, navigation, idx}: props) => {
   const getKakaoProfile = async (token: string): Promise<void> => {
     const profile: KakaoProfile = await getProfile(token);
     console.log('profile', profile);
-    if (profile) {
+    if (profile.email) {
       _checkUser(profile, profile.email);
     }
   };

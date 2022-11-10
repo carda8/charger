@@ -12,12 +12,13 @@ export const _getAPI = async (url: string, params: any) => {
         url: url,
         params: params,
       };
-      ErrorHandler(data);
+      // ErrorHandler(data);
       console.log('## ERROR GET API');
       console.log('## ERROR URL', url);
       console.log('## ERROR PARAMS ', params);
+      return e;
     });
-  if (resGet) return resGet;
+  return resGet;
 };
 
 export const _postAPI = async (url: string, params: any) => {
@@ -33,12 +34,13 @@ export const _postAPI = async (url: string, params: any) => {
         url: url,
         params: params,
       };
-      ErrorHandler(data);
+      // ErrorHandler(data);
       console.log('## ERROR GET API', e);
       console.log('## ERROR URL', url);
       console.log('## ERROR PARAMS ', params);
+      return e;
     });
-  if (resGet) return resGet;
+  return resGet;
 };
 
 export const _delAPI = async (url: string, params: any) => {
@@ -52,10 +54,12 @@ export const _delAPI = async (url: string, params: any) => {
         url: url,
         params: params,
       };
-      ErrorHandler(data);
+
+      // ErrorHandler(data);
       console.log('## ERROR GET API');
       console.log('## ERROR URL', url);
       console.log('## ERROR PARAMS ', params);
+      return e;
     });
-  if (resGet) return resGet;
+  return resGet;
 };

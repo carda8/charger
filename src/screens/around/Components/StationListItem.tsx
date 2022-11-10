@@ -27,6 +27,7 @@ interface props {
   clickedMarker?: any;
   setClickedMarker?: Dispatch<SetStateAction<any>>;
   bottomSheetRef?: React.RefObject<BottomSheetModalMethods>;
+  isPath?: boolean;
 }
 
 const StationListItem = ({
@@ -36,27 +37,26 @@ const StationListItem = ({
   style,
   goal,
   bottomSheetRef,
-  clickedMarker,
   setClickedMarker,
-  isRecent,
+  isPath,
 }: props) => {
   const [favorite, setFavorite] = useState(false);
   const dispatch = useDispatch();
-  const isClosed = modules._isClosed(item);
+  const isClosed = isPath ? false : modules._isClosed(item);
   const nav = useNavigation<commonTypes.navi>();
-  console.log('####### item', item);
+
   const _sortChgerBySpeed = (item: any) => {
-    //   현 데이터에서 chgerTypeInfo 는 총 7개가 있
-    //   고 일반적으로 DC는 급속, AC는 완속으로 나누어 집니다
-    // 다만 충전기 타입에서 급속과 같이 완속도 지원하는 충전기도 있습니다.
-    // (chgerType=03, DC차데모+AC3상, 또는 chgerType=06) 예시로 statId = "CPTEST01" 경우가 참고가 되실것 같습니다
-    //03, 06인 경우
-    //dc는 급속, ac는 완속
+    //  현 데이터에서 chgerTypeInfo 는 총 7개가 있
+    //  고 일반적으로 DC는 급속, AC는 완속으로 나누어 집니다
+    //  다만 충전기 타입에서 급속과 같이 완속도 지원하는 충전기도 있습니다.
+    //  (chgerType=03, DC차데모+AC3상, 또는 chgerType=06) 예시로 statId = "CPTEST01" 경우가 참고가 되실것 같습니다
+    //  03, 06인 경우
+    //  dc는 급속, ac는 완속
 
     let normal = 0;
     let fast = 0;
 
-    item.chargers.map((item, index) => {
+    item?.chargers.map((item, index) => {
       if (item.chgerTypeInfo === 'AC완속' || item.chgerTypeInfo === 'AC3상')
         normal++;
       else fast++;
@@ -71,6 +71,13 @@ const StationListItem = ({
   };
 
   const _getChgerImg = (item: any) => {
+    let chgerImgTemp = {
+      dcCombo: false,
+      dcDemo: false,
+      ac3: false,
+      ac5: false,
+    };
+    if (isPath) return chgerImgTemp;
     let chgerImg = {
       dcCombo: false,
       dcDemo: false,
@@ -163,7 +170,7 @@ const StationListItem = ({
                 fontSize: 16,
                 color: '#333333',
               }}>
-              {item?.statNm ? item?.statNm : '서문여자고등학교'}
+              {item?.statNm ? item?.statNm : '강남역 12번 출구'}
               {'  '}
               <Text
                 style={{
@@ -235,7 +242,7 @@ const StationListItem = ({
             fontFamily: FontList.PretendardRegular,
             color: '#959595',
           }}>
-          {item?.addr ? item?.addr : '강남구 서초동 방배로 33-3'}
+          {item?.addr ? item?.addr : '강남구 테헤란로 8길 22'}
         </Text>
       </View>
       {item?.parkingFree && (
@@ -293,7 +300,7 @@ const StationListItem = ({
                 fontFamily: FontList.PretendardRegular,
                 color: '#333333',
               }}>
-              급속 {_sortChgerBySpeed(item).fast}
+              급속 {isPath ? 1 : _sortChgerBySpeed(item).fast}
             </Text>
             <Text
               style={{
@@ -307,7 +314,7 @@ const StationListItem = ({
                 fontFamily: FontList.PretendardRegular,
                 color: '#333333',
               }}>
-              완속 {_sortChgerBySpeed(item).normal}
+              완속 {isPath ? 1 : _sortChgerBySpeed(item).normal}
             </Text>
           </View>
         </View>

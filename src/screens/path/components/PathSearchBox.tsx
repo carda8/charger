@@ -223,7 +223,7 @@ const PathSearchBox = ({
           </Text>
         </Pressable>
 
-        <Pressable
+        {/* <Pressable
           onPress={() => {
             nav.navigate('FavStationMain');
           }}
@@ -257,7 +257,7 @@ const PathSearchBox = ({
             }}>
             즐겨찾기
           </Text>
-        </Pressable>
+        </Pressable> */}
       </View>
     </View>
   );

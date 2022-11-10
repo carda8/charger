@@ -13,7 +13,7 @@ import BottomNav from '@components/BottomNav';
 import {useDispatch, useSelector} from 'react-redux';
 import {RouteProp, useIsFocused, useRoute} from '@react-navigation/native';
 import {setBottomIdx} from 'redux/reducers/navReducer';
-import NaverMapView, {Marker, Path, Polygon, Polyline} from 'react-native-nmap';
+import NaverMapView, {Marker} from 'react-native-nmap';
 import {GestureHandlerRootView, ScrollView} from 'react-native-gesture-handler';
 import {_getHeight, _getWidth} from 'constants/utils';
 import BottomButton from '@components/BottomButton';
@@ -26,29 +26,44 @@ import {RootState} from 'redux/store';
 import {Shadow} from 'react-native-shadow-2';
 import FontList from 'constants/FontList';
 import commonAPI from 'api/modules/commonAPI';
-import {setGoal, setStart} from 'redux/reducers/pathReducer';
-import Loading from '@components/Loading';
+import {setGoal} from 'redux/reducers/pathReducer';
 
 const PathMain = () => {
   const dispatch = useDispatch();
+  const isFocused = useIsFocused();
   const [showRecomend, setShowRecomend] = useState(false);
   const {goal, start} = useSelector((state: RootState) => state.pathReducer);
-  const {currentUserLocation} = useSelector(
-    (state: RootState) => state.locationReducer,
-  );
   const [pickedRecomend, setPickedRecomend] = useState<number>();
   const [pickedMarker, setPickedMarker] = useState<number>();
   const [recomandList, setRecomandList] = useState([]);
-  const [lineData, setLineData] = useState([]);
   const layout = useWindowDimensions();
-  const [modal, setModal] = useState(false);
   const P0 = {latitude: 37.564362, longitude: 126.977011};
 
+  // const P1 = {
+  //   latitude: 37.573563090476725,
+  //   longitude: 126.98308669525267,
+  //   zoom: 15,
+  // };
+  // const P2 = {
+  //   latitude: 37.561682976455955,
+  //   longitude: 126.99405480283474,
+  //   zoom: 15,
+  // };
+  // const P3 = {
+  //   latitude: 37.54731262277241,
+  //   longitude: 126.96262053836222,
+  //   zoom: 15,
+  // };
+  // const P4 = {
+  //   latitude: 37.66135049861896,
+  //   longitude: 126.86227420843852,
+  //   zoom: 15,
+  // };
   const [showOnlyMap, setShowOnlyMap] = useState(false);
 
   const [center, setCenter] = useState<any>({
-    latitude: currentUserLocation.latitude,
-    longitude: currentUserLocation.longitude,
+    latitude: 37.564362,
+    longitude: 126.977011,
     zoom: 16,
   });
 
@@ -56,14 +71,21 @@ const PathMain = () => {
     useRoute<RouteProp<commonTypes.RootStackParamList, 'PathMain'>>().params
       ?.item;
 
+  console.log('route', route);
+  console.log('goal', goal);
+  console.log('start', start);
+
   const [visible, setVisible] = useState(false);
+  // ref
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const [pick, setPick] = useState(false);
+  // variables
   const snapPoints = useMemo(() => ['40%'], []);
 
   const handleSheetChanges = useCallback((index: number) => {
     console.log('handleSheetChanges', index);
   }, []);
+
   const sheetStyle = useMemo(
     () => ({
       ...styles.sheetContainer,
@@ -72,16 +94,10 @@ const PathMain = () => {
     [],
   );
 
-  const goalCoor = {
-    latitude: 37.498418405021695,
-    longitude: 127.02862499003908,
-    zoom: 16,
-  };
-
   const _getRecomand = async () => {
-    let data = {
+    const data = {
       route: [
-        [currentUserLocation.latitude, currentUserLocation.longitude],
+        [37.56392846610939, 126.97665795422165],
         [37.498418405021695, 127.02862499003908],
       ],
       distance: 1,
@@ -95,105 +111,39 @@ const PathMain = () => {
       .catch(err => console.log('path recomand  ERR ', err));
   };
 
-  // 경로 표시
-  const _getPath = async () => {
-    setModal(true);
-    let data = {
-      start: `${currentUserLocation.longitude},${currentUserLocation.latitude}`,
-      end: '127.02862499003908,37.498418405021695',
-    };
-
-    if (center) {
-      data = {
-        start: `${currentUserLocation.longitude},${currentUserLocation.latitude}`,
-        end: `${center.longitude},${center.latitude}`,
-      };
+  useEffect(() => {
+    if (isFocused) {
+      dispatch(setBottomIdx(2));
     }
-    console.log('_getPath', data);
-    await commonAPI
-      ._getPathLine(data)
-      .then(res => {
-        if (res.data.route) {
-          let temp = [
-            {
-              latitude: currentUserLocation.latitude,
-              longitude: currentUserLocation.longitude,
-            },
-          ];
-          res.data.route.map((item, index) => {
-            temp.push({latitude: item[1], longitude: item[0]});
-          });
-          console.log('temp', temp);
-          setLineData(temp);
-        }
-      })
-      .catch(err => console.log('paht ERR', err));
-  };
+  }, [isFocused]);
+
+  useEffect(() => {
+    if (goal && recomandList.length > 0) {
+      bottomSheetRef.current?.present();
+    }
+  }, [isFocused]);
+
+  useEffect(() => {
+    if (recomandList.length > 0 && recomandList[pickedRecomend]) {
+      setCenter({
+        latitude: recomandList[pickedRecomend].location.lat,
+        longitude: recomandList[pickedRecomend].location.lon,
+        zoom: 16,
+      });
+    }
+  }, [pickedRecomend]);
 
   useEffect(() => {
     if (route) {
-      setCenter({
-        latitude: goalCoor.latitude,
-        longitude: goalCoor.longitude,
-        zoom: 16,
-      });
-      bottomSheetRef.current?.present();
+      setCenter({latitude: 37.498418405021695, longitude: 127.02862499003908});
+      _getRecomand();
     }
   }, [route]);
 
   useEffect(() => {
-    if (showRecomend) {
-      _getRecomand();
-    }
-  }, [showRecomend]);
-
-  // useEffect(() => {
-  //   _getPath();
-  // }, []);
-
-  useEffect(() => {
-    if (center && showRecomend) {
-      _getPath();
-    }
-  }, [center]);
-
-  const _getAddrByCoor = async () => {
-    const param = {
-      x: currentUserLocation.longitude,
-      y: currentUserLocation.latitude,
-    };
-    await commonAPI
-      ._getAddrByCoor(param)
-      .then(res => {
-        if (res?.data?.documents?.length > 0) {
-          dispatch(setStart(res.data.documents[0].address_name));
-        }
-        console.log('add res', res.data.documents);
-      })
-      .catch(err => console.log('add err', err));
-  };
-
-  useEffect(() => {
-    if (currentUserLocation) {
-      _getAddrByCoor();
-    }
-  }, []);
-
-  useEffect(() => {
-    if (lineData?.length > 0) {
-      setTimeout(() => {
-        mapRef?.current?.animateToCoordinates(lineData, {
-          top: 500,
-          bottom: 500,
-          left: 275,
-          right: 275,
-        });
-        setModal(false);
-      }, 200);
-    }
-  }, [lineData]);
-
-  const mapRef = useRef();
+    if (pickedMarker && recomandList.length > 0)
+      bottomSheetRef.current?.present();
+  }, [pickedMarker]);
 
   return (
     <GestureHandlerRootView style={{flex: 1}}>
@@ -215,13 +165,13 @@ const PathMain = () => {
           )}
 
           <NaverMapView
-            ref={mapRef}
             compass={false}
             rotateGesturesEnabled={false}
             onMapClick={e => {
               console.log('coor', e);
               if (showOnlyMap) {
                 setShowOnlyMap(!showOnlyMap);
+                if (start && goal) bottomSheetRef.current?.present();
               }
             }}
             zoomControl={false}
@@ -230,22 +180,20 @@ const PathMain = () => {
               width: '100%',
               height: layout.height - _getHeight(60),
             }}
-            onCameraChange={e => console.log('changed', e)}
             scaleBar={false}
             showsMyLocationButton={false}
             tiltGesturesEnabled={false}
-            center={center}>
+            center={center}
+            onTouch={(e: any) => console.log(e.navtiveEvent)}>
             <Marker
               pinColor="blue"
-              coordinate={currentUserLocation}
+              coordinate={{...P0}}
               image={require('@assets/my_location.png')}
               width={20}
               height={20}
               onClick={() => console.log('onClick! p0')}
-              zIndex={100}
             />
-            {/* 도착지 마커 */}
-            {route && (
+            {recomandList.length > 0 && (
               <Marker
                 coordinate={{
                   latitude: 37.498418405021695,
@@ -275,17 +223,8 @@ const PathMain = () => {
                 </ImageBackground>
               </Marker>
             )}
-            {/* 도착지 목적지 라인 */}
-            {lineData.length > 0 && showRecomend && (
-              <Path
-                coordinates={lineData}
-                width={1.5}
-                color={'red'}
-                outlineColor={'red'}
-              />
-            )}
-            {/* 추천 중전기 마커들 */}
-            {recomandList.length > 0 &&
+
+            {showRecomend &&
               recomandList.map((item, index) => (
                 <Marker
                   key={index}
@@ -296,12 +235,7 @@ const PathMain = () => {
                   width={32}
                   height={48}
                   onClick={() => {
-                    console.log('item', item);
-                    setCenter({
-                      latitude: item.location.lat,
-                      longitude: item.location.lon,
-                      zoom: 14,
-                    });
+                    setPickedMarker(index);
                   }}>
                   <ImageBackground
                     source={require('@assets/marker_normal.png')}
@@ -310,16 +244,16 @@ const PathMain = () => {
                       height: 48,
                       alignItems: 'center',
                       justifyContent: 'center',
-                      paddingBottom: '48%',
+                      paddingBottom: '42%',
                     }}
                     resizeMode="contain">
                     <Text
                       style={{
                         color: 'white',
-                        fontSize: 12,
+                        fontSize: 16,
                         fontFamily: FontList.PretendardBold,
                       }}>
-                      {item.chargers.length > 9 ? '9+' : item.chargers.length}
+                      {item?.chargers.length > 9 ? '9+' : item?.chargers.length}
                     </Text>
                   </ImageBackground>
                 </Marker>
@@ -329,34 +263,22 @@ const PathMain = () => {
             style={sheetStyle}
             ref={bottomSheetRef}
             animateOnMount={true}
-            footerComponent={() => (
-              <Pressable
-                onPress={() => {
-                  setShowRecomend(true);
-                  bottomSheetRef.current?.close();
-                }}
-                style={[
-                  {
-                    height: 54,
-                    backgroundColor: '#00239C',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: 8,
-                    marginTop: 'auto',
-                    marginBottom: 22,
-                    marginHorizontal: 16,
-                  },
-                ]}>
-                <Text
-                  style={{
-                    fontFamily: FontList.PretendardBold,
-                    fontSize: 16,
-                    color: 'white',
-                  }}>
-                  경로 설정
-                </Text>
-              </Pressable>
-            )}
+            footerComponent={() =>
+              showRecomend && pickedMarker ? (
+                <BottomButton
+                  text="도착지 설정"
+                  style={{marginHorizontal: 16, marginTop: 8}}
+                  setVisible={setVisible}
+                />
+              ) : (
+                <BottomButton
+                  setRecomend={setShowRecomend}
+                  text="경로 설정"
+                  style={{marginHorizontal: 16}}
+                  setVisible={setVisible}
+                />
+              )
+            }
             index={0}
             snapPoints={snapPoints}
             onChange={handleSheetChanges}>
@@ -364,7 +286,7 @@ const PathMain = () => {
               style={{borderBottomWidth: 0}}
               bottomSheetRef={bottomSheetRef}
               setPick={setPick}
-              item={route}
+              item={pickedMarker ? recomandList[pickedMarker] : route}
               pick={pick}
               goal={goal}
               isPath={true}
@@ -400,15 +322,7 @@ const PathMain = () => {
                         marginHorizontal: 8,
                       }}>
                       <Pressable
-                        onPress={() => {
-                          setPickedRecomend(index);
-                          dispatch(setGoal(item.addr));
-                          setCenter({
-                            latitude: item.location.lat,
-                            longitude: item.location.lon,
-                            zoom: 14,
-                          });
-                        }}
+                        onPress={() => setPickedRecomend(index)}
                         key={index}
                         style={{
                           flex: 1,
@@ -518,7 +432,6 @@ const PathMain = () => {
             title="길안내 연결"
           />
           <BottomNav />
-          <Loading visible={modal} />
         </SafeAreaView>
       </BottomSheetModalProvider>
     </GestureHandlerRootView>

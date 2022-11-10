@@ -50,10 +50,13 @@ const AroundMain = () => {
     useRoute<RouteProp<commonTypes.RootStackParamList, 'AroundMain'>>().params
       ?.res;
   console.log(':::::::::: res', res);
+  const coverRef = useRef(0);
 
   const {currentUserLocation} = useSelector(
     (state: RootState) => state.locationReducer,
   );
+  const [reload, setReload] = useState(false);
+  const [reloadCover, setReloadCover] = useState<any>();
 
   const [repair, setRepair] = useState(false);
 
@@ -155,6 +158,9 @@ const AroundMain = () => {
       console.log('## cover', covering);
       _getAroundStation();
     }
+    coverRef.current = coverRef.current + 1;
+    if (coverRef.current === 3) reloadRef.current = reloadRef.current + 2;
+    else reloadRef.current = reloadRef.current + 1;
   }, [covering]);
 
   useEffect(() => {
@@ -195,6 +201,8 @@ const AroundMain = () => {
     if (isDc && !isAc) return require('@assets/marker_fast.png');
     if (!isAc && !isDc) return require('@assets/marker_normal.png');
   };
+
+  const reloadRef = useRef(0);
 
   const arrFliter = ['충전속도', '충전소 유무료', '주차요금', '현재이용가능'];
 
@@ -265,6 +273,7 @@ const AroundMain = () => {
       <NaverMapView
         compass={false}
         tiltGesturesEnabled={false}
+        rotateGesturesEnabled={false}
         showsMyLocationButton={false}
         style={{
           flex: 1,
@@ -273,9 +282,13 @@ const AroundMain = () => {
         zoomControl={false}
         scaleBar={false}
         center={clickedMarker ? clickedMarker : undefined}
+        onInitialized={() => {}}
         onCameraChange={e => {
-          // console.log('### covering', covering);
-          setCovering(e.coveringRegion);
+          console.log('############### camera cha', e);
+          setReloadCover(e.coveringRegion);
+          if (reloadRef.current > 3) setReload(true);
+          console.log('rerere', reloadRef.current);
+          if (coverRef.current < 3) setCovering(e.coveringRegion);
           if (clickedMarker) setClickedMarker(undefined);
         }}
         onMapClick={e => bottomSheetRef.current?.close()}>
@@ -426,11 +439,71 @@ const AroundMain = () => {
       </Shadow>
 
       {/* 주변 충전기 버튼 */}
-      <StationCount
-        bottomSheetRef={bottomSheetRef}
-        stationList={stationList}
-        setPick={setPick}
-      />
+      {!reload ? (
+        <StationCount
+          bottomSheetRef={bottomSheetRef}
+          stationList={stationList}
+          setPick={setPick}
+        />
+      ) : (
+        <View
+          style={{
+            alignSelf: 'center',
+            position: 'absolute',
+            bottom: _getHeight(70),
+            // backgroundColor: 'gray',
+          }}>
+          <Shadow
+            distance={4}
+            stretch={true}
+            style={{
+              width: _getWidth(149),
+              height: _getHeight(40),
+            }}
+            containerStyle={{
+              flex: 1,
+            }}>
+            <Pressable
+              onPress={() => {
+                setCovering(reloadCover);
+                setReload(false);
+              }}
+              style={{
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: _getWidth(149),
+                height: _getHeight(40),
+                borderRadius: 46,
+                backgroundColor: '#00239C',
+                zIndex: 1000,
+              }}>
+              <Text
+                style={{
+                  includeFontPadding: false,
+                  fontFamily: FontList.PretendardRegular,
+                  fontSize: 16,
+                  color: 'white',
+                }}>
+                주변 충전소 보기
+              </Text>
+            </Pressable>
+          </Shadow>
+        </View>
+      )}
+
+      {/*       
+<Pressable
+          onPress={() => {
+            setCovering(reloadCover);
+            setReload(false);
+          }}
+          style={{
+            position: 'absolute',
+            bottom: 60,
+            width: 100,
+            height: 100,
+            backgroundColor: 'teal',
+          }}></Pressable> */}
 
       {/* 길안내 연결 모달 */}
       <NavModal
