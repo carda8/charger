@@ -70,7 +70,6 @@ const HomeHeader = ({title, subTitle, goBack, backTitle}: props) => {
             alignItems: 'center',
           }}>
           <Image
-            // source={require('@assets/carinfo_false.png')}
             source={
               userInfo?.car_brand
                 ? require('@assets/carinfo_true.png')
@@ -79,7 +78,7 @@ const HomeHeader = ({title, subTitle, goBack, backTitle}: props) => {
             style={{width: _getWidth(89), height: _getHeight(89)}}
             resizeMode="contain"
           />
-          <View style={{marginLeft: 24}}>
+          <View style={{marginLeft: 24, flex: 1}}>
             <Text
               style={{fontFamily: FontList.PretendardLight, color: '#858585'}}>
               {/* 등록된 정보가 없습니다. */}
@@ -94,7 +93,7 @@ const HomeHeader = ({title, subTitle, goBack, backTitle}: props) => {
               {userInfo?.name ? userInfo?.name : '마이차저'}님
             </Text>
             {userInfo?.car_brand ? (
-              <View style={{flexDirection: 'row'}}>
+              <View style={{flexDirection: 'row', flex: 1}}>
                 <Text
                   style={{
                     fontFamily: FontList.PretendardMedium,

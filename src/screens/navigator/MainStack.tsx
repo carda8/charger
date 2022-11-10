@@ -38,10 +38,12 @@ const Stack = createNativeStackNavigator<commonTypes.RootStackParamList>();
 const MainStack = () => {
   return (
     <NavigationContainer>
-      <GestureHandlerRootView style={{flex: 1}}>
+      <GestureHandlerRootView
+        style={{flex: 1}}
+        renderToHardwareTextureAndroid={true}>
         <BottomSheetModalProvider>
           <Stack.Navigator
-            screenOptions={{headerShown: false, animation: 'default'}}
+            screenOptions={{headerShown: false}}
             initialRouteName={'Login'}>
             <Stack.Screen
               name="Login"

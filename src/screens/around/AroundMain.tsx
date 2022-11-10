@@ -22,7 +22,7 @@ import {
   useRoute,
 } from '@react-navigation/native';
 import {setBottomIdx} from 'redux/reducers/navReducer';
-import NaverMapView, {Marker} from 'react-native-nmap';
+import NaverMapView, {Align, Marker} from 'react-native-nmap';
 import {BottomSheetFlatList, BottomSheetModal} from '@gorhom/bottom-sheet';
 import {ScrollView} from 'react-native-gesture-handler';
 import {_getHeight, _getWidth} from 'constants/utils';
@@ -93,7 +93,10 @@ const AroundMain = () => {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const [pick, setPick] = useState<any>();
   // variables
-  const snapPoints = useMemo(() => [pick ? '40%' : '80%'], [pick]);
+  const snapPoints = useMemo(
+    () => [pick ? _getHeight(layout.height * 0.6) : '80%'],
+    [pick],
+  );
 
   // callbacks
   const handleSheetChanges = useCallback((index: number) => {
@@ -272,6 +275,8 @@ const AroundMain = () => {
       </View>
       <NaverMapView
         compass={false}
+        scaleBar={false}
+        zoomControl={false}
         tiltGesturesEnabled={false}
         rotateGesturesEnabled={false}
         showsMyLocationButton={false}
@@ -279,10 +284,7 @@ const AroundMain = () => {
           flex: 1,
         }}
         useTextureView={true}
-        zoomControl={false}
-        scaleBar={false}
         center={clickedMarker ? clickedMarker : undefined}
-        onInitialized={() => {}}
         onCameraChange={e => {
           console.log('############### camera cha', e);
           setReloadCover(e.coveringRegion);
@@ -306,7 +308,6 @@ const AroundMain = () => {
             key={index}
             width={32}
             height={48}
-            // animated={true}
             onClick={() => {
               console.log('## station info ::', item);
               setPick([item]);
@@ -316,11 +317,16 @@ const AroundMain = () => {
                 zoom: 16,
               });
             }}
+            caption={{text: '123'}}
+            image={_getMarkerImg(item)}
             coordinate={{
               latitude: Number(item.location.lat),
               longitude: Number(item.location.lon),
-            }}>
-            <ImageBackground
+            }}
+          />
+        ))}
+      </NaverMapView>
+      {/* <ImageBackground
               source={_getMarkerImg(item)}
               style={{
                 width: 32,
@@ -342,10 +348,7 @@ const AroundMain = () => {
                   ? '9+'
                   : item?.chargers.length}
               </Text>
-            </ImageBackground>
-          </Marker>
-        ))}
-      </NaverMapView>
+            </ImageBackground> */}
       <BottomSheetModal
         style={sheetStyle}
         ref={bottomSheetRef}

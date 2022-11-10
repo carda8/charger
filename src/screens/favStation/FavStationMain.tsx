@@ -85,7 +85,7 @@ const FavStationMain = () => {
           key={item.index}
           style={{
             flex: 1,
-            height: _getHeight(154),
+            height: 154,
             borderWidth: 1,
             borderColor: '#E6E6E6',
             borderRadius: 8,
@@ -94,11 +94,13 @@ const FavStationMain = () => {
             paddingTop: 8,
             paddingBottom: 12,
           }}>
-          <Image
-            source={require('@assets/star_on.png')}
-            style={{width: 14.6, height: 14, marginBottom: 10}}
-            resizeMode="contain"
-          />
+          <Pressable style={{backgroundColor: 'teal', alignSelf: 'flex-start'}}>
+            <Image
+              source={require('@assets/star_on.png')}
+              style={{width: 14.6, height: 14, marginBottom: 10}}
+              resizeMode="contain"
+            />
+          </Pressable>
           <Text
             style={{fontFamily: FontList.PretendardMedium, color: '#333333'}}>
             판교 테크노 밸리 주차장 {item.index}
@@ -175,7 +177,7 @@ const FavStationMain = () => {
           }}
         />
       </View>
-      <NaverMapView
+      {/* <NaverMapView
         zoomControl={false}
         rotateGesturesEnabled={false}
         tiltGesturesEnabled={false}
@@ -188,8 +190,8 @@ const FavStationMain = () => {
         showsMyLocationButton={false}
         center={center}
         onTouch={(e: any) => console.log(e.nativeEvent)}
-        useTextureView={true}
-        mapType={MapType.Basic}
+        // useTextureView={true}
+        // mapType={MapType.Basic}
         onMapClick={e => {
           // console.log('onMapClick', e);
           bottomSheetRef.current?.present();
@@ -228,7 +230,7 @@ const FavStationMain = () => {
               resizeMode="contain"></ImageBackground>
           </Marker>
         ))}
-      </NaverMapView>
+      </NaverMapView> */}
       {/*      <Marker
             coordinate={item}
             onClick={() => {
@@ -239,10 +241,9 @@ const FavStationMain = () => {
               });
             }}
           /> */}
-      <BottomSheetModal
+      {/* <BottomSheetModal
         style={sheetStyle}
         ref={bottomSheetRef}
-        animateOnMount={true}
         index={0}
         snapPoints={snapPoints}
         onChange={handleSheetChanges}>
@@ -282,7 +283,7 @@ const FavStationMain = () => {
           // ListFooterComponent={<BottomNav />}
           renderItem={item => renderItem(item)}
         />
-      </BottomSheetModal>
+      </BottomSheetModal> */}
       <BottomNav />
     </SafeAreaView>
   );
