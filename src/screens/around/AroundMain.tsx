@@ -6,9 +6,6 @@ import {
   ListRenderItem,
   useWindowDimensions,
   Image,
-  ImageBackground,
-  Keyboard,
-  Dimensions,
 } from 'react-native';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -40,51 +37,36 @@ import FontList from 'constants/FontList';
 import MyModal from '@components/MyModal';
 import Loading from '@components/Loading';
 import modules from 'constants/utils/modules';
+import {setAroundKeyData} from 'redux/reducers/aroundReducer';
 
 const AroundMain = () => {
   const dispatch = useDispatch();
-  const isFocused = useIsFocused();
-  const layout = useWindowDimensions();
-  const nav = useNavigation<commonTypes.navi>();
-  const res =
-    useRoute<RouteProp<commonTypes.RootStackParamList, 'AroundMain'>>().params
-      ?.res;
-  console.log(':::::::::: res', res);
-  const coverRef = useRef(0);
-
+  const {aroundKeyData} = useSelector(
+    (state: RootState) => state.aroundReducer,
+  );
   const {currentUserLocation} = useSelector(
     (state: RootState) => state.locationReducer,
   );
+  const isFocused = useIsFocused();
+  const layout = useWindowDimensions();
+  const nav = useNavigation<commonTypes.navi>();
+  // const res =
+  //   useRoute<RouteProp<commonTypes.RootStackParamList, 'AroundMain'>>().params
+  //     ?.res;
+  // console.log(':::::::::: res', res);
+  const coverRef = useRef(0);
+
   const [reload, setReload] = useState(false);
   const [reloadCover, setReloadCover] = useState<any>();
 
   const [repair, setRepair] = useState(false);
+  const [needLogin, setNeedLogin] = useState(false);
 
   const [stationList, setStationList] = useState([]);
-  const [clickedMarker, setClickedMarker] = useState<any>({
-    latitude: currentUserLocation.latitude
-      ? Number(currentUserLocation.latitude)
-      : 37.5666805,
-    longitude: currentUserLocation.longitude
-      ? Number(currentUserLocation.longitude)
-      : 126.9784147,
-    zoom: 14,
-  });
-
-  useEffect(() => {
-    if (res) {
-      setClickedMarker({
-        latitude: res.location.lat,
-        longitude: res.location.lon,
-        zoom: 16,
-      });
-    }
-  }, [res]);
+  const [clickedMarker, setClickedMarker] = useState<any>();
 
   const [loading, setLoading] = useState(false);
 
-  // console.log('res route', res);
-  // console.log('currentUserLocation', currentUserLocation);
   const [covering, setCovering] = useState<any>();
 
   const [visible, setVisible] = useState(false);
@@ -93,10 +75,7 @@ const AroundMain = () => {
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const [pick, setPick] = useState<any>();
   // variables
-  const snapPoints = useMemo(
-    () => [pick ? _getHeight(layout.height * 0.6) : '80%'],
-    [pick],
-  );
+  const snapPoints = useMemo(() => [pick ? 300 : '80%'], [pick]);
 
   // callbacks
   const handleSheetChanges = useCallback((index: number) => {
@@ -113,7 +92,6 @@ const AroundMain = () => {
 
   const _getAroundStation = async () => {
     setLoading(true);
-
     const data = {
       minx: covering[0].latitude,
       miny: covering[0].longitude,
@@ -125,7 +103,7 @@ const AroundMain = () => {
       // busiId: ['ME'],
       // chgerTypeInfo: ['AC완속'],
       offset: 0,
-      limit: 30,
+      limit: 100,
     };
     console.log('#### current xy', data);
     await commonAPI
@@ -142,41 +120,82 @@ const AroundMain = () => {
       });
   };
 
-  const renderItem: ListRenderItem<any> = item => {
-    console.log('## item', item);
-    return (
-      <StationListItem
-        setClickedMarker={setClickedMarker}
-        bottomSheetRef={bottomSheetRef}
-        item={item.item}
-        setPick={setPick}
-        pick={pick}
-        style={{borderBottomWidth: pick ? 0 : 1}}
-      />
-    );
+  const initRef = useRef(0);
+
+  const _init = () => {
+    if (currentUserLocation?.latitude) {
+      _getAroundStation();
+    }
   };
 
   useEffect(() => {
-    if (covering) {
-      console.log('## cover', covering);
-      _getAroundStation();
-    }
-    coverRef.current = coverRef.current + 1;
-    if (coverRef.current === 3) reloadRef.current = reloadRef.current + 2;
-    else reloadRef.current = reloadRef.current + 1;
+    if (initRef.current > 1) _init();
   }, [covering]);
 
   useEffect(() => {
-    if (isFocused) {
-      dispatch(setBottomIdx(1));
+    // console.log(33);
+    if (aroundKeyData?.location) {
+      setClickedMarker({
+        latitude: aroundKeyData.location?.lat,
+        longitude: aroundKeyData.location?.lon,
+        zoom: 16,
+      });
+    } else if (currentUserLocation?.latitude) {
+      setClickedMarker({
+        latitude: currentUserLocation.latitude,
+        longitude: currentUserLocation.longitude,
+        zoom: 16,
+      });
     }
-  }, [isFocused]);
+  }, [aroundKeyData]);
+
+  // const _init = async () => {
+  //   await _getAroundStation();
+  //   coverRef.current = coverRef.current + 1;
+  //   if (coverRef.current === 3) reloadRef.current = reloadRef.current + 2;
+  //   else reloadRef.current = reloadRef.current + 1;
+  // };
+
+  // const initRef = useRef(false);
+
+  // useEffect(() => {
+  //   if (initRef.current) _init();
+  // }, [covering]);
+
+  // useEffect(() => {
+  //   if (isFocused) {
+  //     dispatch(setBottomIdx(1));
+  //   }
+  // }, [isFocused]);
+
+  // useEffect(() => {
+  //   if (pick && isFocused) {
+  //     bottomSheetRef.current?.present();
+  //   }
+  // }, [pick]);
+
+  // useEffect(() => {
+  //   console.log(33);
+  //   if (aroundKeyData?.location) {
+  //     setClickedMarker({
+  //       latitude: aroundKeyData.location?.lat,
+  //       longitude: aroundKeyData.location?.lon,
+  //       zoom: 16,
+  //     });
+  //   } else if (currentUserLocation?.latitude) {
+  //     setClickedMarker({
+  //       latitude: currentUserLocation.latitude,
+  //       longitude: currentUserLocation.longitude,
+  //       zoom: 16,
+  //     });
+  //   }
+  // }, [aroundKeyData]);
 
   useEffect(() => {
-    if (pick && isFocused) {
-      bottomSheetRef.current?.present();
-    }
-  }, [pick]);
+    return () => {
+      dispatch(setAroundKeyData(undefined));
+    };
+  }, []);
 
   const _getMarkerImg = (item: any) => {
     let isAc = false;
@@ -205,9 +224,24 @@ const AroundMain = () => {
     if (!isAc && !isDc) return require('@assets/marker_normal.png');
   };
 
-  const reloadRef = useRef(0);
+  // const reloadRef = useRef(0);
 
   const arrFliter = ['충전속도', '충전소 유무료', '주차요금', '현재이용가능'];
+
+  const renderItem: ListRenderItem<any> = item => {
+    // console.log('## item', item);
+    return (
+      <StationListItem
+        setClickedMarker={setClickedMarker}
+        bottomSheetRef={bottomSheetRef}
+        item={item.item}
+        setPick={setPick}
+        pick={pick}
+        style={{borderBottomWidth: pick ? 0 : 1}}
+        setNeedLogin={setNeedLogin}
+      />
+    );
+  };
 
   return (
     <SafeAreaView style={{...GlobalStyles.safeAreaStyle}}>
@@ -277,21 +311,25 @@ const AroundMain = () => {
         compass={false}
         scaleBar={false}
         zoomControl={false}
+        useTextureView={true}
         tiltGesturesEnabled={false}
         rotateGesturesEnabled={false}
         showsMyLocationButton={false}
         style={{
           flex: 1,
         }}
-        useTextureView={true}
         center={clickedMarker ? clickedMarker : undefined}
         onCameraChange={e => {
-          console.log('############### camera cha', e);
-          setReloadCover(e.coveringRegion);
-          if (reloadRef.current > 3) setReload(true);
-          console.log('rerere', reloadRef.current);
-          if (coverRef.current < 3) setCovering(e.coveringRegion);
+          console.log('########## CAMERA MOVED', e);
+          if (initRef.current === 1) {
+            setCovering(e.coveringRegion);
+          }
+          if (initRef.current > 1) {
+            setReload(true);
+          }
           if (clickedMarker) setClickedMarker(undefined);
+          initRef.current += 1;
+          setReloadCover(e.coveringRegion);
         }}
         onMapClick={e => bottomSheetRef.current?.close()}>
         <Marker
@@ -303,11 +341,40 @@ const AroundMain = () => {
           height={20}
           onClick={() => console.log('onClick! p0')}
         />
+        {aroundKeyData?.location?.lat && (
+          <Marker
+            width={32}
+            height={65}
+            onClick={() => {
+              setPick([aroundKeyData]);
+              setClickedMarker({
+                latitude: Number(aroundKeyData.location?.lat),
+                longitude: Number(aroundKeyData.location?.lon),
+                zoom: 16,
+              });
+            }}
+            caption={{
+              text:
+                aroundKeyData.chargers.length > 9
+                  ? '9+'
+                  : String(aroundKeyData.chargers.length),
+              align: Align.Center,
+              haloColor: 'A6A6A6',
+              textSize: 15,
+              color: 'ffffff',
+            }}
+            image={_getMarkerImg(aroundKeyData)}
+            coordinate={{
+              latitude: Number(aroundKeyData.location.lat),
+              longitude: Number(aroundKeyData.location.lon),
+            }}
+          />
+        )}
         {stationList?.map((item, index) => (
           <Marker
             key={index}
             width={32}
-            height={48}
+            height={65}
             onClick={() => {
               console.log('## station info ::', item);
               setPick([item]);
@@ -317,7 +384,14 @@ const AroundMain = () => {
                 zoom: 16,
               });
             }}
-            caption={{text: '123'}}
+            caption={{
+              text:
+                item.chargers.length > 9 ? '9+' : String(item.chargers.length),
+              align: Align.Center,
+              haloColor: 'A6A6A6',
+              textSize: 15,
+              color: 'ffffff',
+            }}
             image={_getMarkerImg(item)}
             coordinate={{
               latitude: Number(item.location.lat),
@@ -326,29 +400,6 @@ const AroundMain = () => {
           />
         ))}
       </NaverMapView>
-      {/* <ImageBackground
-              source={_getMarkerImg(item)}
-              style={{
-                width: 32,
-                height: 48,
-                alignItems: 'center',
-                justifyContent: 'center',
-                paddingBottom: '42%',
-              }}
-              resizeMode="contain">
-              <Text
-                style={{
-                  color: 'white',
-                  fontSize: 16,
-                  fontFamily: FontList.PretendardBold,
-                }}>
-                {loading
-                  ? ''
-                  : item?.chargers.length > 9
-                  ? '9+'
-                  : item?.chargers.length}
-              </Text>
-            </ImageBackground> */}
       <BottomSheetModal
         style={sheetStyle}
         ref={bottomSheetRef}
@@ -380,7 +431,7 @@ const AroundMain = () => {
         distance={3}
         containerStyle={{
           position: 'absolute',
-          zIndex: 100,
+          zIndex: 500,
           bottom: 173,
           right: 16,
         }}
@@ -409,7 +460,7 @@ const AroundMain = () => {
         distance={3}
         containerStyle={{
           position: 'absolute',
-          zIndex: 100,
+          zIndex: 500,
           bottom: 131,
           right: 16,
         }}
@@ -422,6 +473,7 @@ const AroundMain = () => {
           justifyContent: 'center',
         }}>
         <Pressable
+          hitSlop={5}
           onPress={() => {
             setClickedMarker({
               latitude: Number(currentUserLocation.latitude),
@@ -523,6 +575,15 @@ const AroundMain = () => {
         positiveTitle="확인"
         visible={repair}
         setVisible={setRepair}
+      />
+
+      {/* 로그인 필요 안내 모달 */}
+      <MyModal
+        title="로그인이 필요한 기능입니다."
+        positive
+        positiveTitle="확인"
+        visible={needLogin}
+        setVisible={setNeedLogin}
       />
 
       <Loading visible={loading} />

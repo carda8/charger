@@ -10,13 +10,15 @@ import {
 import React, {useState, Dispatch, SetStateAction} from 'react';
 import {_getHeight, _getWidth} from 'constants/utils';
 import FontList from 'constants/FontList';
-import {useDispatch} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import {setGoal} from 'redux/reducers/pathReducer';
 import ChargerType from 'constants/ChargerType';
 import {BottomSheetModalMethods} from '@gorhom/bottom-sheet/lib/typescript/types';
 import modules from 'constants/utils/modules';
 import {useNavigation} from '@react-navigation/native';
 import {commonTypes} from '@types';
+import {RootState} from 'redux/store';
+import commonAPI from 'api/modules/commonAPI';
 interface props {
   item?: any;
   pick?: boolean;
@@ -28,6 +30,7 @@ interface props {
   setClickedMarker?: Dispatch<SetStateAction<any>>;
   bottomSheetRef?: React.RefObject<BottomSheetModalMethods>;
   isPath?: boolean;
+  setNeedLogin?: Dispatch<SetStateAction<any>> | undefined;
 }
 
 const StationListItem = ({
@@ -39,11 +42,13 @@ const StationListItem = ({
   bottomSheetRef,
   setClickedMarker,
   isPath,
+  setNeedLogin,
 }: props) => {
   const [favorite, setFavorite] = useState(false);
   const dispatch = useDispatch();
   const isClosed = isPath ? false : modules._isClosed(item);
   const nav = useNavigation<commonTypes.navi>();
+  const {userInfo} = useSelector((state: RootState) => state.authReducer);
 
   const _sortChgerBySpeed = (item: any) => {
     //  현 데이터에서 chgerTypeInfo 는 총 7개가 있
@@ -66,7 +71,6 @@ const StationListItem = ({
       normal,
       fast,
     };
-    // console.warn('res', res);
     return res;
   };
 
@@ -113,6 +117,49 @@ const StationListItem = ({
     });
     return chgerImg;
   };
+
+  const _setUserStar = async () => {
+    if (userInfo?.id) {
+      const data = {
+        user_id: userInfo.id,
+        stat_id: item.statId,
+      };
+      await commonAPI
+        ._postUserStar(data)
+        .then(res => console.log('User Star RES', res.data))
+        .catch(err => console.log('err', err));
+
+      console.log('data', data);
+    }
+  };
+
+  const _delUserStar = async () => {
+    if (userInfo?.id) {
+      const data = {
+        user_id: userInfo.id,
+        stat_id: item.statId,
+      };
+      await commonAPI
+        ._deleteUserStar(data)
+        .then(res => console.log('User Star RES', res.data))
+        .catch(err => console.log('err', err));
+
+      console.log('data', data);
+    }
+  };
+
+  const _onPressed = () => {
+    if (userInfo?.id) {
+      setFavorite(!favorite);
+      if (!favorite) {
+        _setUserStar();
+      } else {
+        _delUserStar();
+      }
+    } else {
+      if (setNeedLogin) setNeedLogin(true);
+    }
+  };
   return (
     <Pressable
       onPress={() => {
@@ -122,9 +169,6 @@ const StationListItem = ({
         }
 
         if (item) {
-          console.log('item', item);
-          console.log('pick', pick);
-          console.log('2', item.location);
           setClickedMarker &&
             setClickedMarker({
               latitude: Number(item.location.lat),
@@ -170,7 +214,7 @@ const StationListItem = ({
                 fontSize: 16,
                 color: '#333333',
               }}>
-              {item?.statNm ? item?.statNm : '강남역 12번 출구'}
+              {item?.statNm ? item?.statNm : ''}
               {'  '}
               <Text
                 style={{
@@ -189,7 +233,7 @@ const StationListItem = ({
             alignItems: 'center',
           }}
           hitSlop={10}
-          onPress={() => setFavorite(!favorite)}>
+          onPress={() => _onPressed()}>
           <Image
             source={
               favorite
@@ -212,7 +256,8 @@ const StationListItem = ({
             }}
             hitSlop={10}
             onPress={() => {
-              setPick && setPick(false);
+              bottomSheetRef?.current?.close();
+              // setPick && setPick(false);
               if (goal) {
                 dispatch(setGoal(''));
                 bottomSheetRef?.current?.close();
@@ -242,7 +287,7 @@ const StationListItem = ({
             fontFamily: FontList.PretendardRegular,
             color: '#959595',
           }}>
-          {item?.addr ? item?.addr : '강남구 테헤란로 8길 22'}
+          {item?.addr ? item?.addr : ''}
         </Text>
       </View>
       {item?.parkingFree && (
@@ -326,8 +371,8 @@ const StationListItem = ({
           }}>
           <View
             style={{
-              width: _getWidth(40),
-              height: _getHeight(40),
+              width: 40,
+              height: 40,
               borderRadius: _getWidth(40) / 2,
               borderWidth: 1,
               alignItems: 'center',
@@ -337,14 +382,14 @@ const StationListItem = ({
             }}>
             <Image
               source={ChargerType.chargerLogo[0]}
-              style={{width: _getWidth(35), height: _getHeight(35)}}
+              style={{width: 35, height: 35}}
               resizeMode="contain"
             />
           </View>
           <View
             style={{
-              width: _getWidth(40),
-              height: _getHeight(40),
+              width: 40,
+              height: 40,
               borderRadius: _getWidth(40) / 2,
               borderWidth: 1,
               alignItems: 'center',
@@ -354,14 +399,14 @@ const StationListItem = ({
             }}>
             <Image
               source={ChargerType.chargerLogo[1]}
-              style={{width: _getWidth(30), height: _getHeight(30)}}
+              style={{width: 30, height: 30}}
               resizeMode="contain"
             />
           </View>
           <View
             style={{
-              width: _getWidth(40),
-              height: _getHeight(40),
+              width: 40,
+              height: 40,
               borderRadius: _getWidth(40) / 2,
               borderWidth: 1,
               alignItems: 'center',
@@ -371,14 +416,14 @@ const StationListItem = ({
             }}>
             <Image
               source={ChargerType.chargerLogo[2]}
-              style={{width: _getWidth(30), height: _getHeight(30)}}
+              style={{width: 30, height: 30}}
               resizeMode="contain"
             />
           </View>
           <View
             style={{
-              width: _getWidth(40),
-              height: _getHeight(40),
+              width: 40,
+              height: 40,
               borderRadius: _getWidth(40) / 2,
               borderWidth: 1,
               alignItems: 'center',
@@ -388,7 +433,7 @@ const StationListItem = ({
             }}>
             <Image
               source={ChargerType.chargerLogo[3]}
-              style={{width: _getWidth(33), height: _getHeight(33)}}
+              style={{width: 33, height: 33}}
               resizeMode="contain"
             />
           </View>

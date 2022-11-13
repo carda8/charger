@@ -19,10 +19,12 @@ import {commonTypes} from '@types';
 import SnsList from 'constants/SnsList';
 import {_getHeight} from 'constants/utils';
 import MyModal from '@components/MyModal';
+import Loading from '@components/Loading';
 
 const Login = () => {
   const navigation = useNavigation<commonTypes.navi>();
   const [modal, setModal] = useState(false);
+  const [modalLoading, setModalLoading] = useState(false);
   const ref = useRef(false);
 
   useEffect(() => {
@@ -63,14 +65,14 @@ const Login = () => {
             justifyContent: 'center',
             marginTop: _getHeight(165),
             marginBottom: _getHeight(74),
-          }}
-        >
+          }}>
           <Image source={require('~/assets/logo.png')} resizeMode={'contain'} />
         </View>
         {SnsList.snsList.map((item, idx) => (
           <View key={idx}>
             {Platform.OS === 'android' && idx !== 3 && (
               <SnsButton
+                setLoading={setModalLoading}
                 text={SnsList.snsListText[idx]}
                 snsType={item}
                 navigation={navigation}
@@ -79,6 +81,7 @@ const Login = () => {
             )}
             {Platform.OS === 'ios' && (
               <SnsButton
+                setLoading={setModalLoading}
                 text={SnsList.snsListText[idx]}
                 snsType={item}
                 navigation={navigation}
@@ -88,6 +91,7 @@ const Login = () => {
           </View>
         ))}
         <Pressable
+          hitSlop={20}
           onPress={() => {
             navigation.navigate('Home');
           }}
@@ -95,8 +99,7 @@ const Login = () => {
             alignItems: 'center',
             justifyContent: 'center',
             marginTop: 14,
-          }}
-        >
+          }}>
           <Text style={{fontWeight: '400'}}>먼저 둘러보기</Text>
         </Pressable>
       </ScrollView>
@@ -108,6 +111,7 @@ const Login = () => {
         title="로그인 실패"
         text="현재 해당 기능을 사용 할 수 없습니다"
       />
+      <Loading visible={modalLoading} />
     </SafeAreaView>
   );
 };

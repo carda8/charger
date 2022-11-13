@@ -44,7 +44,7 @@ export const _postAPI = async (url: string, params: any) => {
 };
 
 export const _delAPI = async (url: string, params: any) => {
-  const resGet = await API.delete(url, params)
+  const resGet = await API.delete(url, {params: params})
     .then(result => {
       return result;
     })
