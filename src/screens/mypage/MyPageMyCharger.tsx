@@ -363,7 +363,8 @@ const MyPageMyCharger = () => {
                               setType(ChargerType.chargerType[index]);
                             }}
                             style={{
-                              ...styles.innerView,
+                              // ...styles.innerView,
+                              flex: 1 / 4,
                               borderWidth: 1,
                               opacity:
                                 type === ChargerType.chargerType[index]
@@ -374,7 +375,8 @@ const MyPageMyCharger = () => {
                                   ? '#333333'
                                   : '#DBDBDB',
                               borderRadius: 4,
-                              marginRight: 48,
+                              marginRight:
+                                index > 3 ? (index > 4 ? 32 : 16) : 0,
                               alignItems: 'center',
                               justifyContent: 'center',
                             }}>
@@ -398,7 +400,8 @@ const MyPageMyCharger = () => {
                           <View
                             style={{
                               ...styles.innerView,
-                              marginRight: 48,
+                              marginRight:
+                                index > 3 ? (index > 4 ? 32 : 16) : 0,
                             }}>
                             <Text
                               style={{

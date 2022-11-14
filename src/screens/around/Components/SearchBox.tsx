@@ -12,13 +12,16 @@ import {_getHeight, _getWidth} from 'constants/utils';
 import {useNavigation} from '@react-navigation/native';
 import {commonTypes} from '@types';
 import {BottomSheetModalMethods} from '@gorhom/bottom-sheet/lib/typescript/types';
+import {useSelector} from 'react-redux';
+import {RootState} from 'redux/store';
 
 interface props {
   bottomSheetRef: React.RefObject<BottomSheetModalMethods>;
 }
 
 const SearchBox = ({bottomSheetRef}: props) => {
-  const layout = useWindowDimensions();
+  const {aroundKeyData} = useSelector((state: RootState) => state.aroundReducer);
+  console.log('key', aroundKeyData)
   const nav = useNavigation<commonTypes.navi>();
   return (
     <Pressable
@@ -39,6 +42,7 @@ const SearchBox = ({bottomSheetRef}: props) => {
       }}>
       <TextInput
         editable={false}
+        value={aroundKeyData?.addr ? aroundKeyData?.addr : ''}
         onSubmitEditing={() => Keyboard.dismiss()}
         autoCapitalize="none"
         placeholder="목적지를 검색하세요"

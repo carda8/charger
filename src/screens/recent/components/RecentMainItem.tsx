@@ -10,9 +10,13 @@ import {
 import React, {useState, Dispatch, SetStateAction} from 'react';
 import {_getHeight, _getWidth} from 'constants/utils';
 import FontList from 'constants/FontList';
-import {useDispatch} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import {setGoal} from 'redux/reducers/pathReducer';
 import ChargerType from 'constants/ChargerType';
+import modules from 'constants/utils/modules';
+import commonAPI from 'api/modules/commonAPI';
+import {RootState} from 'redux/store';
+import {setUserInfo} from 'redux/reducers/authReducer';
 interface props {
   item?: any;
   // pick?: boolean;
@@ -32,7 +36,7 @@ const RecentMainItem = ({
   setRecentData,
   index,
 }: props) => {
-  const [favorite, setFavorite] = useState(false);
+  const {userInfo} = useSelector((state: RootState) => state.authReducer);
   const dispatch = useDispatch();
 
   const _deleteItem = (target: any[], setTarget: any, index: any) => {
@@ -42,7 +46,26 @@ const RecentMainItem = ({
     console.log('temp', temp);
     setTarget(temp);
   };
+  console.log('item', item);
 
+  const _delUserHistory = async (stat_id: string) => {
+    const data = {
+      user_id: userInfo?.id,
+      stat_id: stat_id,
+    };
+
+    await commonAPI
+      ._deleteUserHistory(data)
+      .then(res => modules._updateUserInfo(dispatch, userInfo))
+      .catch(err => console.log('err', err));
+  };
+
+  const _onPressed = () => {
+    if (userInfo?.id) {
+      _deleteItem(recentData, setRecentData, index);
+      _delUserHistory(item.statId);
+    }
+  };
   return (
     <Pressable
       hitSlop={15}
@@ -83,14 +106,14 @@ const RecentMainItem = ({
               fontSize: 16,
               color: '#333333',
             }}>
-            {item}
+            {item?.statNm}
           </Text>
         </View>
         <Text>1.5km</Text>
         <View style={{marginLeft: 'auto', marginRight: 8}}>
           <Text
             style={{fontFamily: FontList.PretendardRegular, color: '#C6C6C6'}}>
-            10.01
+            {modules._convertDate(item.updated_at)}
           </Text>
         </View>
         <Pressable
@@ -98,7 +121,7 @@ const RecentMainItem = ({
             alignItems: 'center',
           }}
           hitSlop={10}
-          onPress={() => _deleteItem(recentData, setRecentData, index)}>
+          onPress={() => _onPressed()}>
           <Image
             source={require('@assets/close_star.png')}
             style={{
@@ -117,7 +140,7 @@ const RecentMainItem = ({
             fontFamily: FontList.PretendardRegular,
             color: '#959595',
           }}>
-          {'경기도 성남시 분당구 판교로227번길 6'}
+          {item?.addr}
         </Text>
       </View>
 

@@ -1,5 +1,5 @@
 import {View, Text, Pressable, Image} from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, Dispatch, SetStateAction} from 'react';
 import SnsList from 'constants/SnsList';
 import {commonTypes} from '@types';
 import {_getHeight, _getWidth} from 'constants/utils';
@@ -23,9 +23,10 @@ interface props {
   snsType: string;
   navigation: commonTypes.navi;
   idx: number;
+  setLoading: Dispatch<SetStateAction<boolean>>;
 }
 
-const SnsButton = ({text, snsType, navigation, idx}: props) => {
+const SnsButton = ({text, snsType, navigation, idx, setLoading}: props) => {
   const {userInfo} = useSelector((state: RootState) => state.authReducer);
   const dispatch = useDispatch();
 
@@ -64,7 +65,9 @@ const SnsButton = ({text, snsType, navigation, idx}: props) => {
               name: resData.name,
               car_brand: resData.car_brand,
               car_model: resData.car_model,
-              chgerType: resData.chgerType[0],
+              chgerType: resData.chgerType,
+              favorites: resData.favorites,
+              histories: resData.histories,
             }),
           );
         }
@@ -74,7 +77,8 @@ const SnsButton = ({text, snsType, navigation, idx}: props) => {
       .catch(err => {
         navigation.navigate('AccountFinish');
         console.log('check user err', err);
-      });
+      })
+      .finally(() => setLoading(false));
     return;
   };
 
@@ -111,12 +115,14 @@ const SnsButton = ({text, snsType, navigation, idx}: props) => {
       if (profileResult?.message === 'success') {
         const id = profileResult.response.id;
         const name = profileResult.response.name;
-        dispatch(setUserInfo({...userInfo, name: name}));
+        dispatch(setUserInfo({...userInfo, id: id, name: name}));
         navigation.navigate('AccountFinish');
       }
       setGetProfileRes(profileResult);
     } catch (e) {
       setGetProfileRes(undefined);
+    } finally {
+      setLoading(false);
     }
   };
   //########## naver end ##########
@@ -127,6 +133,8 @@ const SnsButton = ({text, snsType, navigation, idx}: props) => {
     console.log('profile', profile);
     if (profile.email) {
       _checkUser(profile, profile.email);
+    } else {
+      setLoading(false);
     }
   };
 
@@ -136,21 +144,28 @@ const SnsButton = ({text, snsType, navigation, idx}: props) => {
         getKakaoProfile(res.accessToken);
         console.log('res', res);
       })
-      .catch(err => console.log(err));
+      .catch(err => {
+        setLoading(false);
+        console.log(err);
+      });
   };
   // ########## kakao end ##########
 
   const _onPressLogin = (snsType: string) => {
+    setLoading(true);
     switch (snsType) {
       case SnsList.naver:
         return loginNaver();
       case SnsList.kakao:
         return signInWithKakao();
       case SnsList.google:
+        setLoading(false);
         return;
       case SnsList.apple:
+        setLoading(false);
         return;
       default:
+        setLoading(false);
         return navigation.navigate('AccountFinish');
     }
   };

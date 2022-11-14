@@ -1,5 +1,5 @@
 import {commonTypes} from '@types';
-import {_getAPI, _postAPI} from 'api/apiModules';
+import {_delAPI, _getAPI, _postAPI} from 'api/apiModules';
 
 export default {
   // user
@@ -9,6 +9,32 @@ export default {
   },
   _getUserInfo: async (params: any) => {
     const res = await _getAPI('users', params);
+    return res;
+  },
+  _getUserHistory: async (params: any) => {
+    const res = await _getAPI('search/histories', params);
+    return res;
+  },
+  _postUserHistory: async (params: any) => {
+    const res = await _postAPI('search/histories', params);
+    return res;
+  },
+  _deleteUserHistory: async (params: any) => {
+    const res = await _delAPI('search/histories', params);
+    return res;
+  },
+
+  //favorite
+  _postUserStar: async (params: any) => {
+    const res = await _postAPI('search/favorites', params);
+    return res;
+  },
+  _getUserStar: async (params: any) => {
+    const res = await _getAPI('search/favorites', params);
+    return res;
+  },
+  _deleteUserStar: async (params: any) => {
+    const res = await _delAPI('search/favorites', params);
     return res;
   },
 

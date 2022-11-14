@@ -31,7 +31,7 @@ declare module commonTypes {
 
     FavStationMain: undefined;
 
-    AroundMain: {res?: any[]} | undefined;
+    AroundMain: {res?: any[]; isFavorite?: boolean} | undefined;
     AroundFilter: undefined;
 
     PathMain: {item?: item; goal?: string; start?: string} | undefined;

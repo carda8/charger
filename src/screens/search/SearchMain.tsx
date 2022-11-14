@@ -22,6 +22,12 @@ import commonAPI from 'api/modules/commonAPI';
 import MyModal from '@components/MyModal';
 import {ScrollView} from 'react-native-gesture-handler';
 import {BottomSheetModalMethods} from '@gorhom/bottom-sheet/lib/typescript/types';
+import {useDispatch, useSelector} from 'react-redux';
+import {RootState} from 'redux/store';
+import dayjs from 'dayjs';
+import {setAroundKey, setAroundKeyData} from 'redux/reducers/aroundReducer';
+import Loading from '@components/Loading';
+import modules from 'constants/utils/modules';
 
 interface keywordParam {
   keywords: string;
@@ -36,22 +42,69 @@ interface props {
 const SearchMain = ({bottomSheetRef}: props) => {
   const nav = useNavigation<commonTypes.navi>();
   const [input, setInput] = useState('');
-  const [history, setHistory] = useState([
-    '선릉역',
-    '이마트 트레이더스',
-    '코스트코',
-  ]);
-  const [recent, setRecent] = useState([
-    '서울 강남구 역삼로168길',
-    '신설설농탕 강남점',
-    '서초 보건소',
-    '서울 관악구 ',
-  ]);
+
+  const [recent, setRecent] = useState([]);
+
+  const [visible, setVisible] = useState(false);
+
   const [modal, setModal] = useState(false);
   const [modalNoRes, setModalNoRes] = useState(false);
   const [res, setRest] = useState([]);
   const [showNoRes, setShowNoRes] = useState(false);
-  const layout = useWindowDimensions();
+  const {userInfo} = useSelector((state: RootState) => state.authReducer);
+
+  const dispatch = useDispatch();
+
+  const _getUserHistory = async () => {
+    const data = {
+      user_id: userInfo?.id,
+    };
+    await commonAPI
+      ._getUserHistory(data)
+      .then(res => {
+        console.log('User History RES::', res.data.histories);
+        setRecent(res.data.histories);
+      })
+      .catch(err => console.log('ERR', err))
+      .finally(() => {
+        setVisible(false);
+      });
+  };
+
+  const _postUserHistory = async (item: any) => {
+    const data = {
+      user_id: userInfo?.id,
+      stat_id: item.statId,
+    };
+    if (data.user_id) {
+      await commonAPI
+        ._postUserHistory(data)
+        .then(res => {
+          // dispatch(setAroundKey({aroundKey: item.addr}));
+          if (res.data) {
+            dispatch(setAroundKeyData(item));
+            modules._updateUserInfo(dispatch, userInfo);
+            nav.navigate('AroundMain');
+          }
+        })
+        .catch(err => console.log('err', err));
+    } else {
+      dispatch(setAroundKeyData(item));
+      nav.navigate('AroundMain');
+    }
+  };
+
+  const _delUserHistory = async (stat_id: string) => {
+    const data = {
+      user_id: userInfo?.id,
+      stat_id: stat_id,
+    };
+
+    await commonAPI
+      ._deleteUserHistory(data)
+      .then(res => modules._updateUserInfo())
+      .catch(err => console.log('err', err));
+  };
 
   const _getKeyword = async () => {
     // setModal(true);
@@ -60,7 +113,7 @@ const SearchMain = ({bottomSheetRef}: props) => {
       const data: keywordParam = {
         keywords: input,
         offset: 0,
-        limit: 20,
+        limit: 3,
       };
 
       commonAPI
@@ -70,7 +123,6 @@ const SearchMain = ({bottomSheetRef}: props) => {
           if (res?.data.data.length > 0) {
             setRest(res?.data.data);
             setShowNoRes(false);
-            // nav.navigate('AroundMain', {res: res?.data.data});
           } else {
             setShowNoRes(true);
             // setModalNoRes(!modalNoRes);
@@ -86,9 +138,15 @@ const SearchMain = ({bottomSheetRef}: props) => {
     }
   };
 
-  const _delelteItem = (target: any[], setTarget: any, index: any) => {
+  const _delelteItem = (
+    target: any[],
+    setTarget: any,
+    index: any,
+    stat_id: string,
+  ) => {
     let temp = [...target];
     temp = target.filter((item, idx) => idx !== index);
+    _delUserHistory(stat_id);
     setTarget(temp);
   };
 
@@ -97,6 +155,13 @@ const SearchMain = ({bottomSheetRef}: props) => {
       _getKeyword();
     }
   }, [input]);
+
+  useEffect(() => {
+    if (userInfo?.id) {
+      setVisible(true);
+      _getUserHistory();
+    }
+  }, []);
 
   return (
     <SafeAreaView style={{...GlobalStyles.safeAreaStyle}}>
@@ -147,154 +212,95 @@ const SearchMain = ({bottomSheetRef}: props) => {
         </View>
       </View>
 
-      {/* input 존재 시 리스트업 */}
+      {/* input res 없을 시 */}
       {res.length === 0 && showNoRes && input.length > 1 && (
         <View style={{margin: 16}}>
           <Text
-            style={{fontFamily: FontList.PretendardRegular, color: '#333333'}}>
+            style={{
+              fontFamily: FontList.PretendardRegular,
+              color: '#333333',
+            }}>
             검색결과가 없습니다
           </Text>
         </View>
       )}
-      {input && res.length > 0 && (
-        <ScrollView style={{flex: 1, marginBottom: 65}}>
-          {res.map((item, index) => (
-            <Pressable
-              onPress={() => {
-                nav.navigate('AroundMain', {res: item});
-              }}
-              key={index}
-              style={{
-                justifyContent: 'center',
-                borderColor: '#F6F6F6',
-                borderBottomWidth: 1,
-              }}>
-              <View
+
+      <ScrollView style={{marginBottom: 60}}>
+        {/* input 존재 시 리스트업 */}
+        {input && res.length > 0 && (
+          <>
+            {res.map((item, index) => (
+              <Pressable
+                onPress={() => {
+                  console.log('item', item);
+                  _postUserHistory(item);
+                }}
+                key={index}
                 style={{
-                  height: _getHeight(48),
-                  marginHorizontal: 18,
-                  borderBottomWidth: 1,
+                  paddingVertical: 3,
+                  justifyContent: 'center',
                   borderColor: '#F6F6F6',
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
+                  borderBottomWidth: res.length - 1 === index ? 4 : 1,
                 }}>
-                <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                  <Image
-                    source={require('@assets/search.png')}
-                    style={{width: 14, height: 14, marginRight: 6}}
-                    resizeMode="contain"
-                  />
-                  <Text
-                    style={{
-                      fontFamily: FontList.PretendardMedium,
-                      fontSize: 16,
-                      color: '#333333',
-                    }}>
-                    {item?.addr}
-                  </Text>
+                <View
+                  style={{
+                    height: 48,
+                    marginHorizontal: 18,
+                    // borderBottomWidth: 1,
+                    borderColor: '#F6F6F6',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}>
+                  <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                    <Image
+                      source={require('@assets/search.png')}
+                      style={{width: 14, height: 14, marginRight: 6}}
+                      resizeMode="contain"
+                    />
+                    <Text
+                      style={{
+                        fontFamily: FontList.PretendardMedium,
+                        fontSize: 16,
+                        color: '#333333',
+                      }}>
+                      {item?.statNm}
+                    </Text>
+                  </View>
                 </View>
-              </View>
-            </Pressable>
-          ))}
-        </ScrollView>
-      )}
-
-      {!input &&
-        history.map((item, idx) => (
-          <Pressable
-            onPress={() => {
-              nav.goBack();
-            }}
-            key={idx}
+              </Pressable>
+            ))}
+          </>
+        )}
+        <Text
+          style={{
+            lineHeight: 24,
+            color: '#333333',
+            marginHorizontal: 16,
+            marginTop: 17.6,
+            fontSize: 16,
+          }}>
+          최근 기록
+        </Text>
+        {recent.length === 0 && (
+          <Text
             style={{
-              justifyContent: 'center',
-              borderColor: '#F6F6F6',
-              borderBottomWidth: idx === history.length - 1 ? 5 : undefined,
+              lineHeight: 24,
+              color: '#7A7A7A',
+              marginHorizontal: 16,
+              marginTop: 17.6,
+              fontSize: 13,
             }}>
-            <View
-              style={{
-                height: _getHeight(48),
-                marginHorizontal: 18,
-                borderBottomWidth: 1,
-                borderColor: '#F6F6F6',
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              }}>
-              <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                <Image
-                  source={require('@assets/search.png')}
-                  style={{width: 14, height: 14, marginRight: 6}}
-                  resizeMode="contain"
-                />
-                <Text
-                  style={{
-                    fontFamily: FontList.PretendardMedium,
-                    fontSize: 16,
-                    color: '#333333',
-                  }}>
-                  {item}
-                </Text>
-              </View>
-              <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                <Text
-                  style={{
-                    fontFamily: FontList.PretendardRegular,
-                    color: '#C6C6C6',
-                  }}>
-                  10.01
-                </Text>
-                <Pressable
-                  hitSlop={10}
-                  onPress={() => {
-                    _delelteItem(history, setHistory, idx);
-                  }}>
-                  <Image
-                    source={require('@assets/search_close.png')}
-                    style={{
-                      width: 12,
-                      height: 12,
-                      marginLeft: 10,
-                      tintColor: '#959595',
-                    }}
-                    resizeMode="contain"
-                  />
-                </Pressable>
-              </View>
-            </View>
-          </Pressable>
-        ))}
-      {!input && (
-        <Text
-          style={{
-            lineHeight: 24,
-            color: '#7A7A7A',
-            marginHorizontal: 16,
-            marginTop: 17.6,
-          }}>
-          최근 검색지
-        </Text>
-      )}
-
-      {recent.length === 0 && (
-        <Text
-          style={{
-            lineHeight: 24,
-            color: '#7A7A7A',
-            marginHorizontal: 16,
-            marginTop: 17.6,
-            fontSize: 13,
-          }}>
-          최근 검색지가 없습니다
-        </Text>
-      )}
-      {!input &&
-        recent.map((item, index) => (
+            최근 검색지가 없습니다
+          </Text>
+        )}
+        {recent.map((item, index) => (
           <Pressable
             hitSlop={10}
             onPress={() => {
-              nav.goBack();
+              console.log('recent item', item);
+              dispatch(setAroundKeyData(item));
+              nav.navigate('AroundMain');
             }}
             key={index}
             style={{
@@ -306,7 +312,8 @@ const SearchMain = ({bottomSheetRef}: props) => {
             <View
               style={{
                 marginHorizontal: 16,
-                height: 58,
+                // minHeight: 38,
+                paddingVertical: 18,
                 justifyContent: 'center',
               }}>
               <View
@@ -316,19 +323,24 @@ const SearchMain = ({bottomSheetRef}: props) => {
                   justifyContent: 'space-between',
                 }}>
                 <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                  <Image
+                    source={require('@assets/search_goal.png')}
+                    style={{width: 12, height: 12, marginRight: 6}}
+                    resizeMode="contain"
+                  />
                   <Text
                     style={{
                       fontFamily: FontList.PretendardMedium,
                       fontSize: 16,
                       color: '#333333',
                     }}>
-                    {item}
+                    {item.statNm}
                   </Text>
                 </View>
                 <Pressable
                   hitSlop={10}
                   onPress={() => {
-                    _delelteItem(recent, setRecent, index);
+                    _delelteItem(recent, setRecent, index, item.statId);
                   }}
                   style={{flexDirection: 'row', alignItems: 'center'}}>
                   <Text
@@ -336,7 +348,7 @@ const SearchMain = ({bottomSheetRef}: props) => {
                       fontFamily: FontList.PretendardRegular,
                       color: '#C6C6C6',
                     }}>
-                    10.01
+                    {modules._convertDate(item.updated_at)}
                   </Text>
                   <Image
                     source={require('@assets/search_close.png')}
@@ -357,11 +369,13 @@ const SearchMain = ({bottomSheetRef}: props) => {
                   fontFamily: FontList.PretendardRegular,
                   color: '#7A7A7A',
                 }}>
-                서울특별시 강남구 역삼로168길
+                {item.addr}
               </Text>
             </View>
           </Pressable>
         ))}
+      </ScrollView>
+
       <BottomNav />
       <Modal
         transparent
@@ -388,6 +402,7 @@ const SearchMain = ({bottomSheetRef}: props) => {
         positiveTitle="확인"
         title="검색결과가 없습니다"
       />
+      <Loading visible={visible} />
     </SafeAreaView>
   );
 };

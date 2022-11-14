@@ -13,7 +13,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import GlobalStyles from 'styles/GlobalStyles';
 import HeaderCenter from '@components/HeaderCenter';
 import BottomNav from '@components/BottomNav';
-import NaverMapView, {MapType, Marker} from 'react-native-nmap';
+import NaverMapView, {Align, MapType, Marker} from 'react-native-nmap';
 import {_getHeight} from 'constants/utils';
 import {
   BottomSheetFlatList,
@@ -28,28 +28,22 @@ import {
   ScrollView,
 } from 'react-native-gesture-handler';
 import FontList from 'constants/FontList';
+import modules from 'constants/utils/modules';
+import RenderItem from './components/RenderItem';
+import {useSelector} from 'react-redux';
+import {RootState} from 'redux/store';
+import commonAPI from 'api/modules/commonAPI';
 
 const FavStationMain = () => {
   const layout = useWindowDimensions();
+  const {userInfo} = useSelector((state: RootState) => state.authReducer);
   const P0 = {latitude: 37.564362, longitude: 126.977011};
-  const [pick, setPick] = useState(false);
+  const {currentUserLocation} = useSelector(
+    (state: RootState) => state.locationReducer,
+  );
   const snapPoints = useMemo(() => ['82%'], []);
   const bottomSheetRef = useRef<BottomSheetModal>(null);
-  const data = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
-  const dumCoor = [
-    {latitude: 37.3598560266063, longitude: 126.866019306938},
-    {latitude: 37.4498560266063, longitude: 126.926019306938},
-    {latitude: 37.5398560266063, longitude: 127.166019306938},
-    {latitude: 37.4298560266063, longitude: 126.966019306938},
-    {latitude: 37.5198560266063, longitude: 126.966019306938},
-    {latitude: 37.8598560266063, longitude: 126.426019306938},
-    {latitude: 37.5598560266063, longitude: 126.916019306938},
-    {latitude: 37.5598560266063, longitude: 126.926019306938},
-    {latitude: 37.5198560266063, longitude: 126.546019306938},
-    {latitude: 37.5598560266063, longitude: 126.966019306938},
-    {latitude: 37.7398560266063, longitude: 126.566019306938},
-    {latitude: 37.1098560266063, longitude: 126.762019306938},
-  ];
+  const [userStar, setUserStar] = useState([]);
 
   const [center, setCenter] = useState({
     latitude: 37.564362,
@@ -70,89 +64,47 @@ const FavStationMain = () => {
     ['linen'],
   );
 
-  const renderItem: ListRenderItem<any> = item => {
-    return (
-      <>
-        <Pressable
-          onPress={() => {
-            setCenter({
-              latitude: item.item.latitude,
-              longitude: item.item.longitude,
-              zoom: 13,
-            });
-            bottomSheetRef.current?.close();
-          }}
-          key={item.index}
-          style={{
-            flex: 1,
-            height: 154,
-            borderWidth: 1,
-            borderColor: '#E6E6E6',
-            borderRadius: 8,
-            marginHorizontal: 2,
-            paddingHorizontal: 8,
-            paddingTop: 8,
-            paddingBottom: 12,
-          }}>
-          <Pressable style={{backgroundColor: 'teal', alignSelf: 'flex-start'}}>
-            <Image
-              source={require('@assets/star_on.png')}
-              style={{width: 14.6, height: 14, marginBottom: 10}}
-              resizeMode="contain"
-            />
-          </Pressable>
-          <Text
-            style={{fontFamily: FontList.PretendardMedium, color: '#333333'}}>
-            판교 테크노 밸리 주차장 {item.index}
-          </Text>
-          <View style={{marginTop: 5}}>
-            <Text
-              style={{
-                fontFamily: FontList.PretendardRegular,
-                color: '#4B4B4B',
-                fontSize: 13,
-              }}>
-              1.5km
-            </Text>
-          </View>
-          <View style={{marginTop: 17}}>
-            <Text
-              style={{
-                fontFamily: FontList.PretendardMedium,
-                color: '#6FCF24',
-                lineHeight: 24,
-              }}>
-              충전가능
-            </Text>
-          </View>
-          <Text
-            style={{
-              fontFamily: FontList.PretendardRegular,
-              fontSize: 12,
-              color: 'black',
-            }}>
-            급속 1 | 완속 3
-          </Text>
-        </Pressable>
-        {console.log('data', data.length % 3)}
-        {item.index === data?.length - 1 && data?.length % 3 !== 0 && (
-          <View
-            style={{
-              // padding: 7,
-              flex: 3 - (data?.length % 3),
-              // borderWidth: 1,
-              borderColor: '#DBDBDB',
-              borderRadius: 5,
-              alignItems: 'center',
-              marginHorizontal: data.length % 3 === 1 ? 12 : 2,
-              paddingHorizontal: 8,
-              justifyContent: 'center',
-              // marginLeft: _getWidth(9) * (5 - (data?.length % 3)),
-            }}></View>
-        )}
-        <View></View>
-      </>
-    );
+  const _getUserStar = async () => {
+    if (userInfo?.id) {
+      const data = {
+        user_id: userInfo.id,
+      };
+
+      await commonAPI
+        ._getUserStar(data)
+        .then(res => {
+          console.log(res.data);
+          setUserStar(res.data.favorites);
+        })
+        .catch(err => console.log('err', err));
+    }
+  };
+
+  const _getMarkerImg = (item: any) => {
+    let isAc = false;
+    let isDc = false;
+    let close = modules._isClosed(item);
+
+    // console.log('is CLOSED? ::', close);
+    item.chargers.map((item, index) => {
+      if (
+        item.chgerTypeInfo === 'DC차데모+AC3상+DC콤보' ||
+        item.chgerTypeInfo === 'DC차데모+AC3상'
+      ) {
+        isAc = true;
+        isDc = true;
+      }
+
+      if (item.chgerTypeInfo === 'AC완속' || item.chgerTypeInfo === 'AC3상')
+        isAc = true;
+      else isDc = true;
+    });
+    if (!item) return;
+    if (!close) return require('@assets/marker_close.png');
+    if (isAc && isDc) return require('@assets/marker_mix.png');
+    if (isAc && !isDc) return require('@assets/marker_normal.png');
+    if (isDc && !isAc) return require('@assets/marker_fast.png');
+    if (!isAc && !isDc) return require('@assets/marker_normal.png');
   };
 
   useEffect(() => {
@@ -162,6 +114,21 @@ const FavStationMain = () => {
       bottomSheetRef.current?.close();
     };
   }, [isFocused]);
+
+  useEffect(() => {
+    _getUserStar();
+  }, []);
+
+  const renderItem: ListRenderItem<any> = item => {
+    return (
+      <RenderItem
+        item={item}
+        list={userStar}
+        bottomSheetRef={bottomSheetRef}
+        setCenter={setCenter}
+      />
+    );
+  };
 
   return (
     <SafeAreaView style={{...GlobalStyles.safeAreaStyle}}>
@@ -177,113 +144,123 @@ const FavStationMain = () => {
           }}
         />
       </View>
-      {/* <NaverMapView
+      <NaverMapView
+        // center={center}
+        scaleBar={false}
         zoomControl={false}
         rotateGesturesEnabled={false}
         tiltGesturesEnabled={false}
+        showsMyLocationButton={false}
+        useTextureView={true}
+        onMapClick={e => {
+          bottomSheetRef.current?.present();
+        }}
         style={{
-          zIndex: -1,
           width: '100%',
           height: layout.height - 60,
-        }}
-        scaleBar={false}
-        showsMyLocationButton={false}
-        center={center}
-        onTouch={(e: any) => console.log(e.nativeEvent)}
-        // useTextureView={true}
-        // mapType={MapType.Basic}
-        onMapClick={e => {
-          // console.log('onMapClick', e);
-          bottomSheetRef.current?.present();
         }}>
         <Marker
-          pinColor="blue"
-          zIndex={100}
-          coordinate={{...P0}}
-          image={require('@assets/my_location.png')}
           width={20}
           height={20}
-          onClick={() => console.log('onClick! p0')}></Marker>
+          zIndex={100}
+          pinColor="blue"
+          image={require('@assets/my_location.png')}
+          onClick={() => console.log('onClick! p0')}
+          coordinate={{
+            latitude: Number(currentUserLocation.latitude),
+            longitude: Number(currentUserLocation.longitude),
+          }}
+        />
 
-        {dumCoor.map((item, index) => (
-          <Marker
-            key={index}
-            width={32}
-            height={37.7}
-            coordinate={item}
-            onClick={() => {
-              setCenter({
-                latitude: item.latitude,
-                longitude: item.longitude,
-                zoom: 16,
-              });
-            }}>
-            <ImageBackground
-              source={require('@assets/marker_green.png')}
-              style={{
-                width: 32,
-                height: 38,
-                alignItems: 'center',
-                justifyContent: 'center',
-                paddingBottom: '20%',
+        {userStar.length > 0 &&
+          userStar?.map((item, index) => (
+            <Marker
+              key={index}
+              width={32}
+              height={65}
+              onClick={() => {
+                console.log('item', item);
+                // setCenter({
+                //   latitude: item.location.lat,
+                //   longitude: item.location.lon,
+                //   zoom: 14,
+                // });
               }}
-              resizeMode="contain"></ImageBackground>
-          </Marker>
-        ))}
-      </NaverMapView> */}
-      {/*      <Marker
-            coordinate={item}
-            onClick={() => {
-              setCenter({
-                latitude: item.latitude,
-                longitude: item.longitude,
-                zoom: 16,
-              });
-            }}
-          /> */}
-      {/* <BottomSheetModal
+              caption={{
+                text: '9+',
+                // text:
+                //   item.chargers.length > 9 ? '9+' : String(item.chargers.length),
+                align: Align.Center,
+                haloColor: 'A6A6A6',
+                textSize: 15,
+                color: 'ffffff',
+              }}
+              // image={_getMarkerImg(item)}
+              image={require('@assets/marker_normal.png')}
+              coordinate={{
+                latitude: item.location.lat,
+                longitude: item.location.lon,
+              }}
+            />
+          ))}
+      </NaverMapView>
+      <BottomSheetModal
         style={sheetStyle}
         ref={bottomSheetRef}
         index={0}
         snapPoints={snapPoints}
         onChange={handleSheetChanges}>
         <BottomSheetFlatList
-          data={dumCoor}
-          initialNumToRender={3}
+          data={userStar}
+          ListEmptyComponent={
+            <View style={{alignItems: 'center'}}>
+              <Text
+                style={{
+                  textAlign: 'center',
+                  marginTop: 44,
+                  fontSize: 16,
+                  fontFamily: FontList.PretendardRegular,
+                  color: '#959595',
+                  lineHeight: 24.7,
+                }}>
+                아직 즐겨찾기한 충전소가 없네요 ;-){'\n'} 자주 가는 충전소를
+                즐겨찾기 해 보아요!
+              </Text>
+            </View>
+          }
           keyExtractor={(item, idx) => String(idx)}
           numColumns={3}
-          scrollEnabled={true}
           columnWrapperStyle={{
-            flex: 1,
             marginHorizontal: 6,
             marginBottom: 12,
           }}
           ListHeaderComponent={
-            <Pressable
-              style={{
-                alignSelf: 'flex-end',
-                flexDirection: 'row',
-                alignItems: 'center',
-                marginBottom: 12,
-              }}>
-              <Text
+            userStar.length > 0 && (
+              <Pressable
                 style={{
-                  fontFamily: FontList.PretendardRegular,
-                  color: 'black',
+                  alignSelf: 'flex-end',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  marginBottom: 12,
                 }}>
-                즐겨찾기 한 순
-              </Text>
-              <Image
-                source={require('@assets/arrow_bottom.png')}
-                style={{width: 9, height: 5, marginRight: 8, marginLeft: 6}}
-                resizeMode="contain"
-              />
-            </Pressable>
+                <Text
+                  style={{
+                    fontFamily: FontList.PretendardRegular,
+                    color: 'black',
+                  }}>
+                  즐겨찾기 한 순
+                </Text>
+                <Image
+                  source={require('@assets/arrow_bottom.png')}
+                  style={{width: 9, height: 5, marginRight: 8, marginLeft: 6}}
+                  resizeMode="contain"
+                />
+              </Pressable>
+            )
           }
-          // ListFooterComponent={<BottomNav />}
           renderItem={item => renderItem(item)}
         />
-      </BottomSheetModal> */}
+      </BottomSheetModal>
       <BottomNav />
     </SafeAreaView>
   );

@@ -17,6 +17,7 @@ import {
   Text,
   useWindowDimensions,
   View,
+  StyleSheet,
 } from 'react-native';
 import ModelList from 'constants/ModelList';
 import ChargerType from 'constants/ChargerType';
@@ -44,6 +45,10 @@ const AccountCarInfo = () => {
   const [selectedBrand, setSelectedBrand] = useState('');
   const [type, setType] = useState('');
   const [isReady, setIsReady] = useState(false);
+
+  const layout = useWindowDimensions();
+  const WIDTH = (layout.width - 32 - 48) / 4;
+  const nav = useNavigation<commonTypes.navi>();
 
   const dispatch = useDispatch();
 
@@ -132,9 +137,6 @@ const AccountCarInfo = () => {
       setIsReady(true);
     } else setIsReady(false);
   }, [selectedBrand, selectedModel, type]);
-
-  const layout = useWindowDimensions();
-  const nav = useNavigation<commonTypes.navi>();
 
   return (
     <SafeAreaView style={{...GlobalStyles.safeAreaStyle}}>
@@ -283,59 +285,139 @@ const AccountCarInfo = () => {
             <Title text="충전기 타입" />
             <View
               style={{
-                marginTop: 8,
-                // alignItems: 'center',
+                marginTop: 10,
+                alignItems: 'center',
                 flexDirection: 'row',
                 flexWrap: 'wrap',
-                justifyContent: 'space-between',
               }}>
-              {ChargerType.chargerLogo.map((item, idx) => (
-                <View key={idx}>
-                  <View
-                    style={{
-                      alignItems: 'center',
-                      marginBottom: 15,
-                    }}
-                    key={idx}>
-                    <Pressable
-                      onPress={() => {
-                        setType(ChargerType.chargerType[idx]);
-                      }}
-                      style={{
-                        width: 72,
-                        height: 72,
-                        borderRadius: 4,
-                        borderWidth: 1,
-                        borderColor:
-                          type === ChargerType.chargerType[idx]
-                            ? '#333333'
-                            : '#DBDBDB',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}>
-                      <Image
-                        source={item}
-                        style={{
-                          width: '85%',
-                          height: '85%',
-                          opacity:
-                            type === ChargerType.chargerType[idx] ? 1 : 0.2,
-                        }}
-                        resizeMode={'contain'}
-                      />
-                    </Pressable>
-                    <Text
-                      style={{
-                        textAlign: 'center',
-                        width: 73,
-                        fontFamily: FontList.PretendardRegular,
-                        fontSize: 12,
-                      }}>
-                      {ChargerType.chargerType[idx]}
-                    </Text>
-                  </View>
+              <View style={{flex: 1}}>
+                <View
+                  style={{
+                    height: WIDTH,
+                    ...styles.warpper,
+                  }}>
+                  {ChargerType.chargerLogo.map(
+                    (item, index) =>
+                      index < 4 && (
+                        <Pressable
+                          key={index}
+                          onPress={() => {
+                            setType(ChargerType.chargerType[index]);
+                          }}
+                          style={{
+                            ...styles.innerView,
+                            borderWidth: 1,
+                            opacity:
+                              type === ChargerType.chargerType[index] ? 1 : 0.3,
+                            borderColor:
+                              type === ChargerType.chargerType[index]
+                                ? '#333333'
+                                : '#DBDBDB',
+                            borderRadius: 4,
+                            marginRight: index < 3 ? 16 : 0,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}>
+                          <Image
+                            source={item}
+                            resizeMode={'contain'}
+                            style={{width: '80%', height: '80%'}}
+                          />
+                        </Pressable>
+                      ),
+                  )}
                 </View>
-              ))}
+
+                <View
+                  style={{
+                    ...styles.warpper,
+                  }}>
+                  {ChargerType.chargerType.map(
+                    (item, index) =>
+                      index < 4 && (
+                        <View
+                          key={index}
+                          style={{
+                            ...styles.innerView,
+                            marginRight: index < 3 ? 16 : 0,
+                          }}>
+                          <Text
+                            style={{
+                              fontFamily: FontList.PretendardRegular,
+                              fontSize: 12,
+                              color: '#333333',
+                            }}>
+                            {item}
+                          </Text>
+                        </View>
+                      ),
+                  )}
+                </View>
+                {/* 두 번째 라인 */}
+                <View
+                  style={{
+                    height: WIDTH,
+                    ...styles.warpper,
+                    marginTop: 15,
+                  }}>
+                  {ChargerType.chargerLogo.map(
+                    (item, index) =>
+                      index > 3 && (
+                        <Pressable
+                          key={index}
+                          onPress={() => {
+                            setType(ChargerType.chargerType[index]);
+                          }}
+                          style={{
+                            // ...styles.innerView,
+                            flex: 1 / 4,
+                            borderWidth: 1,
+                            opacity:
+                              type === ChargerType.chargerType[index] ? 1 : 0.3,
+                            borderColor:
+                              type === ChargerType.chargerType[index]
+                                ? '#333333'
+                                : '#DBDBDB',
+                            borderRadius: 4,
+                            marginRight: index > 3 ? (index > 4 ? 32 : 16) : 0,
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                          }}>
+                          <Image
+                            source={item}
+                            resizeMode={'contain'}
+                            style={{width: '80%', height: '80%'}}
+                          />
+                        </Pressable>
+                      ),
+                  )}
+                </View>
+
+                <View
+                  style={{
+                    ...styles.warpper,
+                  }}>
+                  {ChargerType.chargerType.map(
+                    (item, index) =>
+                      index > 3 && (
+                        <View
+                          style={{
+                            ...styles.innerView,
+                            marginRight: index > 3 ? (index > 4 ? 32 : 16) : 0,
+                          }}>
+                          <Text
+                            style={{
+                              fontFamily: FontList.PretendardRegular,
+                              fontSize: 12,
+                              color: '#333333',
+                            }}>
+                            {item}
+                          </Text>
+                        </View>
+                      ),
+                  )}
+                </View>
+              </View>
             </View>
           </View>
         </View>
@@ -376,3 +458,14 @@ const AccountCarInfo = () => {
 };
 
 export default AccountCarInfo;
+const styles = StyleSheet.create({
+  warpper: {
+    flexDirection: 'row',
+    // marginHorizontal: 16,
+  },
+  innerView: {
+    flex: 1 / 4,
+    // backgroundColor: 'gray',
+    alignItems: 'center',
+  },
+});

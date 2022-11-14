@@ -12,8 +12,14 @@ import GlobalStyles from 'styles/GlobalStyles';
 import BottomNav from '@components/BottomNav';
 import {useDispatch, useSelector} from 'react-redux';
 import {RouteProp, useIsFocused, useRoute} from '@react-navigation/native';
-import {setBottomIdx} from 'redux/reducers/navReducer';
-import NaverMapView, {Marker, Path, Polygon, Polyline} from 'react-native-nmap';
+import NaverMapView, {
+  Align,
+  MapType,
+  Marker,
+  Path,
+  Polygon,
+  Polyline,
+} from 'react-native-nmap';
 import {GestureHandlerRootView, ScrollView} from 'react-native-gesture-handler';
 import {_getHeight, _getWidth} from 'constants/utils';
 import BottomButton from '@components/BottomButton';
@@ -28,6 +34,7 @@ import FontList from 'constants/FontList';
 import commonAPI from 'api/modules/commonAPI';
 import {setGoal, setStart} from 'redux/reducers/pathReducer';
 import Loading from '@components/Loading';
+import modules from 'constants/utils/modules';
 
 const PathMain = () => {
   const dispatch = useDispatch();
@@ -37,7 +44,6 @@ const PathMain = () => {
     (state: RootState) => state.locationReducer,
   );
   const [pickedRecomend, setPickedRecomend] = useState<number>();
-  const [pickedMarker, setPickedMarker] = useState<number>();
   const [recomandList, setRecomandList] = useState([]);
   const [lineData, setLineData] = useState([]);
   const layout = useWindowDimensions();
@@ -59,7 +65,7 @@ const PathMain = () => {
   const [visible, setVisible] = useState(false);
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const [pick, setPick] = useState(false);
-  const snapPoints = useMemo(() => ['40%'], []);
+  const snapPoints = useMemo(() => [300], []);
 
   const handleSheetChanges = useCallback((index: number) => {
     console.log('handleSheetChanges', index);
@@ -193,6 +199,33 @@ const PathMain = () => {
     }
   }, [lineData]);
 
+  const _getMarkerImg = (item: any) => {
+    let isAc = false;
+    let isDc = false;
+    let close = modules._isClosed(item);
+
+    // console.log('is CLOSED? ::', close);
+    item.chargers.map((item, index) => {
+      if (
+        item.chgerTypeInfo === 'DC차데모+AC3상+DC콤보' ||
+        item.chgerTypeInfo === 'DC차데모+AC3상'
+      ) {
+        isAc = true;
+        isDc = true;
+      }
+
+      if (item.chgerTypeInfo === 'AC완속' || item.chgerTypeInfo === 'AC3상')
+        isAc = true;
+      else isDc = true;
+    });
+    if (!item) return;
+    if (!close) return require('@assets/marker_close.png');
+    if (isAc && isDc) return require('@assets/marker_mix.png');
+    if (isAc && !isDc) return require('@assets/marker_normal.png');
+    if (isDc && !isAc) return require('@assets/marker_fast.png');
+    if (!isAc && !isDc) return require('@assets/marker_normal.png');
+  };
+
   const mapRef = useRef();
 
   return (
@@ -227,61 +260,65 @@ const PathMain = () => {
             zoomControl={false}
             useTextureView={true}
             style={{
-              width: '100%',
-              height: layout.height - _getHeight(60),
+              // flex: 1,
+              // width: '100%',
+              height: layout.height - 60,
             }}
             onCameraChange={e => console.log('changed', e)}
             scaleBar={false}
             showsMyLocationButton={false}
             tiltGesturesEnabled={false}
+            // mapType={MapType.Navi}
             center={center}>
             <Marker
-              pinColor="blue"
-              coordinate={currentUserLocation}
-              image={require('@assets/my_location.png')}
-              width={20}
-              height={20}
-              onClick={() => console.log('onClick! p0')}
+              width={32}
+              height={65}
+              caption={{
+                text: '출발',
+                align: Align.Center,
+                haloColor: '16B112',
+                textSize: 13,
+                color: 'ffffff',
+              }}
               zIndex={100}
+              image={require('@assets/marker_normal.png')}
+              coordinate={currentUserLocation}
             />
             {/* 도착지 마커 */}
             {route && (
               <Marker
+                width={32}
+                height={65}
+                onClick={() => {
+                  setCenter({
+                    latitude: 37.498418405021695,
+                    longitude: 127.02862499003908,
+                    zoom: 14,
+                  });
+                }}
+                caption={{
+                  text: '도착',
+                  align: Align.Center,
+                  haloColor: '166DF0',
+                  textSize: 13,
+                  color: 'ffffff',
+                }}
+                image={require('@assets/marker_fast.png')}
                 coordinate={{
                   latitude: 37.498418405021695,
                   longitude: 127.02862499003908,
                 }}
-                width={32}
-                height={48}
-                onClick={() => console.log('onClick! p0')}>
-                <ImageBackground
-                  source={require('@assets/marker_fast.png')}
-                  style={{
-                    width: 32,
-                    height: 48,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    paddingBottom: '48%',
-                  }}
-                  resizeMode="contain">
-                  <Text
-                    style={{
-                      color: 'white',
-                      fontSize: 12,
-                      fontFamily: FontList.PretendardBold,
-                    }}>
-                    도착
-                  </Text>
-                </ImageBackground>
-              </Marker>
+              />
             )}
             {/* 도착지 목적지 라인 */}
             {lineData.length > 0 && showRecomend && (
               <Path
                 coordinates={lineData}
-                width={1.5}
-                color={'red'}
-                outlineColor={'red'}
+                width={7}
+                color={'#07B3FD'}
+                outlineColor={'#07B3FD'}
+                pattern={require('@assets/top_ic_history_w.png')}
+                patternInterval={25}
               />
             )}
             {/* 추천 중전기 마커들 */}
@@ -289,12 +326,8 @@ const PathMain = () => {
               recomandList.map((item, index) => (
                 <Marker
                   key={index}
-                  coordinate={{
-                    latitude: item.location.lat,
-                    longitude: item.location.lon,
-                  }}
                   width={32}
-                  height={48}
+                  height={65}
                   onClick={() => {
                     console.log('item', item);
                     setCenter({
@@ -302,27 +335,23 @@ const PathMain = () => {
                       longitude: item.location.lon,
                       zoom: 14,
                     });
-                  }}>
-                  <ImageBackground
-                    source={require('@assets/marker_normal.png')}
-                    style={{
-                      width: 32,
-                      height: 48,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      paddingBottom: '48%',
-                    }}
-                    resizeMode="contain">
-                    <Text
-                      style={{
-                        color: 'white',
-                        fontSize: 12,
-                        fontFamily: FontList.PretendardBold,
-                      }}>
-                      {item.chargers.length > 9 ? '9+' : item.chargers.length}
-                    </Text>
-                  </ImageBackground>
-                </Marker>
+                  }}
+                  caption={{
+                    text:
+                      item.chargers.length > 9
+                        ? '9+'
+                        : String(item.chargers.length),
+                    align: Align.Center,
+                    haloColor: 'A6A6A6',
+                    textSize: 15,
+                    color: 'ffffff',
+                  }}
+                  image={_getMarkerImg(item)}
+                  coordinate={{
+                    latitude: Number(item.location.lat),
+                    longitude: Number(item.location.lon),
+                  }}
+                />
               ))}
           </NaverMapView>
           <BottomSheetModal

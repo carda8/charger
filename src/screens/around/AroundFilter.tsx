@@ -520,7 +520,7 @@ const AroundFilter = () => {
                           opacity: _getOpasity(chargerType, item),
                           borderColor: _getColor(chargerType, item),
                           borderRadius: 4,
-                          marginRight: 48,
+                          marginRight: index > 3 ? (index > 4 ? 32 : 16) : 0,
                           alignItems: 'center',
                           justifyContent: 'center',
                         }}>
@@ -544,7 +544,7 @@ const AroundFilter = () => {
                       <View
                         style={{
                           ...styles.innerView,
-                          marginRight: 48,
+                          marginRight: index > 3 ? (index > 4 ? 32 : 16) : 0,
                         }}>
                         <Text
                           style={{

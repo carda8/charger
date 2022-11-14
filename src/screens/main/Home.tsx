@@ -74,7 +74,7 @@ const Home = () => {
       case 2:
         return setVisible(!visible);
       case 3:
-        return nav.navigate('FavStationMain');
+        return nav.navigate('AroundMain', {isFavorite: true});
       default:
         return;
     }

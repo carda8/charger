@@ -84,8 +84,12 @@ const NavModal = ({visible, text, title, setVisible, coor, item}: props) => {
     // 만약 어플이 설치되어 있으면 true, 없으면 false
     const supported = await Linking.canOpenURL(url);
     console.log('KAKAO_MAP_SCHEMA', KAKAO_MAP_SCHEMA);
+    console.log('supported', supported);
     await Linking.openURL(url)
-      .then(res => console.log('true res', res))
+      .then(res => {
+        if (!res) _routeMarket(url);
+        console.log('true res', res);
+      })
       .catch(err => {
         _routeMarket(url);
       });

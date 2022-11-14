@@ -3,7 +3,7 @@ import React, {useEffect, useState} from 'react';
 import BottomNav from '@components/BottomNav';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import GlobalStyles from 'styles/GlobalStyles';
-import {useDispatch} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import {useIsFocused} from '@react-navigation/native';
 import {setBottomIdx} from 'redux/reducers/navReducer';
 import Header from '@components/Header';
@@ -11,38 +11,40 @@ import HeaderCenter from '@components/HeaderCenter';
 import {FlatList} from 'react-native-gesture-handler';
 import StationListItem from '@screens/around/Components/StationListItem';
 import RecentMainItem from './components/RecentMainItem';
+import {RootState} from 'redux/store';
 
 const RecentMain = () => {
   const dispatch = useDispatch();
   const isFocused = useIsFocused();
-  const [recent, setRecent] = useState([
-    '선릉역',
-    '강남역 1번 출구',
-    '서면역',
-    '강남역 12번 출구',
-    '강남역 12번 출구 ',
-    '코스트코',
-    '트레이더스',
-    '이케아',
-    '홈플러스',
-    '한화포레나 3단지',
-  ]);
+  const {userInfo} = useSelector((state: RootState) => state.authReducer);
+  const [recent, setRecent] = useState<any>();
+
+  const _getHistory = () => {
+    console.log('userinfo', userInfo);
+    if (userInfo?.histories) {
+      const temp = [...userInfo?.histories].reverse();
+      setRecent(temp);
+    }
+  };
+
   useEffect(() => {
     if (isFocused) {
       dispatch(setBottomIdx(3));
     }
   }, [isFocused]);
 
+  useEffect(() => {
+    _getHistory();
+  }, []);
+
   const renderItem: ListRenderItem<any> = item => {
     return (
-      <View>
-        <RecentMainItem
-          item={item.item}
-          index={item.index}
-          recentData={recent}
-          setRecentData={setRecent}
-        />
-      </View>
+      <RecentMainItem
+        item={item.item}
+        index={item.index}
+        recentData={recent}
+        setRecentData={setRecent}
+      />
     );
   };
 
@@ -51,6 +53,13 @@ const RecentMain = () => {
       <HeaderCenter title="최근 충전소" />
       <FlatList
         data={recent}
+        ListEmptyComponent={
+          <View style={{margin: 16, alignItems: 'center'}}>
+            <Text style={{fontSize: 16, color: '#959595'}}>
+              최근 충전소가 없습니다
+            </Text>
+          </View>
+        }
         keyExtractor={(item, index) => String(index)}
         renderItem={item => renderItem(item)}
         style={{marginBottom: 60}}

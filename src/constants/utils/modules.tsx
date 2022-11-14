@@ -1,4 +1,9 @@
+import commonAPI from 'api/modules/commonAPI';
 import ModelList from 'constants/ModelList';
+import dayjs from 'dayjs';
+import {useDispatch, useSelector} from 'react-redux';
+import {setUserInfo} from 'redux/reducers/authReducer';
+import {RootState} from 'redux/store';
 
 export default {
   _getCarModel: (selectedBrand: any) => {
@@ -32,5 +37,25 @@ export default {
     );
     if (close) return true;
     else return false;
+  },
+
+  _convertDate: (day: any) => {
+    return dayjs(day).format('MM.DD');
+  },
+
+  _updateUserInfo: async (dispatch: any, userInfo: any) => {
+    // const {userInfo} = useSelector((state: RootState) => state.authReducer);
+    // const dispatch = useDispatch();
+    if (userInfo?.id) {
+      const id = {user_id: userInfo?.id};
+      await commonAPI
+        ._getUserInfo(id)
+        .then(res => {
+          if (res.data) dispatch(setUserInfo(res.data));
+        })
+        .catch(err => {
+          console.log('err', err);
+        });
+    }
   },
 };
