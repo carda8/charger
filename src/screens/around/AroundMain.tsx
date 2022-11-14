@@ -317,7 +317,7 @@ const AroundMain = () => {
                 zoom: 16,
               });
             }}
-            caption={{text: '123'}}
+            caption={{text: '123', align: Align.Center}}
             image={_getMarkerImg(item)}
             coordinate={{
               latitude: Number(item.location.lat),
