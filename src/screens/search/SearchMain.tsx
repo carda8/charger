@@ -47,9 +47,9 @@ const SearchMain = ({bottomSheetRef}: props) => {
 
   const [visible, setVisible] = useState(false);
 
+  const [res, setRest] = useState([]);
   const [modal, setModal] = useState(false);
   const [modalNoRes, setModalNoRes] = useState(false);
-  const [res, setRest] = useState([]);
   const [showNoRes, setShowNoRes] = useState(false);
   const {userInfo} = useSelector((state: RootState) => state.authReducer);
 

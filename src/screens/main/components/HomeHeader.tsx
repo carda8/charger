@@ -93,11 +93,11 @@ const HomeHeader = ({title, subTitle, goBack, backTitle}: props) => {
               {userInfo?.name ? userInfo?.name : '마이차저'}님
             </Text>
             {userInfo?.car_brand ? (
-              <View style={{flexDirection: 'row', flex: 1}}>
+              <View style={{flexDirection: 'row', flex: 1, flexWrap: 'wrap'}}>
                 <Text
                   style={{
                     fontFamily: FontList.PretendardMedium,
-                    fontSize: 16,
+                    fontSize: 14,
                     color: '#858585',
                   }}>
                   {userInfo?.car_brand}{' '}
@@ -105,7 +105,7 @@ const HomeHeader = ({title, subTitle, goBack, backTitle}: props) => {
                 <Text
                   style={{
                     fontFamily: FontList.PretendardMedium,
-                    fontSize: 16,
+                    fontSize: 14,
                     color: '#858585',
                   }}>
                   {userInfo?.car_model}
@@ -114,7 +114,7 @@ const HomeHeader = ({title, subTitle, goBack, backTitle}: props) => {
                 <Text
                   style={{
                     fontFamily: FontList.PretendardMedium,
-                    fontSize: 16,
+                    fontSize: 14,
                     color: '#858585',
                   }}>
                   {userInfo?.chgerType}

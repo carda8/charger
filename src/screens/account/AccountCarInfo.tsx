@@ -29,6 +29,8 @@ import {setUserInfo} from 'redux/reducers/authReducer';
 import {RootState} from 'redux/store';
 import {API} from 'api/API';
 import commonAPI from 'api/modules/commonAPI';
+import Loading from '@components/Loading';
+import {cos} from 'react-native-reanimated';
 
 interface props {
   text: string;
@@ -37,13 +39,14 @@ interface props {
 
 const AccountCarInfo = () => {
   const {userInfo} = useSelector((state: RootState) => state.authReducer);
+  console.log('userInfo', userInfo);
 
   const [modal, setModal] = useState(false);
   const [showModel, setShowModel] = useState(false);
 
   const [selectedModel, setSelectedModel] = useState('');
   const [selectedBrand, setSelectedBrand] = useState('');
-  const [type, setType] = useState('');
+  const [type, setType] = useState<any[]>([]);
   const [isReady, setIsReady] = useState(false);
 
   const layout = useWindowDimensions();
@@ -52,6 +55,11 @@ const AccountCarInfo = () => {
 
   const dispatch = useDispatch();
 
+  const [carList, setCarList] = useState([]);
+  const [carListEtc, setCarListEtc] = useState<any[]>([]);
+
+  const [loading, setLoading] = useState(false);
+  const [etcOrigin, setEtcOrigin] = useState<any[]>([]);
   const Title = ({text, lineHeight}: props) => {
     return (
       <Text
@@ -67,39 +75,93 @@ const AccountCarInfo = () => {
     );
   };
 
+  const _filterList = (brand: string) => {
+    let temp = [...carList];
+    let modelList: any[] = [];
+    temp = temp.filter((item, index) => item.car_brand === brand);
+    temp.map((item, index) => modelList.push(item.car_model));
+    if (modelList.length > 0) return modelList;
+    else return [];
+  };
+
+  const _filterEtcList = () => {
+    const mainCarList = [
+      '현대자동차',
+      '기아자동차',
+      'BENZ',
+      'AUDI',
+      'Genesis',
+      'TESLA',
+      'GM',
+      'BMW',
+    ];
+
+    const res = carList.filter(item => !mainCarList.includes(item.car_brand));
+    let temp: any[] = [];
+    res.map((item, index) => {
+      temp.push(item.car_brand);
+      temp.push(item.car_model);
+    });
+    const set = new Set(temp);
+    const uniqueArr = [...set];
+    setCarListEtc(uniqueArr);
+    setEtcOrigin(res);
+    console.log('set', set);
+    console.log('filter res', res);
+  };
+
+  const _onPressEtcModel = (item: string) => {
+    const res = etcOrigin.find(item2 => item2.car_brand === item);
+    if (res) return true;
+    else return false;
+  };
+
   const _getCarModel = () => {
+    let res;
     switch (selectedBrand) {
       case '현대':
-        return ModelList.현대;
+        res = _filterList('현대자동차');
+        return res;
       case '기아':
-        return ModelList.기아;
+        res = _filterList('기아자동차');
+        return res;
       case '벤츠':
-        return ModelList.벤츠;
+        res = _filterList('BENZ');
+        return res;
       case '아우디':
-        return ModelList.아우디;
+        res = _filterList('AUDI');
+        return res;
       case '제네시스':
-        return ModelList.제네시스;
+        res = _filterList('Genesis');
+        return res;
       case '테슬라':
-        return ModelList.테슬라;
+        res = _filterList('TESLA');
+        return res;
       case '쉐보레':
-        return ModelList.쉐보레;
+        res = _filterList('GM');
+        return res;
       case 'BMW':
-        return ModelList.BMW;
+        res = _filterList('BMW');
+        return res;
+      case '기타':
+        return carListEtc;
       default:
         return [];
     }
   };
 
   const _onPress = () => {
+    const res = etcOrigin?.find(item => item.car_model === selectedModel);
+
     if (!isReady) {
       setModal(!modal);
     } else {
       dispatch(
         setUserInfo({
           ...userInfo,
-          car_brand: selectedBrand,
+          car_brand: res ? res.car_brand : selectedBrand,
           car_model: selectedModel,
-          chgerType: [type],
+          chgerType: type.join(' '),
         }),
       );
       _postUserDB();
@@ -107,13 +169,16 @@ const AccountCarInfo = () => {
   };
 
   const _postUserDB = () => {
+    const res = etcOrigin?.find(item => item.car_model === selectedModel);
+
     const data: commonTypes.saveUserDB = {
-      car_brand: selectedBrand,
+      car_brand: res ? res.car_brand : selectedBrand,
       car_model: selectedModel,
-      chgerType: [type],
+      chgerType: type,
       name: userInfo?.name,
       user_id: userInfo?.id,
     };
+    console.log('data', data);
     if (data.user_id) {
       commonAPI
         ._postSaveUserInfo(data)
@@ -127,13 +192,85 @@ const AccountCarInfo = () => {
     }
   };
 
+  const _getCarList = async () => {
+    setLoading(true);
+    await commonAPI
+      ._getCarInfoList({})
+      .then(res => {
+        const data = res.data;
+        console.log('res', data);
+        if (data.length > 0) {
+          let temp: any[] = [];
+          data.map((item, index) => {
+            temp.push(item.car_brand);
+          });
+          const set = new Set(temp);
+          const uniqueArr = [...set];
+          console.log('temp', uniqueArr);
+          setCarList(data);
+        }
+      })
+      .catch(err => console.log('err', err))
+      .finally(() => setLoading(false));
+  };
+
+  const _onPressType = (item: string) => {
+    let temp: any[] = [...type];
+    const isSelected = temp.find(item2 => item === item2);
+    if (isSelected) {
+      temp = temp.filter(item2 => item !== item2);
+      setType(temp);
+    } else {
+      temp.push(item);
+      setType(temp);
+    }
+  };
+
+  const _getStyle = (item: string) => {
+    let temp: any[] = [...type];
+    const isSelected = temp.find(item2 => item === item2);
+    return isSelected;
+  };
+
+  const _autoSetType = () => {
+    const res = carList.find(item => item.car_model === selectedModel);
+    if (res) {
+      let temp: any[] = [];
+      res.chagers.map(item => {
+        temp.push(item.name);
+      });
+      console.log('temp', temp);
+      setType(temp);
+    }
+    console.log('res', res);
+  };
+
+  useEffect(() => {
+    _getCarList();
+  }, []);
+
+  useEffect(() => {
+    if (carList.length > 0) {
+      _filterEtcList();
+    }
+  }, [carList]);
+
   useEffect(() => {
     setSelectedModel('');
+    setType([]);
   }, [selectedBrand]);
 
   useEffect(() => {
-    console.log('model');
-    if (selectedBrand !== '' && selectedModel !== '' && type) {
+    if (selectedModel) _autoSetType();
+  }, [selectedModel]);
+
+  useEffect(() => {
+    if (selectedBrand == '기타') {
+      const res = etcOrigin.find(item => item.car_model === selectedModel);
+      console.log('기타 res', res);
+    }
+    console.log('picked', selectedBrand, selectedModel, type);
+    if (selectedBrand !== '' && selectedModel !== '' && type.length > 0) {
       setIsReady(true);
     } else setIsReady(false);
   }, [selectedBrand, selectedModel, type]);
@@ -208,6 +345,9 @@ const AccountCarInfo = () => {
                 if (!selectedBrand) {
                   return setModal(!modal);
                 }
+                if (_getCarModel().length === 0) {
+                  return;
+                }
                 setShowModel(!showModel);
               }}
               style={{
@@ -228,7 +368,11 @@ const AccountCarInfo = () => {
                   fontSize: 16,
                   color: '#838383',
                 }}>
-                {selectedModel ? selectedModel : '차량모델명을 선택하세요'}
+                {selectedModel
+                  ? selectedModel
+                  : _getCarModel().length === 0
+                  ? '차량모델 정보가 없습니다'
+                  : '차량모델명을 선택하세요'}
               </Text>
               <Image
                 source={require('@assets/bottom_arrow.png')}
@@ -256,10 +400,12 @@ const AccountCarInfo = () => {
               >
                 {_getCarModel()?.map((item, idx) => (
                   <Pressable
+                    disabled={_onPressEtcModel(item)}
                     key={idx}
                     onPress={() => {
                       setShowModel(false);
                       setSelectedModel(item);
+                      console.log('item', item);
                     }}
                     style={{
                       paddingHorizontal: 16,
@@ -269,8 +415,10 @@ const AccountCarInfo = () => {
                     }}>
                     <Text
                       style={{
-                        fontFamily: FontList.PretendardMedium,
-                        color: '#959595',
+                        fontFamily: _onPressEtcModel(item)
+                          ? FontList.PretendardBold
+                          : FontList.PretendardMedium,
+                        color: _onPressEtcModel(item) ? '#333333' : '#959595',
                         fontSize: 13,
                       }}>
                       {item}
@@ -302,17 +450,20 @@ const AccountCarInfo = () => {
                         <Pressable
                           key={index}
                           onPress={() => {
-                            setType(ChargerType.chargerType[index]);
+                            _onPressType(ChargerType.chargerType[index]);
+                            // setType(ChargerType.chargerType[index]);
                           }}
                           style={{
                             ...styles.innerView,
                             borderWidth: 1,
-                            opacity:
-                              type === ChargerType.chargerType[index] ? 1 : 0.3,
-                            borderColor:
-                              type === ChargerType.chargerType[index]
-                                ? '#333333'
-                                : '#DBDBDB',
+                            opacity: _getStyle(ChargerType.chargerType[index])
+                              ? 1
+                              : 0.3,
+                            borderColor: _getStyle(
+                              ChargerType.chargerType[index],
+                            )
+                              ? '#333333'
+                              : '#DBDBDB',
                             borderRadius: 4,
                             marginRight: index < 3 ? 16 : 0,
                             alignItems: 'center',
@@ -366,18 +517,20 @@ const AccountCarInfo = () => {
                         <Pressable
                           key={index}
                           onPress={() => {
-                            setType(ChargerType.chargerType[index]);
+                            _onPressType(ChargerType.chargerType[index]);
                           }}
                           style={{
                             // ...styles.innerView,
                             flex: 1 / 4,
                             borderWidth: 1,
-                            opacity:
-                              type === ChargerType.chargerType[index] ? 1 : 0.3,
-                            borderColor:
-                              type === ChargerType.chargerType[index]
-                                ? '#333333'
-                                : '#DBDBDB',
+                            opacity: _getStyle(ChargerType.chargerType[index])
+                              ? 1
+                              : 0.3,
+                            borderColor: _getStyle(
+                              ChargerType.chargerType[index],
+                            )
+                              ? '#333333'
+                              : '#DBDBDB',
                             borderRadius: 4,
                             marginRight: index > 3 ? (index > 4 ? 32 : 16) : 0,
                             alignItems: 'center',
@@ -401,6 +554,7 @@ const AccountCarInfo = () => {
                     (item, index) =>
                       index > 3 && (
                         <View
+                          key={index}
                           style={{
                             ...styles.innerView,
                             marginRight: index > 3 ? (index > 4 ? 32 : 16) : 0,
@@ -453,6 +607,7 @@ const AccountCarInfo = () => {
         setVisible={setModal}
         visible={modal}
       />
+      <Loading visible={loading} />
     </SafeAreaView>
   );
 };

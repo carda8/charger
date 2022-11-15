@@ -23,6 +23,11 @@ export default {
     const res = await _delAPI('search/histories', params);
     return res;
   },
+  // common
+  _getCarInfoList: async (params: any) => {
+    const res = await _getAPI('car-infos', params);
+    return res;
+  },
 
   //favorite
   _postUserStar: async (params: any) => {

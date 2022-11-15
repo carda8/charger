@@ -10,6 +10,7 @@ interface props {
   item: any;
   setCenter: Dispatch<SetStateAction<any>>;
   setUserStar: Dispatch<SetStateAction<any>>;
+  setStarMarker: Dispatch<SetStateAction<any>>;
   bottomSheetRef: React.RefObject<BottomSheetModalMethods>;
 }
 
@@ -19,6 +20,7 @@ const RenderItem = ({
   setCenter,
   bottomSheetRef,
   setUserStar,
+  setStarMarker,
 }: props) => {
   const {userInfo} = useSelector((state: RootState) => state.authReducer);
   const [star, setStart] = useState(true);
@@ -54,12 +56,14 @@ const RenderItem = ({
     <>
       <Pressable
         onPress={() => {
+          console.log('data', data);
+          bottomSheetRef.current?.present();
           setCenter({
-            latitude: item.item.latitude,
-            longitude: item.item.longitude,
-            zoom: 13,
+            latitude: data.location.lat,
+            longitude: data.location.lon,
+            zoom: 17,
           });
-          bottomSheetRef.current?.close();
+          setStarMarker(data);
         }}
         key={item.index}
         style={{
@@ -101,7 +105,7 @@ const RenderItem = ({
               color: '#4B4B4B',
               fontSize: 13,
             }}>
-            1.5km
+            {data.distance}km
           </Text>
         </View>
         <View style={{marginTop: 17}}>

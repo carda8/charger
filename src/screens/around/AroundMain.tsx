@@ -97,13 +97,15 @@ const AroundMain = () => {
     if (userInfo?.id) {
       const data = {
         user_id: userInfo.id,
+        currentXY: `${currentUserLocation.latitude},${currentUserLocation.longitude}`,
+        order_by: '',
       };
 
       await commonAPI
         ._getUserStar(data)
         .then(res => {
-          console.log(res.data);
-          setUserStar(res.data.favorites);
+          console.log('_getUserStar ## ', res);
+          setUserStar(res.data);
         })
         .catch(err => console.log('err', err));
     }
@@ -111,7 +113,7 @@ const AroundMain = () => {
 
   useEffect(() => {
     _getUserStar();
-  }, []);
+  }, [userInfo]);
 
   const _getAroundStation = async () => {
     setLoading(true);
@@ -230,11 +232,12 @@ const AroundMain = () => {
       />
     );
   };
-  const [center, setCenter] = useState({
-    latitude: 37.564362,
-    longitude: 126.977011,
-    zoom: 13,
-  });
+  // const [center, setCenter] = useState({
+  //   latitude: 37.564362,
+  //   longitude: 126.977011,
+  //   zoom: 13,
+  // });
+  const [starMarker, setStarMarker] = useState<any>();
 
   const renderItemStar: ListRenderItem<any> = item => {
     return (
@@ -242,11 +245,21 @@ const AroundMain = () => {
         item={item}
         list={userStar}
         bottomSheetRef={bottomSheetStarRef}
-        setCenter={setCenter}
+        setCenter={setClickedMarker}
         setUserStar={setUserStar}
+        setStarMarker={setStarMarker}
       />
     );
   };
+
+  useEffect(() => {
+    if (starMarker) {
+      setPick([starMarker]);
+      console.log('hi');
+      bottomSheetRef.current?.present();
+      bottomSheetStarRef.current?.dismiss();
+    }
+  }, [starMarker]);
 
   return (
     <SafeAreaView style={{...GlobalStyles.safeAreaStyle}}>
@@ -332,7 +345,11 @@ const AroundMain = () => {
           if (initRef.current > 1) {
             setReload(true);
           }
-          if (clickedMarker) setClickedMarker(undefined);
+          if (
+            clickedMarker?.latitude === currentUserLocation?.latitude &&
+            clickedMarker?.longitude === currentUserLocation?.longitude
+          )
+            setClickedMarker(undefined);
           initRef.current += 1;
           setReloadCover(e.coveringRegion);
         }}
@@ -346,6 +363,37 @@ const AroundMain = () => {
           height={40}
           onClick={() => console.log('onClick! p0')}
         />
+        {starMarker && (
+          <Marker
+            width={32}
+            height={65}
+            onClick={() => {
+              setPick([starMarker]);
+              setClickedMarker({
+                latitude: Number(starMarker.location?.lat),
+                longitude: Number(starMarker.location?.lon),
+                zoom: 16,
+              });
+              bottomSheetRef.current?.present();
+            }}
+            caption={{
+              text:
+                starMarker.chargers.length > 9
+                  ? '9+'
+                  : String(starMarker.chargers.length),
+              align: Align.Center,
+              haloColor: 'A6A6A6',
+              textSize: 15,
+              color: 'ffffff',
+            }}
+            image={_getMarkerImg(starMarker)}
+            coordinate={{
+              latitude: Number(starMarker.location.lat),
+              longitude: Number(starMarker.location.lon),
+            }}
+          />
+        )}
+
         {aroundKeyData?.location?.lat && (
           <Marker
             width={32}

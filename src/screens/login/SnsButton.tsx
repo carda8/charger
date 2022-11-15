@@ -1,4 +1,4 @@
-import {View, Text, Pressable, Image} from 'react-native';
+import {View, Text, Pressable, Image, Alert} from 'react-native';
 import React, {useEffect, useState, Dispatch, SetStateAction} from 'react';
 import SnsList from 'constants/SnsList';
 import {commonTypes} from '@types';
@@ -17,6 +17,10 @@ import {useDispatch, useSelector} from 'react-redux';
 import {RootState} from 'redux/store';
 import {setUserInfo} from 'redux/reducers/authReducer';
 import commonAPI from 'api/modules/commonAPI';
+import {
+  GoogleSignin,
+  statusCodes,
+} from '@react-native-google-signin/google-signin';
 
 interface props {
   text: string;
@@ -48,7 +52,11 @@ const SnsButton = ({text, snsType, navigation, idx, setLoading}: props) => {
     require('@assets/apple.png'),
   ];
 
-  const _checkUser = async (profileInfo: any, userEmail: string) => {
+  const _checkUser = async (
+    profileInfo: any,
+    userEmail: string,
+    userName: string,
+  ) => {
     const data = {
       user_id: userEmail,
     };
@@ -75,6 +83,7 @@ const SnsButton = ({text, snsType, navigation, idx, setLoading}: props) => {
         console.log('check user res', res);
       })
       .catch(err => {
+        dispatch(setUserInfo({...userInfo, id: userEmail, name: userName}));
         navigation.navigate('AccountFinish');
         console.log('check user err', err);
       })
@@ -115,8 +124,9 @@ const SnsButton = ({text, snsType, navigation, idx, setLoading}: props) => {
       if (profileResult?.message === 'success') {
         const id = profileResult.response.id;
         const name = profileResult.response.name;
-        dispatch(setUserInfo({...userInfo, id: id, name: name}));
-        navigation.navigate('AccountFinish');
+        _checkUser(profileResult.response, id, name);
+        // dispatch(setUserInfo({...userInfo, id: id, name: name}));
+        // navigation.navigate('AccountFinish');
       }
       setGetProfileRes(profileResult);
     } catch (e) {
@@ -132,7 +142,7 @@ const SnsButton = ({text, snsType, navigation, idx, setLoading}: props) => {
     const profile: KakaoProfile = await getProfile(token);
     console.log('profile', profile);
     if (profile.email) {
-      _checkUser(profile, profile.email);
+      _checkUser(profile, profile.email, profile.nickname);
     } else {
       setLoading(false);
     }
@@ -151,6 +161,48 @@ const SnsButton = ({text, snsType, navigation, idx, setLoading}: props) => {
   };
   // ########## kakao end ##########
 
+  // ########## google start ##########
+
+  const _googleLogin = () => {
+    GoogleSignin.configure({
+      // scopes: ['https://www.googleapis.com/auth/drive.readonly'], // what API you want to access on behalf of the user, default is email and profile
+      webClientId:
+        '290449804815-1egeomuk2a1sftefjng8nfjsd0t0jdcc.apps.googleusercontent.com', // client ID of type WEB for your server (needed to verify user ID and offline access)
+      // offlineAccess: true, // if you want to access Google API on behalf of the user FROM YOUR SERVER
+      // hostedDomain: '', // specifies a hosted domain restriction
+      // forceCodeForRefreshToken: true, // [Android] related to `serverAuthCode`, read the docs link below *.
+      // accountName: '', // [Android] specifies an account name on the device that should be used
+      // iosClientId: '<FROM DEVELOPER CONSOLE>', // [iOS] if you want to specify the client ID of type iOS (otherwise, it is taken from GoogleService-Info.plist)
+      // googleServicePlistPath: '', // [iOS] if you renamed your GoogleService-Info file, new name here, e.g. GoogleService-Info-Staging
+      // openIdRealm: '', // [iOS] The OpenID2 realm of the home web server. This allows Google to include the user's OpenID Identifier in the OpenID Connect ID token.
+      // profileImageSize: 120, // [iOS] The desired height (and width) of the profile image. Defaults to 120px
+    });
+    _googleSignIn();
+  };
+
+  const _googleSignIn = async () => {
+    try {
+      await GoogleSignin.hasPlayServices();
+      const userInfo = await GoogleSignin.signIn();
+      const user = userInfo.user;
+      const userName = user.familyName + user.givenName;
+      _checkUser(userInfo, user.email, userName);
+      console.log('userinfo', user, userName);
+    } catch (error: any) {
+      console.log('err', error);
+      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+        // user cancelled the login flow
+      } else if (error.code === statusCodes.IN_PROGRESS) {
+        // operation (e.g. sign in) is in progress already
+      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+        Alert.alert('알림', '스토어와 통신 할 수 없습니다.');
+      } else {
+        Alert.alert('알림', '현재 해당 기능을 사용 할 수 없습니다.');
+      }
+    }
+  };
+  // ########## google end ##########
+
   const _onPressLogin = (snsType: string) => {
     setLoading(true);
     switch (snsType) {
@@ -160,7 +212,7 @@ const SnsButton = ({text, snsType, navigation, idx, setLoading}: props) => {
         return signInWithKakao();
       case SnsList.google:
         setLoading(false);
-        return;
+        return _googleLogin();
       case SnsList.apple:
         setLoading(false);
         return;

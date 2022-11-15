@@ -126,7 +126,10 @@ const StationListItem = ({
       };
       await commonAPI
         ._postUserStar(data)
-        .then(res => console.log('User Star RES', res.data))
+        .then(res => {
+          modules._updateUserInfo(dispatch, userInfo);
+          console.log('User Star RES', res.data);
+        })
         .catch(err => console.log('err', err));
 
       console.log('data', data);
