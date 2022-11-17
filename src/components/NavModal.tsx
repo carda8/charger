@@ -18,17 +18,27 @@ interface props {
   title: string;
   coor?: any;
   item?: any;
+  isPath?: any;
   //버튼이 하나인 경우 positive 사용
   setVisible: React.Dispatch<React.SetStateAction<boolean>>;
   // positivePress?: () => void;
 }
 
-const NavModal = ({visible, text, title, setVisible, coor, item}: props) => {
+const NavModal = ({
+  visible,
+  text,
+  title,
+  setVisible,
+  coor,
+  item,
+  isPath,
+}: props) => {
   //   const GOOGLE_PLAY_STORE_LINK = 'market://details?id=io.github.Antodo';
   //route?y=${“도착”}&x=${“도착”}&sX=${“출발”}&sY=${“출발”}
   const {currentUserLocation} = useSelector(
     (state: RootState) => state.locationReducer,
   );
+  const path = useSelector((state: RootState) => state.pathReducer);
 
   //dummy
   const USER_Lat = currentUserLocation?.latitude
@@ -38,15 +48,27 @@ const NavModal = ({visible, text, title, setVisible, coor, item}: props) => {
     ? currentUserLocation.longitude
     : 126.8881368;
 
+  const _getCoor = (target: any) => {
+    let res;
+    if (target === 'kakao') {
+      res = coor?.latitude
+        ? `kakaomap://route?sp=${USER_Lat},${USER_Lon}&ep=${coor.latitude},${coor.longitude}&by=CAR`
+        : 'kakaomap://route?sp=37.537229,127.005515&ep=37.4979502,127.0276368&by=CAR';
+      return res;
+    }
+    if (target === 'tmap') {
+      res = coor?.latitude
+        ? `tmap://route?startx=${USER_Lon}&starty=${USER_Lat}&goalx=${coor.longitude}&goaly=${coor.latitude}`
+        : 'tmap://route?startx=129.0756416&starty=35.1795543&goalx=127.005515&goaly=37.537229';
+      return res;
+    }
+  };
+
   // 카카오맵 스킴
-  const KAKAO_MAP_SCHEMA = coor?.latitude
-    ? `kakaomap://route?sp=${USER_Lat},${USER_Lon}&ep=${coor.latitude},${coor.longitude}&by=CAR`
-    : 'kakaomap://route?sp=37.537229,127.005515&ep=37.4979502,127.0276368&by=CAR';
+  const KAKAO_MAP_SCHEMA = _getCoor('kakao');
 
   //티앱 스킴
-  const T_MAP_SCHEMA = coor?.latitude
-    ? `tmap://route?startx=${USER_Lon}&starty=${USER_Lat}&goalx=${coor.longitude}&goaly=${coor.latitude}`
-    : 'tmap://route?startx=129.0756416&starty=35.1795543&goalx=127.005515&goaly=37.537229';
+  const T_MAP_SCHEMA = _getCoor('tmap');
 
   const GOOGLE_STORE_KAKAO_MAP = 'market://details?id=net.daum.android.map';
   const GOOGLE_STORE_T_MAP = 'market://details?id=com.skt.tmap.ku';
@@ -60,38 +82,37 @@ const NavModal = ({visible, text, title, setVisible, coor, item}: props) => {
 
   const onPress = (index: number) => {
     if (index === 1) {
-      handlePress(KAKAO_MAP_SCHEMA);
+      handlePress(KAKAO_MAP_SCHEMA, index);
     }
     if (index === 2) {
-      handlePress(T_MAP_SCHEMA);
+      handlePress(T_MAP_SCHEMA, index);
     }
   };
 
-  const _routeMarket = async (url: any) => {
-    console.log(url);
+  const _routeMarket = async (url: any, index: number) => {
     if (Platform.OS === 'android') {
-      if (url === KAKAO_MAP_SCHEMA)
-        await Linking.openURL(GOOGLE_STORE_KAKAO_MAP);
-      if (url === T_MAP_SCHEMA) await Linking.openURL(GOOGLE_STORE_T_MAP);
+      if (index === 1) await Linking.openURL(GOOGLE_STORE_KAKAO_MAP);
+      if (index === 2) await Linking.openURL(GOOGLE_STORE_T_MAP);
     } else {
-      if (url === KAKAO_MAP_SCHEMA)
-        await Linking.openURL(APPLE_STORE_KAKAO_MAP);
-      if (url === T_MAP_SCHEMA) await Linking.openURL(APPLE_STORE_T_MAP);
+      if (index === 1) await Linking.openURL(APPLE_STORE_KAKAO_MAP);
+      if (index === 2) await Linking.openURL(APPLE_STORE_T_MAP);
     }
   };
 
-  const handlePress = useCallback(async (url: string) => {
+  const handlePress = useCallback(async (url: string, index: number) => {
     // 만약 어플이 설치되어 있으면 true, 없으면 false
     const supported = await Linking.canOpenURL(url);
     console.log('KAKAO_MAP_SCHEMA', KAKAO_MAP_SCHEMA);
     console.log('supported', supported);
+
     await Linking.openURL(url)
       .then(res => {
-        if (!res) _routeMarket(url);
+        if (!res) _routeMarket(url, index);
         console.log('true res', res);
       })
       .catch(err => {
-        _routeMarket(url);
+        _routeMarket(url, index);
+        console.log('linking err', err);
       });
   }, []);
 

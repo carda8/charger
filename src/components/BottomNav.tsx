@@ -8,7 +8,7 @@ import {
   ViewStyle,
   KeyboardAvoidingView,
 } from 'react-native';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {_getHeight, _getWidth} from 'constants/utils';
 import {useNavigation} from '@react-navigation/native';
 import {commonTypes} from '@types';
@@ -21,13 +21,16 @@ import {Shadow} from 'react-native-shadow-2';
 interface props {
   style?: StyleProp<ViewStyle>;
   shadowStyle?: StyleProp<ViewStyle>;
+  sheetRef?: any;
 }
 
-const BottomNav = ({style, shadowStyle}: props) => {
+const BottomNav = ({style, shadowStyle, sheetRef}: props) => {
   const nav = useNavigation<commonTypes.navi>();
   const {bottomIdx} = useSelector((state: RootState) => state.navReducer);
   const dispatch = useDispatch();
-
+  useEffect(() => {
+    if (sheetRef?.current) sheetRef.current?.dismiss();
+  }, [bottomIdx]);
   return (
     <>
       {/* <Shadow

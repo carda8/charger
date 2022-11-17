@@ -46,27 +46,23 @@ const StationListItem = ({
 }: props) => {
   const [favorite, setFavorite] = useState(false);
   const dispatch = useDispatch();
-  const isClosed = isPath ? false : modules._isClosed(item);
+  const isClosed = modules._isClosed(item);
   const nav = useNavigation<commonTypes.navi>();
   const {userInfo} = useSelector((state: RootState) => state.authReducer);
+  const pathState = useSelector((state: RootState) => state.pathReducer);
+  console.log('item,', item);
 
   const _sortChgerBySpeed = (item: any) => {
-    //  현 데이터에서 chgerTypeInfo 는 총 7개가 있
-    //  고 일반적으로 DC는 급속, AC는 완속으로 나누어 집니다
-    //  다만 충전기 타입에서 급속과 같이 완속도 지원하는 충전기도 있습니다.
-    //  (chgerType=03, DC차데모+AC3상, 또는 chgerType=06) 예시로 statId = "CPTEST01" 경우가 참고가 되실것 같습니다
-    //  03, 06인 경우
-    //  dc는 급속, ac는 완속
-
     let normal = 0;
     let fast = 0;
-
-    item?.chargers.map((item, index) => {
-      if (item.chgerTypeInfo === 'AC완속' || item.chgerTypeInfo === 'AC3상')
-        normal++;
-      else fast++;
-    });
-
+    console.log('sort', item);
+    if (item) {
+      item?.chargers.map((item, index) => {
+        if (item.chgerTypeInfo === 'AC완속' || item.chgerTypeInfo === 'AC3상')
+          normal++;
+        else fast++;
+      });
+    }
     const res = {
       normal,
       fast,
@@ -81,40 +77,42 @@ const StationListItem = ({
       ac3: false,
       ac5: false,
     };
-    if (isPath) return chgerImgTemp;
+    // if (isPath) return chgerImgTemp;
     let chgerImg = {
       dcCombo: false,
       dcDemo: false,
       ac3: false,
       ac5: false,
     };
-    item.chargers.map((item, index) => {
-      if (item.chgerTypeInfo === 'DC차데모+AC3상+DC콤보') {
-        chgerImg.ac3 = true;
-        chgerImg.dcCombo = true;
-        chgerImg.dcDemo = true;
-      }
-      if (item.chgerTypeInfo === 'AC완속') {
-        chgerImg.ac5 = true;
-      }
-      if (item.chgerTypeInfo === 'DC콤보') {
-        chgerImg.dcCombo = true;
-      }
-      if (item.chgerTypeInfo === 'DC차데모+DC콤보') {
-        chgerImg.dcCombo = true;
-        chgerImg.dcDemo = true;
-      }
-      if (item.chgerTypeInfo === 'DC차데모+AC3상') {
-        chgerImg.dcDemo = true;
-        chgerImg.ac3 = true;
-      }
-      if (item.chgerTypeInfo === 'AC3상') {
-        chgerImg.ac3 = true;
-      }
-      if (item.chgerTypeInfo === 'DC차데모') {
-        chgerImg.dcDemo = true;
-      }
-    });
+    if (item) {
+      item.chargers.map((item, index) => {
+        if (item.chgerTypeInfo === 'DC차데모+AC3상+DC콤보') {
+          chgerImg.ac3 = true;
+          chgerImg.dcCombo = true;
+          chgerImg.dcDemo = true;
+        }
+        if (item.chgerTypeInfo === 'AC완속') {
+          chgerImg.ac5 = true;
+        }
+        if (item.chgerTypeInfo === 'DC콤보') {
+          chgerImg.dcCombo = true;
+        }
+        if (item.chgerTypeInfo === 'DC차데모+DC콤보') {
+          chgerImg.dcCombo = true;
+          chgerImg.dcDemo = true;
+        }
+        if (item.chgerTypeInfo === 'DC차데모+AC3상') {
+          chgerImg.dcDemo = true;
+          chgerImg.ac3 = true;
+        }
+        if (item.chgerTypeInfo === 'AC3상') {
+          chgerImg.ac3 = true;
+        }
+        if (item.chgerTypeInfo === 'DC차데모') {
+          chgerImg.dcDemo = true;
+        }
+      });
+    }
     return chgerImg;
   };
 
@@ -262,8 +260,8 @@ const StationListItem = ({
               bottomSheetRef?.current?.close();
               // setPick && setPick(false);
               if (goal) {
-                dispatch(setGoal(''));
-                bottomSheetRef?.current?.close();
+                // pathState.textFocuse()
+                // bottomSheetRef?.current?.close();
               }
             }}>
             <Image
@@ -348,7 +346,7 @@ const StationListItem = ({
                 fontFamily: FontList.PretendardRegular,
                 color: '#333333',
               }}>
-              급속 {isPath ? 1 : _sortChgerBySpeed(item).fast}
+              급속 {_sortChgerBySpeed(item).fast}
             </Text>
             <Text
               style={{
@@ -362,7 +360,7 @@ const StationListItem = ({
                 fontFamily: FontList.PretendardRegular,
                 color: '#333333',
               }}>
-              완속 {isPath ? 1 : _sortChgerBySpeed(item).normal}
+              완속 {_sortChgerBySpeed(item).normal}
             </Text>
           </View>
         </View>

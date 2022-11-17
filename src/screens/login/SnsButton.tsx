@@ -122,16 +122,15 @@ const SnsButton = ({text, snsType, navigation, idx, setLoading}: props) => {
       const profileResult = await NaverLogin.getProfile(accessToken);
       console.log('profileResult', profileResult);
       if (profileResult?.message === 'success') {
-        const id = profileResult.response.id;
+        const email = profileResult.response.email;
         const name = profileResult.response.name;
-        _checkUser(profileResult.response, id, name);
+        _checkUser(profileResult.response, email, name);
         // dispatch(setUserInfo({...userInfo, id: id, name: name}));
         // navigation.navigate('AccountFinish');
       }
       setGetProfileRes(profileResult);
     } catch (e) {
       setGetProfileRes(undefined);
-    } finally {
       setLoading(false);
     }
   };
@@ -186,9 +185,11 @@ const SnsButton = ({text, snsType, navigation, idx, setLoading}: props) => {
       const userInfo = await GoogleSignin.signIn();
       const user = userInfo.user;
       const userName = user.familyName + user.givenName;
+      setLoading(true);
       _checkUser(userInfo, user.email, userName);
       console.log('userinfo', user, userName);
     } catch (error: any) {
+      setLoading(false);
       console.log('err', error);
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
         // user cancelled the login flow
@@ -211,7 +212,6 @@ const SnsButton = ({text, snsType, navigation, idx, setLoading}: props) => {
       case SnsList.kakao:
         return signInWithKakao();
       case SnsList.google:
-        setLoading(false);
         return _googleLogin();
       case SnsList.apple:
         setLoading(false);

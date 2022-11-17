@@ -100,6 +100,7 @@ const AroundMain = () => {
         currentXY: `${currentUserLocation.latitude},${currentUserLocation.longitude}`,
         order_by: '',
       };
+      console.log('userId', data);
 
       await commonAPI
         ._getUserStar(data)
@@ -359,8 +360,8 @@ const AroundMain = () => {
           zIndex={100}
           coordinate={currentUserLocation}
           image={require('@assets/my_location.png')}
-          width={40}
-          height={40}
+          width={35}
+          height={35}
           onClick={() => console.log('onClick! p0')}
         />
         {starMarker && (
@@ -710,6 +711,7 @@ const AroundMain = () => {
       <BottomNav
         style={{position: 'relative'}}
         shadowStyle={{position: 'relative'}}
+        sheetRef={bottomSheetRef}
       />
     </SafeAreaView>
   );

@@ -30,13 +30,16 @@ export default {
   },
 
   _isClosed: (item: any) => {
-    let close = false;
-    close = item.chargers.find(
-      (item, index) =>
-        item.statInfo === '충전대기' || item.statInfo === '충전중',
-    );
-    if (close) return true;
-    else return false;
+    if (item?.chargers?.length > 0) {
+      let close = false;
+      close = item.chargers.find(
+        (item, index) =>
+          item.statInfo === '충전대기' || item.statInfo === '충전중',
+      );
+      if (close) return true;
+      else return false;
+    }
+    return;
   },
 
   _convertDate: (day: any) => {

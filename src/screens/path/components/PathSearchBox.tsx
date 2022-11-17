@@ -13,7 +13,6 @@ import {
 } from 'react-native';
 import FontList from 'constants/FontList';
 import {useDispatch, useSelector} from 'react-redux';
-import {setGoal, setPath, setStart} from 'redux/reducers/pathReducer';
 import {RootState} from 'redux/store';
 import {BottomSheetModalMethods} from '@gorhom/bottom-sheet/lib/typescript/types';
 
@@ -32,33 +31,28 @@ const PathSearchBox = ({
 }: props) => {
   const nav = useNavigation<commonTypes.navi>();
   const dispatch = useDispatch();
-  const {goal, start} = useSelector((state: RootState) => state.pathReducer);
   const [home, setHome] = useState(false);
-
-  const userInfo = {
-    addr: '부산광역시 금정구 225',
-  };
+  const [inputStart, setInputStart] = useState('');
+  const [inputGoal, setInputGoal] = useState('');
 
   const _switchLocation = () => {
-    const copyStart = JSON.parse(JSON.stringify(start));
-    const copyGoal = JSON.parse(JSON.stringify(goal));
-    console.log('hi');
-    dispatch(setStart(copyGoal));
-    dispatch(setGoal(copyStart));
+    // const copyStart = JSON.parse(JSON.stringify(start));
+    // const copyGoal = JSON.parse(JSON.stringify(goal));
   };
 
-  const _resetLocation = () => {
-    dispatch(setStart(''));
-    dispatch(setGoal(''));
-  };
+  const _resetLocation = () => {};
 
   const _putHome = () => {
     if (!home) {
       setHome(true);
-      dispatch(setGoal(userInfo.addr));
     } else {
       setHome(false);
     }
+  };
+
+  const _onPressClose = () => {
+    setInputStart('');
+    setInputGoal('');
   };
 
   return (
@@ -104,8 +98,8 @@ const PathSearchBox = ({
                   onSubmitEditing={() => {
                     Keyboard.dismiss();
                   }}
-                  value={start}
-                  onChangeText={str => dispatch(setStart(str))}
+                  value={inputStart}
+                  onChangeText={setInputStart}
                   editable={editable ? true : false}
                   style={{
                     flex: 1,
@@ -137,12 +131,10 @@ const PathSearchBox = ({
                 <TextInput
                   editable={editable ? true : false}
                   autoCapitalize="none"
-                  value={goal}
-                  onChangeText={str => dispatch(setGoal(str))}
+                  value={inputGoal}
+                  onChangeText={setInputGoal}
                   onSubmitEditing={() => {
                     Keyboard.dismiss();
-                    // dispatch(setPath({start: start, goal: goal}));
-                    nav.navigate('PathMain');
                   }}
                   style={{
                     flex: 1,
@@ -157,15 +149,7 @@ const PathSearchBox = ({
         </View>
         <Pressable
           hitSlop={5}
-          onPress={() => {
-            if (setShowOnlyMap) {
-              setShowOnlyMap(!showOnlyMap);
-              sheetRef?.current?.close();
-              _resetLocation();
-            } else {
-              _resetLocation();
-            }
-          }}
+          onPress={() => _onPressClose()}
           style={{top: 15}}>
           <Image
             source={require('@assets/close_star.png')}

@@ -4,69 +4,67 @@ import {
   useWindowDimensions,
   Pressable,
   Text,
-  ImageBackground,
+  Image,
+  Platform,
+  PermissionsAndroid,
 } from 'react-native';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import GlobalStyles from 'styles/GlobalStyles';
 import BottomNav from '@components/BottomNav';
 import {useDispatch, useSelector} from 'react-redux';
-import {RouteProp, useIsFocused, useRoute} from '@react-navigation/native';
-import NaverMapView, {
-  Align,
-  MapType,
-  Marker,
-  Path,
-  Polygon,
-  Polyline,
-} from 'react-native-nmap';
-import {GestureHandlerRootView, ScrollView} from 'react-native-gesture-handler';
+import NaverMapView, {Align, Marker} from 'react-native-nmap';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {_getHeight, _getWidth} from 'constants/utils';
-import BottomButton from '@components/BottomButton';
-import NavModal from '@components/NavModal';
-import {commonTypes} from '@types';
 import PathSearchBox from './components/PathSearchBox';
 import {BottomSheetModal, BottomSheetModalProvider} from '@gorhom/bottom-sheet';
-import StationListItem from '@screens/around/Components/StationListItem';
 import {RootState} from 'redux/store';
 import {Shadow} from 'react-native-shadow-2';
 import FontList from 'constants/FontList';
 import commonAPI from 'api/modules/commonAPI';
-import {setGoal, setStart} from 'redux/reducers/pathReducer';
 import Loading from '@components/Loading';
 import modules from 'constants/utils/modules';
+import {setBottomIdx} from 'redux/reducers/navReducer';
+import Geolocation from 'react-native-geolocation-service';
+import {setCurrentUserLocation} from 'redux/reducers/locationReducer';
+import {useIsFocused, useNavigation} from '@react-navigation/native';
+import DeviceInfo from 'react-native-device-info';
+import {commonTypes} from '@types';
+import {PERMISSIONS} from 'react-native-permissions';
+
+interface coor {
+  latitude: number;
+  longitude: number;
+  zoom: number;
+}
 
 const PathMain = () => {
   const dispatch = useDispatch();
-  const [showRecomend, setShowRecomend] = useState(false);
-  const {goal, start} = useSelector((state: RootState) => state.pathReducer);
+  const nav = useNavigation<commonTypes.navi>();
+
   const {currentUserLocation} = useSelector(
     (state: RootState) => state.locationReducer,
   );
-  const [pickedRecomend, setPickedRecomend] = useState<number>();
-  const [recomandList, setRecomandList] = useState([]);
+  console.log('currentUserLocation,', currentUserLocation);
+
   const [lineData, setLineData] = useState([]);
   const layout = useWindowDimensions();
   const [modal, setModal] = useState(false);
-  const P0 = {latitude: 37.564362, longitude: 126.977011};
 
   const [showOnlyMap, setShowOnlyMap] = useState(false);
 
-  const [center, setCenter] = useState<any>({
-    latitude: currentUserLocation.latitude,
-    longitude: currentUserLocation.longitude,
-    zoom: 16,
-  });
+  const [center, setCenter] = useState<coor>();
+  const [startCoor, setStartCoor] = useState<coor | undefined>();
 
-  const route =
-    useRoute<RouteProp<commonTypes.RootStackParamList, 'PathMain'>>().params
-      ?.item;
-
+  // 길안내모달
   const [visible, setVisible] = useState(false);
-  const bottomSheetRef = useRef<BottomSheetModal>(null);
-  const [pick, setPick] = useState(false);
-  const snapPoints = useMemo(() => [300], []);
 
+  // map ref
+  const mapRef = useRef();
+
+  // ########## 바텀 시트 ##########
+  const bottomSheetRef = useRef<BottomSheetModal>(null);
+  const snapPoints = useMemo(() => [300], []);
   const handleSheetChanges = useCallback((index: number) => {
     console.log('handleSheetChanges', index);
   }, []);
@@ -77,91 +75,59 @@ const PathMain = () => {
     }),
     [],
   );
+  // ########## END 바텀시트 ##########
 
-  const goalCoor = {
-    latitude: 37.498418405021695,
-    longitude: 127.02862499003908,
-    zoom: 16,
-  };
-
+  // 추천 목록 가져오기
   const _getRecomand = async () => {
-    let data = {
-      route: [
-        [currentUserLocation.latitude, currentUserLocation.longitude],
-        [37.498418405021695, 127.02862499003908],
-      ],
-      distance: 1,
-    };
+    let data;
+    //현재가 아닌 도착지와 목적지로
+    // data = {
+    //   route: [
+    //     [currentUserLocation.latitude, currentUserLocation.longitude],
+    //     [goalData.location.lat, goalData.location.lon],
+    //   ],
+    //   distance: 1,
+    // };
+
     await commonAPI
       ._postPathRecommend(data)
       .then(res => {
         console.log('path recomand res', res.data.data);
-        setRecomandList(res.data.data);
       })
       .catch(err => console.log('path recomand  ERR ', err));
   };
 
   // 경로 표시
   const _getPath = async () => {
+    //위와 동일 현재 아니고 도착지로
     setModal(true);
-    let data = {
-      start: `${currentUserLocation.longitude},${currentUserLocation.latitude}`,
-      end: '127.02862499003908,37.498418405021695',
-    };
-
-    if (center) {
-      data = {
-        start: `${currentUserLocation.longitude},${currentUserLocation.latitude}`,
-        end: `${center.longitude},${center.latitude}`,
-      };
-    }
-    console.log('_getPath', data);
+    // let data = {
+    //   start: `${currentUserLocation.longitude},${currentUserLocation.latitude}`,
+    //   end: `${pickedRec.longitude},${pickedRec.latitude}`,
+    // };
+    let data = {};
     await commonAPI
       ._getPathLine(data)
       .then(res => {
         if (res.data.route) {
-          let temp = [
-            {
-              latitude: currentUserLocation.latitude,
-              longitude: currentUserLocation.longitude,
-            },
-          ];
-          res.data.route.map((item, index) => {
+          let temp;
+          if (currentUserLocation) {
+            temp = [
+              {
+                latitude: currentUserLocation.latitude,
+                longitude: currentUserLocation.longitude,
+              },
+            ];
+          }
+          res.data.route.map((item: any, index: number) => {
             temp.push({latitude: item[1], longitude: item[0]});
           });
           console.log('temp', temp);
-          setLineData(temp);
+          // setLineData(temp);
         }
       })
       .catch(err => console.log('paht ERR', err));
   };
-
-  useEffect(() => {
-    if (route) {
-      setCenter({
-        latitude: goalCoor.latitude,
-        longitude: goalCoor.longitude,
-        zoom: 16,
-      });
-      bottomSheetRef.current?.present();
-    }
-  }, [route]);
-
-  useEffect(() => {
-    if (showRecomend) {
-      _getRecomand();
-    }
-  }, [showRecomend]);
-
-  // useEffect(() => {
-  //   _getPath();
-  // }, []);
-
-  useEffect(() => {
-    if (center && showRecomend) {
-      _getPath();
-    }
-  }, [center]);
 
   const _getAddrByCoor = async () => {
     const param = {
@@ -172,38 +138,17 @@ const PathMain = () => {
       ._getAddrByCoor(param)
       .then(res => {
         if (res?.data?.documents?.length > 0) {
-          dispatch(setStart(res.data.documents[0].address_name));
+          // dispatch(setStart(res.data.documents[0].address_name));
         }
         console.log('add res', res.data.documents);
       })
       .catch(err => console.log('add err', err));
   };
 
-  useEffect(() => {
-    if (currentUserLocation) {
-      _getAddrByCoor();
-    }
-  }, []);
-
-  useEffect(() => {
-    if (lineData?.length > 0) {
-      setTimeout(() => {
-        mapRef?.current?.animateToCoordinates(lineData, {
-          top: 500,
-          bottom: 500,
-          left: 275,
-          right: 275,
-        });
-        setModal(false);
-      }, 200);
-    }
-  }, [lineData]);
-
   const _getMarkerImg = (item: any) => {
     let isAc = false;
     let isDc = false;
     let close = modules._isClosed(item);
-
     // console.log('is CLOSED? ::', close);
     item.chargers.map((item, index) => {
       if (
@@ -226,7 +171,42 @@ const PathMain = () => {
     if (!isAc && !isDc) return require('@assets/marker_normal.png');
   };
 
-  const mapRef = useRef();
+  const _onPressMyLocation = () => {
+    if (currentUserLocation) {
+      setCenter({
+        latitude: currentUserLocation.latitude,
+        longitude: currentUserLocation.longitude,
+        zoom: 16,
+      });
+    } else {
+    }
+  };
+
+  useEffect(() => {
+    if (lineData?.length > 0) {
+      setTimeout(() => {
+        mapRef?.current?.animateToCoordinates(lineData, {
+          top: 500,
+          bottom: 500,
+          left: 275,
+          right: 275,
+        });
+        setModal(false);
+      }, 200);
+    }
+  }, [lineData]);
+
+  useEffect(() => {
+    if (currentUserLocation) {
+      _getAddrByCoor();
+      setCenter({
+        latitude: currentUserLocation.latitude,
+        longitude: currentUserLocation.longitude,
+        zoom: 16,
+      });
+    }
+    dispatch(setBottomIdx(2));
+  }, []);
 
   return (
     <GestureHandlerRootView style={{flex: 1}}>
@@ -251,119 +231,120 @@ const PathMain = () => {
             ref={mapRef}
             compass={false}
             rotateGesturesEnabled={false}
-            onMapClick={e => {
-              console.log('coor', e);
-              if (showOnlyMap) {
-                setShowOnlyMap(!showOnlyMap);
-              }
-            }}
+            onMapClick={e => {}}
             zoomControl={false}
             useTextureView={true}
             style={{
-              // flex: 1,
-              // width: '100%',
               height: layout.height - 60,
             }}
-            onCameraChange={e => console.log('changed', e)}
+            onCameraChange={e => {}}
             scaleBar={false}
             showsMyLocationButton={false}
             tiltGesturesEnabled={false}
-            // mapType={MapType.Navi}
-            center={center}>
-            <Marker
-              width={32}
-              height={65}
-              caption={{
-                text: '출발',
-                align: Align.Center,
-                haloColor: '16B112',
-                textSize: 13,
-                color: 'ffffff',
-              }}
+            center={center ? center : undefined}>
+            {/* 현재 위치 마커 */}
+            {/* <Marker
+              width={35}
+              height={35}
               zIndex={100}
-              image={require('@assets/marker_normal.png')}
+              image={require('@assets/my_location.png')}
               coordinate={currentUserLocation}
-            />
-            {/* 도착지 마커 */}
-            {route && (
+            /> */}
+
+            {/* 출발지 마커 */}
+            {currentUserLocation && (
               <Marker
                 width={32}
                 height={65}
-                onClick={() => {
-                  setCenter({
-                    latitude: 37.498418405021695,
-                    longitude: 127.02862499003908,
-                    zoom: 14,
-                  });
-                }}
                 caption={{
-                  text: '도착',
+                  text: '출발',
                   align: Align.Center,
-                  haloColor: '166DF0',
+                  haloColor: '16B112',
                   textSize: 13,
                   color: 'ffffff',
                 }}
-                image={require('@assets/marker_fast.png')}
+                zIndex={100}
+                image={require('@assets/marker_normal.png')}
+                onClick={() => _onClickStart()}
                 coordinate={{
-                  latitude: 37.498418405021695,
-                  longitude: 127.02862499003908,
+                  latitude: Number(currentUserLocation.latitude),
+                  longitude: Number(currentUserLocation.longitude),
                 }}
               />
             )}
+
+            {/* 도착지 마커 */}
+            {/* <Marker
+              width={32}
+              height={65}
+              onClick={() => {
+                setCenter({
+                  latitude: goalData.location.lat,
+                  longitude: goalData.location.lon,
+                  zoom: 14,
+                });
+                bottomSheetRef.current?.present();
+              }}
+              caption={{
+                text: '도착',
+                align: Align.Center,
+                haloColor: '166DF0',
+                textSize: 13,
+                color: 'ffffff',
+              }}
+              image={require('@assets/marker_fast.png')}
+              coordinate={{
+                latitude: goalData.location.lat,
+                longitude: goalData.location.lon,
+              }}
+            /> */}
+
             {/* 도착지 목적지 라인 */}
-            {lineData.length > 0 && showRecomend && (
-              <Path
+            {/* <Path
                 coordinates={lineData}
                 width={7}
                 color={'#07B3FD'}
                 outlineColor={'#07B3FD'}
-                pattern={require('@assets/top_ic_history_w.png')}
+                pattern={require('@assets/top_ic_history_w3.png')}
                 patternInterval={25}
-              />
-            )}
+              /> */}
+
             {/* 추천 중전기 마커들 */}
-            {recomandList.length > 0 &&
-              recomandList.map((item, index) => (
-                <Marker
-                  key={index}
-                  width={32}
-                  height={65}
-                  onClick={() => {
-                    console.log('item', item);
-                    setCenter({
-                      latitude: item.location.lat,
-                      longitude: item.location.lon,
-                      zoom: 14,
-                    });
-                  }}
-                  caption={{
-                    text:
-                      item.chargers.length > 9
-                        ? '9+'
-                        : String(item.chargers.length),
-                    align: Align.Center,
-                    haloColor: 'A6A6A6',
-                    textSize: 15,
-                    color: 'ffffff',
-                  }}
-                  image={_getMarkerImg(item)}
-                  coordinate={{
-                    latitude: Number(item.location.lat),
-                    longitude: Number(item.location.lon),
-                  }}
-                />
-              ))}
+            {/* <Marker
+              key={index}
+              width={32}
+              height={65}
+              onClick={() => {
+                console.log('item', item);
+                setCenter({
+                  latitude: item.location.lat,
+                  longitude: item.location.lon,
+                  zoom: 14,
+                });
+              }}
+              caption={{
+                text:
+                  item.chargers.length > 9
+                    ? '9+'
+                    : String(item.chargers.length),
+                align: Align.Center,
+                haloColor: 'A6A6A6',
+                textSize: 15,
+                color: 'ffffff',
+              }}
+              image={_getMarkerImg(item)}
+              coordinate={{
+                latitude: Number(item.location.lat),
+                longitude: Number(item.location.lon),
+              }}
+            /> */}
           </NaverMapView>
           <BottomSheetModal
             style={sheetStyle}
             ref={bottomSheetRef}
-            animateOnMount={true}
             footerComponent={() => (
               <Pressable
-                onPress={() => {
-                  setShowRecomend(true);
-                  bottomSheetRef.current?.close();
-                }}
+                onPress={() => {}}
                 style={[
                   {
                     height: 54,
@@ -382,170 +363,48 @@ const PathMain = () => {
                     fontSize: 16,
                     color: 'white',
                   }}>
-                  경로 설정
+                  위치 설정
                 </Text>
               </Pressable>
             )}
             index={0}
             snapPoints={snapPoints}
             onChange={handleSheetChanges}>
-            <StationListItem
-              style={{borderBottomWidth: 0}}
-              bottomSheetRef={bottomSheetRef}
-              setPick={setPick}
-              item={route}
-              pick={pick}
-              goal={goal}
-              isPath={true}
-            />
+            <View></View>
           </BottomSheetModal>
 
-          {showRecomend && (
-            <View
+          <Shadow
+            distance={3}
+            containerStyle={{
+              position: 'absolute',
+              zIndex: 500,
+              bottom: 131,
+              right: 16,
+            }}
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 36 / 2,
+              backgroundColor: 'white',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+            <Pressable
+              hitSlop={5}
+              onPress={() => {
+                _onPressMyLocation();
+              }}
               style={{
-                position: 'absolute',
-                bottom: 0,
-                width: '100%',
-                height: 196,
-                zIndex: 100,
-                // backgroundColor: 'pink',
+                alignItems: 'center',
+                justifyContent: 'center',
               }}>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                bounces={false}
-                style={{flex: 1}}>
-                <View style={{flexDirection: 'row', paddingTop: 4}}>
-                  {recomandList.map((item, index) => (
-                    <Shadow
-                      key={index}
-                      offset={[0, 1]}
-                      distance={3}
-                      style={{
-                        width: 169,
-                        height: 100,
-                      }}
-                      containerStyle={{
-                        marginHorizontal: 8,
-                      }}>
-                      <Pressable
-                        onPress={() => {
-                          setPickedRecomend(index);
-                          dispatch(setGoal(item.addr));
-                          setCenter({
-                            latitude: item.location.lat,
-                            longitude: item.location.lon,
-                            zoom: 14,
-                          });
-                        }}
-                        key={index}
-                        style={{
-                          flex: 1,
-                          backgroundColor: 'white',
-                          borderRadius: 3,
-                          borderWidth: 2,
-                          borderColor:
-                            index === pickedRecomend ? '#00C2FF' : 'white',
-                          paddingLeft: 6,
-                          paddingRight: _getWidth(18),
-                          paddingVertical: 6.68,
-                        }}>
-                        <Text
-                          style={{
-                            fontFamily: FontList.PretendardBold,
-                            color: 'black',
-                          }}>
-                          추천 충전기
-                        </Text>
-                        <View
-                          style={{
-                            flexDirection: 'row',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                          }}>
-                          <Text
-                            numberOfLines={1}
-                            style={{
-                              flex: 1,
-                              fontFamily: FontList.PretendardRegular,
-                              color: 'black',
-                              lineHeight: 24,
-                            }}>
-                            {item?.statNm}
-                          </Text>
-                          <Text
-                            style={{
-                              fontFamily: FontList.PretendardRegular,
-                              fontSize: 12,
-                              color: '#666666',
-                            }}>
-                            176.8km
-                          </Text>
-                        </View>
-                        <Text
-                          numberOfLines={1}
-                          style={{
-                            fontFamily: FontList.PretendardRegular,
-                            fontSize: 12,
-                            color: '#666666',
-                            lineHeight: 24,
-                          }}>
-                          {item?.addr}
-                        </Text>
-                        <View
-                          style={{
-                            flexDirection: 'row',
-                            justifyContent: 'flex-end',
-                          }}>
-                          <Text
-                            style={{
-                              fontFamily: FontList.PretendardRegular,
-                              fontSize: 12,
-                              color: '#C6C6C6',
-                              lineHeight: 24,
-                            }}>
-                            {'급속 0  |'}
-                          </Text>
-                          <Text
-                            style={{
-                              fontFamily: FontList.PretendardRegular,
-                              fontSize: 12,
-                              color: '#666666',
-                              lineHeight: 24,
-                            }}>
-                            {'  완속 1'}
-                          </Text>
-                        </View>
-                      </Pressable>
-                    </Shadow>
-                  ))}
-                </View>
-              </ScrollView>
-              <View
-                style={{
-                  backgroundColor: 'white',
-                }}>
-                <BottomButton
-                  text="도착지 설정"
-                  style={{marginHorizontal: 16, marginTop: 8}}
-                  setVisible={setVisible}
-                />
-              </View>
-            </View>
-          )}
-
-          <NavModal
-            coor={
-              recomandList.length > 0 &&
-              pickedRecomend && {
-                latitude: recomandList[pickedRecomend].location.lat,
-                longitude: recomandList[pickedRecomend].location.lon,
-              }
-            }
-            visible={visible}
-            setVisible={setVisible}
-            title="길안내 연결"
-          />
+              <Image
+                source={require('@assets/location.png')}
+                style={{width: 20, height: 20}}
+                resizeMode="contain"
+              />
+            </Pressable>
+          </Shadow>
           <BottomNav />
           <Loading visible={modal} />
         </SafeAreaView>

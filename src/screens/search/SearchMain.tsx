@@ -102,7 +102,7 @@ const SearchMain = ({bottomSheetRef}: props) => {
 
     await commonAPI
       ._deleteUserHistory(data)
-      .then(res => modules._updateUserInfo())
+      .then(res => modules._updateUserInfo(dispatch, userInfo))
       .catch(err => console.log('err', err));
   };
 

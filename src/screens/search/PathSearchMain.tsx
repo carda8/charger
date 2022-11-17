@@ -7,7 +7,7 @@ import {
   Image,
   ListRenderItem,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import GlobalStyles from 'styles/GlobalStyles';
 import BottomNav from '@components/BottomNav';
@@ -17,52 +17,27 @@ import {_getHeight} from 'constants/utils';
 import FontList from 'constants/FontList';
 import PathSearchBox from '@screens/path/components/PathSearchBox';
 import {FlatList} from 'react-native-gesture-handler';
-import {useDispatch} from 'react-redux';
-import {setGoal} from 'redux/reducers/pathReducer';
+import {useDispatch, useSelector} from 'react-redux';
 import Loading from '@components/Loading';
+import {RootState} from 'redux/store';
 
 const PathSearchMain = () => {
   const nav = useNavigation<commonTypes.navi>();
-  const [history, setHistory] = useState([
-    '강남역 12번 출구',
-    '강남역 12번 출구',
-    '강남역 12번 출구',
-  ]);
-  const [historyRecent, setHistoryRecent] = useState([
-    '강남역 12번 출구',
-    '강남역 12번 출구',
-    '강남역 12번 출구',
-    '강남역 12번 출구',
-    '강남역 12번 출구',
-    '강남역 12번 출구',
-    '강남역 12번 출구',
-    '강남역 12번 출구',
-    '강남역 12번 출구',
-    '강남역 12번 출구',
-    '강남역 12번 출구',
-    '강남역 12번 출구',
-    '강남역 12번 출구',
-    '강남역 12번 출구',
-    '강남역 12번 출구',
-    '강남역 12번 출구',
-    '강남역 12번 출구',
-    '강남역 12번 출구',
-    '강남역 12번 출구',
-    '강남역 12번 출구',
-    '강남역 12번 출구',
-  ]);
+  const {userInfo} = useSelector((state: RootState) => state.authReducer);
+  const path = useSelector((state: RootState) => state.pathReducer);
+
+  const [historyRecent, setHistoryRecent] = useState<any[]>([]);
   const dispatch = useDispatch();
 
   const _onPress = (item: any) => {
     console.log('item', item);
-    const data: commonTypes.item = {
-      addr: '강남구 테헤란로 8길 22',
-      statNm: item,
-      parkingFree: true,
-    };
-    dispatch(setGoal('강남구 테헤란로 8길 22'));
-    nav.navigate('PathMain', {item: data});
+
+    nav.navigate('PathMain');
   };
+
+  useEffect(() => {
+    console.log('path redux', path);
+  }, [path]);
 
   const _delelteItem = (target: any[], setTarget: any, index: any) => {
     console.log('index', index);
@@ -71,34 +46,8 @@ const PathSearchMain = () => {
     setTarget(temp);
   };
 
-  const _onEndReached = () => {
-    const data = [
-      '강남역 12번 출구',
-      '강남역 12번 출구',
-      '강남역 12번 출구',
-      '강남역 12번 출구',
-      '강남역 12번 출구',
-      '강남역 12번 출구',
-      '강남역 12번 출구',
-      '강남역 12번 출구',
-      '강남역 12번 출구',
-      '강남역 12번 출구',
-      '강남역 12번 출구',
-      '강남역 12번 출구',
-      '강남역 12번 출구',
-      '강남역 12번 출구',
-      '강남역 12번 출구',
-      '강남역 12번 출구',
-      '강남역 12번 출구',
-      '강남역 12번 출구',
-      '강남역 12번 출구',
-      '강남역 12번 출구',
-    ];
-    let temp = [...historyRecent];
-    temp.push(...data);
-    console.log('temp', temp);
-    setHistoryRecent(temp);
-  };
+  const startRef = useRef(null);
+  const goalRef = useRef(null);
 
   const renderItem: ListRenderItem<any> = item => {
     return (
@@ -107,7 +56,6 @@ const PathSearchMain = () => {
           <View
             style={{
               paddingHorizontal: 18,
-              paddingTop: history.length > 0 ? 15 : 0,
             }}>
             <Text
               style={{
@@ -116,7 +64,7 @@ const PathSearchMain = () => {
                 fontSize: 16,
                 color: '#333333',
               }}>
-              최근 도착지
+              최근 기록
             </Text>
           </View>
         )}
@@ -148,7 +96,7 @@ const PathSearchMain = () => {
                   fontSize: 16,
                   color: '#333333',
                 }}>
-                {item.item}
+                {item.item.statNm}
               </Text>
             </View>
 
@@ -184,7 +132,7 @@ const PathSearchMain = () => {
                 fontFamily: FontList.PretendardRegular,
                 color: '#959595',
               }}>
-              강남구 테헤란로 8길 22
+              {item.item.addr}
             </Text>
           </View>
         </Pressable>
@@ -205,86 +153,103 @@ const PathSearchMain = () => {
       <FlatList
         renderItem={item => renderItem(item)}
         style={{paddingBottom: 60, marginBottom: 60}}
-        onEndReached={() => {
-          _onEndReached();
-        }}
-        ListHeaderComponent={() => (
+        onEndReached={() => {}}
+        ListEmptyComponent={
           <>
-            <View style={{paddingHorizontal: 18, paddingTop: 15}}>
-              {history.length > 0 && (
-                <Text
-                  style={{
-                    lineHeight: 28,
-                    fontFamily: FontList.PretendardRegular,
-                    fontSize: 16,
-                    color: '#333333',
-                  }}>
-                  최근 검색지
-                </Text>
-              )}
-            </View>
-            {history.map((item, idx) => (
-              <Pressable
-                onPress={() => _onPress(item)}
-                key={idx}
+            <View style={{margin: 16}}>
+              <Text
                 style={{
-                  width: '100%',
-                  height: _getHeight(48),
-                  paddingHorizontal: 18,
-                  borderBottomWidth: idx === 2 ? 4 : 1,
-                  borderColor: '#F6F6F6',
-                  justifyContent: 'center',
+                  lineHeight: 24,
+                  color: '#7A7A7A',
+                  marginHorizontal: 16,
+                  // marginTop: 17.6,
+                  fontSize: 13,
                 }}>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                  }}>
-                  <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                    <Image
-                      source={require('@assets/search_history.png')}
-                      style={{width: 16, height: 16, marginRight: 6}}
-                      resizeMode="contain"
-                    />
-                    <Text
-                      style={{
-                        fontFamily: FontList.PretendardMedium,
-                        fontSize: 16,
-                        color: '#333333',
-                      }}>
-                      {item}
-                    </Text>
-                  </View>
-                  <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                    <Text
-                      style={{
-                        fontFamily: FontList.PretendardRegular,
-                        color: '#C6C6C6',
-                      }}>
-                      10.01
-                    </Text>
-                    <Pressable
-                      onPress={() => _delelteItem(history, setHistory, idx)}>
-                      <Image
-                        source={require('@assets/search_close.png')}
-                        style={{
-                          width: 12,
-                          height: 12,
-                          marginLeft: 10,
-                          tintColor: '#959595',
-                        }}
-                        resizeMode="contain"
-                      />
-                    </Pressable>
-                  </View>
-                </View>
-              </Pressable>
-            ))}
+                최근 검색지가 없습니다
+              </Text>
+            </View>
           </>
-        )}
+        }
         data={historyRecent}
         keyExtractor={(item, idx) => String(idx) + String(item)}
+        // ListHeaderComponent={() => (
+        //   <>
+        //     {/* <View style={{paddingHorizontal: 18, paddingTop: 15}}>
+        //       {history.length > 0 && (
+        //         <Text
+        //           style={{
+        //             lineHeight: 28,
+        //             fontFamily: FontList.PretendardRegular,
+        //             fontSize: 16,
+        //             color: '#333333',
+        //           }}>
+        //           최근 검색지
+        //         </Text>
+        //       )}
+        //     </View> */}
+        //     {path.keywordList.map((item, idx) => (
+        //       <Pressable
+        //         onPress={() => {
+        //           console.log('item', item);
+        //           _onPress(item);
+        //         }}
+        //         key={idx}
+        //         style={{
+        //           width: '100%',
+        //           height: _getHeight(48),
+        //           paddingHorizontal: 18,
+        //           borderBottomWidth: idx === 2 ? 4 : 1,
+        //           borderColor: '#F6F6F6',
+        //           justifyContent: 'center',
+        //         }}>
+        //         <View
+        //           style={{
+        //             flexDirection: 'row',
+        //             alignItems: 'center',
+        //             justifyContent: 'space-between',
+        //           }}>
+        //           <View style={{flexDirection: 'row', alignItems: 'center'}}>
+        //             <Image
+        //               source={require('@assets/search_history.png')}
+        //               style={{width: 16, height: 16, marginRight: 6}}
+        //               resizeMode="contain"
+        //             />
+        //             <Text
+        //               style={{
+        //                 fontFamily: FontList.PretendardMedium,
+        //                 fontSize: 16,
+        //                 color: '#333333',
+        //               }}>
+        //               {item.statNm}
+        //             </Text>
+        //           </View>
+        //           {/* <View style={{flexDirection: 'row', alignItems: 'center'}}>
+        //             <Text
+        //               style={{
+        //                 fontFamily: FontList.PretendardRegular,
+        //                 color: '#C6C6C6',
+        //               }}>
+        //               10.01
+        //             </Text>
+        //             <Pressable
+        //               onPress={() => _delelteItem(history, setHistory, idx)}>
+        //               <Image
+        //                 source={require('@assets/search_close.png')}
+        //                 style={{
+        //                   width: 12,
+        //                   height: 12,
+        //                   marginLeft: 10,
+        //                   tintColor: '#959595',
+        //                 }}
+        //                 resizeMode="contain"
+        //               />
+        //             </Pressable>
+        //           </View> */}
+        //         </View>
+        //       </Pressable>
+        //     ))}
+        //   </>
+        // )}
       />
       <BottomNav />
     </SafeAreaView>
