@@ -18,19 +18,19 @@ const BottomNav = () => {
     <>
       <Shadow
         distance={1}
-        style={{width: '100%', height: _getHeight(60)}}
+        style={{width: '100%', height: 60}}
         containerStyle={{
           width: '100%',
-          position: 'absolute',
-          bottom: 0,
+          // position: 'absolute',
+          // bottom: 0,
         }}>
         <View
           style={{
-            position: 'absolute',
-            bottom: 0,
+            // position: 'absolute',
+            // bottom: 0,
             width: '100%',
             backgroundColor: 'white',
-            height: _getHeight(60),
+            height: 60,
             flexDirection: 'row',
           }}>
           <Pressable
@@ -39,7 +39,7 @@ const BottomNav = () => {
               dispatch(setBottomIdx(0));
               nav.navigate('Home');
             }}
-            style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+            style={{flex: 1,alignItems: 'center', justifyContent: 'center'}}>
             <Image
               source={
                 bottomIdx === 0

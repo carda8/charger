@@ -172,8 +172,7 @@ const AroundMain = () => {
           <NaverMapView
             showsMyLocationButton
             style={{
-              width: '100%',
-              height: height.height - _getHeight(60),
+              flex:1
             }}
             scaleBar={false}
             // showsMyLocationButton={true}
