@@ -1,54 +1,124 @@
-import {View, Text, Modal, Pressable, Image, Linking} from 'react-native';
+import {
+  View,
+  Text,
+  Modal,
+  Pressable,
+  Image,
+  Linking,
+  Platform,
+} from 'react-native';
 import React, {useCallback} from 'react';
 import FontList from 'constants/FontList';
 import {_getHeight, _getWidth} from 'constants/utils';
-import MyModal from './MyModal';
+import {useSelector} from 'react-redux';
+import {RootState} from 'redux/store';
 interface props {
   visible: boolean;
   text?: string;
   title: string;
+  coor?: any;
+  item?: any;
+  isPath?: any;
   //버튼이 하나인 경우 positive 사용
   setVisible: React.Dispatch<React.SetStateAction<boolean>>;
   // positivePress?: () => void;
 }
 
-const NavModal = ({visible, text, title, setVisible}: props) => {
+const NavModal = ({
+  visible,
+  text,
+  title,
+  setVisible,
+  coor,
+  item,
+  isPath,
+}: props) => {
   //   const GOOGLE_PLAY_STORE_LINK = 'market://details?id=io.github.Antodo';
   //route?y=${“도착”}&x=${“도착”}&sX=${“출발”}&sY=${“출발”}
+  const {currentUserLocation} = useSelector(
+    (state: RootState) => state.locationReducer,
+  );
+  const path = useSelector((state: RootState) => state.pathReducer);
+
+  //dummy
+  const USER_Lat = currentUserLocation?.latitude
+    ? currentUserLocation.latitude
+    : 37.5246544;
+  const USER_Lon = currentUserLocation?.longitude
+    ? currentUserLocation.longitude
+    : 126.8881368;
+
+  const _getCoor = (target: any) => {
+    let res;
+    if (target === 'kakao') {
+      res = coor?.latitude
+        ? `kakaomap://route?sp=${USER_Lat},${USER_Lon}&ep=${coor.latitude},${coor.longitude}&by=CAR`
+        : 'kakaomap://route?sp=37.537229,127.005515&ep=37.4979502,127.0276368&by=CAR';
+      return res;
+    }
+    if (target === 'tmap') {
+      res = coor?.latitude
+        ? `tmap://route?startx=${USER_Lon}&starty=${USER_Lat}&goalx=${coor.longitude}&goaly=${coor.latitude}`
+        : 'tmap://route?startx=129.0756416&starty=35.1795543&goalx=127.005515&goaly=37.537229';
+      return res;
+    }
+  };
 
   // 카카오맵 스킴
-  const KAKAO_MAP_SCHEMA =
-    'kakaomap://route?sp=37.537229,127.005515&ep=37.4979502,127.0276368&by=CAR';
+  const KAKAO_MAP_SCHEMA = _getCoor('kakao');
 
   //티앱 스킴
-  const T_MAP_SCHEMA =
-    'tmap://route?startx=129.0756416&starty=35.1795543&goalx=127.005515&goaly=37.537229';
+  const T_MAP_SCHEMA = _getCoor('tmap');
+
+  const GOOGLE_STORE_KAKAO_MAP = 'market://details?id=net.daum.android.map';
+  const GOOGLE_STORE_T_MAP = 'market://details?id=com.skt.tmap.ku';
+  const APPLE_STORE_KAKAO_MAP =
+    'itms-apps://itunes.apple.com/us/app/id304608425?mt=8';
+  const APPLE_STORE_T_MAP =
+    'itms-apps://itunes.apple.com/us/app/id431589174?mt=8';
 
   //   const GOOGLE_PLAY_STORE_LINK =
   //     'tmap://route?rGoX=127.005515&rGoY=37.537229&rGoName=스벅';
 
-  const onPress = useCallback((index: number) => {
+  const onPress = (index: number) => {
     if (index === 1) {
-      handlePress(KAKAO_MAP_SCHEMA);
+      handlePress(KAKAO_MAP_SCHEMA, index);
     }
     if (index === 2) {
-      handlePress(T_MAP_SCHEMA);
+      handlePress(T_MAP_SCHEMA, index);
     }
-  }, []);
+  };
 
-  const handlePress = useCallback(async (url: string) => {
+  const _routeMarket = async (url: any, index: number) => {
+    if (Platform.OS === 'android') {
+      if (index === 1) await Linking.openURL(GOOGLE_STORE_KAKAO_MAP);
+      if (index === 2) await Linking.openURL(GOOGLE_STORE_T_MAP);
+    } else {
+      if (index === 1) await Linking.openURL(APPLE_STORE_KAKAO_MAP);
+      if (index === 2) await Linking.openURL(APPLE_STORE_T_MAP);
+    }
+  };
+
+  const handlePress = useCallback(async (url: string, index: number) => {
     // 만약 어플이 설치되어 있으면 true, 없으면 false
     const supported = await Linking.canOpenURL(url);
+    console.log('KAKAO_MAP_SCHEMA', KAKAO_MAP_SCHEMA);
+    console.log('supported', supported);
 
-    const res = await Linking.openURL(url);
-    console.log(url, supported, res);
-    if (supported) {
-      await Linking.openURL(url);
-    }
+    await Linking.openURL(url)
+      .then(res => {
+        if (!res) _routeMarket(url, index);
+        console.log('true res', res);
+      })
+      .catch(err => {
+        _routeMarket(url, index);
+        console.log('linking err', err);
+      });
   }, []);
 
   return (
     <Modal
+      statusBarTranslucent
       visible={visible}
       transparent
       onRequestClose={() => {
@@ -116,4 +186,4 @@ const NavModal = ({visible, text, title, setVisible}: props) => {
   );
 };
 
-export default NavModal;
+export default React.memo(NavModal);

@@ -11,6 +11,7 @@ import {
   PermissionsAndroid,
   Platform,
 } from 'react-native';
+import {check, PERMISSIONS, RESULTS} from 'react-native-permissions';
 import React, {useState, useEffect, useRef} from 'react';
 import {_getHeight, _getWidth} from 'constants/utils';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -26,6 +27,7 @@ import {commonTypes} from '@types';
 import MyModal from '@components/MyModal';
 import Geolocation from 'react-native-geolocation-service';
 import {setCurrentUserLocation} from 'redux/reducers/locationReducer';
+import Loading from '@components/Loading';
 
 interface path {
   [key: string]: ImageSourcePropType;
@@ -36,12 +38,16 @@ interface path {
 }
 
 const Home = () => {
+  const {userInfo} = useSelector((state: RootState) => state.authReducer);
+  // const {bottomIdx} = useSelector((state: RootState) => state.navReducer);
+  // const {currentUserLocation} = useSelector(
+  //   (state: RootState) => state.locationReducer,
+  // );
   const nav = useNavigation<commonTypes.navi>();
   const dispatch = useDispatch();
-  const {bottomIdx} = useSelector((state: RootState) => state.navReducer);
   const isFocused = useIsFocused();
   const [visible, setVisible] = useState(false);
-  // const ref = useRef(false);
+  const [modal, setModal] = useState(false);
 
   const imgPath: path = {
     main1: require('@assets/main_near.png'),
@@ -68,13 +74,15 @@ const Home = () => {
       case 2:
         return setVisible(!visible);
       case 3:
-        return nav.navigate('FavStationMain');
+        return nav.navigate('AroundMain', {isFavorite: true});
       default:
         return;
     }
   };
+
   const _geoCallback = (res: any) => {
-    console.log(res);
+    console.log('_geoCallback', res);
+    setModal(true);
     Geolocation.getCurrentPosition(
       position => {
         dispatch(
@@ -86,12 +94,14 @@ const Home = () => {
           }),
         );
         console.log(position);
+        setModal(false);
       },
       error => {
+        setModal(false);
         // See error code charts below.
         console.log(error.code, error.message);
       },
-      {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
+      {enableHighAccuracy: true, timeout: 15000, maximumAge: 1000},
     );
   };
 
@@ -103,12 +113,15 @@ const Home = () => {
     } else {
       await PermissionsAndroid.request(
         PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-      ).then(res => _geoCallback(res));
+      )
+        .then(res => _geoCallback(res))
+        .catch(err => setModal(false));
     }
   };
 
   useEffect(() => {
     _getPermission();
+    console.log('### USER INFO HOME', userInfo);
   }, []);
 
   useEffect(() => {
@@ -124,6 +137,7 @@ const Home = () => {
   return (
     <SafeAreaView style={{...GlobalStyles.safeAreaStyle}}>
       <HomeHeader />
+
       <ScrollView contentContainerStyle={{backgroundColor: '#F5F5F5', flex: 1}}>
         <View style={{...styles.mainButtonCtn}}>
           {btnKeys.map((item, idx) => (
@@ -133,6 +147,7 @@ const Home = () => {
                 _route(idx);
               }}
               style={{
+                elevation: 4,
                 ...styles.mainButton,
                 marginBottom: idx < 2 ? _getHeight(20) : undefined,
               }}>
@@ -169,6 +184,7 @@ const Home = () => {
         negativeTitle="아니요"
       />
       <BottomNav />
+      <Loading visible={modal} />
     </SafeAreaView>
   );
 };

@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "290449804815",
+    "project_id": "mycharger-3c913",
+    "storage_bucket": "mycharger-3c913.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:290449804815:android:70ee03d3c5f46b66335d7a",
+        "android_client_info": {
+          "package_name": "com.evsolution.mycharger"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "290449804815-1egeomuk2a1sftefjng8nfjsd0t0jdcc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAZImF58CvrsgkJlZei8DvmrHWHVpCGpUw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "290449804815-1egeomuk2a1sftefjng8nfjsd0t0jdcc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

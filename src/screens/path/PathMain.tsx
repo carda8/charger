@@ -4,268 +4,487 @@ import {
   useWindowDimensions,
   Pressable,
   Text,
+  Image,
 } from 'react-native';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import GlobalStyles from 'styles/GlobalStyles';
 import BottomNav from '@components/BottomNav';
 import {useDispatch, useSelector} from 'react-redux';
-import {
-  RouteProp,
-  useIsFocused,
-  useNavigation,
-  useRoute,
-} from '@react-navigation/native';
-import {setBottomIdx} from 'redux/reducers/navReducer';
-import NaverMapView, {Marker} from 'react-native-nmap';
-import {GestureHandlerRootView, ScrollView} from 'react-native-gesture-handler';
+import NaverMapView, {Align, Marker} from 'react-native-nmap';
+import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {_getHeight, _getWidth} from 'constants/utils';
-import BottomButton from '@components/BottomButton';
-import NavModal from '@components/NavModal';
-import {commonTypes} from '@types';
 import PathSearchBox from './components/PathSearchBox';
 import {BottomSheetModal, BottomSheetModalProvider} from '@gorhom/bottom-sheet';
-import StationListItem from '@screens/around/Components/StationListItem';
 import {RootState} from 'redux/store';
-import routertype from '@router/routertype';
 import {Shadow} from 'react-native-shadow-2';
-import {setGoal} from 'redux/reducers/pathReducer';
 import FontList from 'constants/FontList';
+import commonAPI from 'api/modules/commonAPI';
+import Loading from '@components/Loading';
+import modules from 'constants/utils/modules';
+import {setBottomIdx} from 'redux/reducers/navReducer';
+import {useIsFocused, useNavigation} from '@react-navigation/native';
+import {commonTypes} from '@types';
+import PathBottomSheetItem from './components/PathBottomSheetItem';
+import {resetPath} from 'redux/reducers/pathReducer';
+
+interface coor {
+  latitude: number;
+  longitude: number;
+  zoom: number;
+}
 
 const PathMain = () => {
   const dispatch = useDispatch();
-  const isFocused = useIsFocused();
-  const [showRecomend, setShowRecomend] = useState(false);
-  const goal = useSelector((state: RootState) => state.pathReducer.goal);
-  const recomendList = [1, 2, 3, 4, 5, 6];
-  const [pickedRecomend, setPickedRecomend] = useState<number>();
-  // const sheet = useBottomSheet<BottomSheetMethods & bO>();
+  const nav = useNavigation<commonTypes.navi>();
+  const {goalData, startData, isSwitch, lastRef} = useSelector(
+    (state: RootState) => state.pathReducer,
+  );
+
+  const {currentUserLocation} = useSelector(
+    (state: RootState) => state.locationReducer,
+  );
+  console.log('currentUserLocation,', currentUserLocation);
+
+  const [lineData, setLineData] = useState([]);
   const layout = useWindowDimensions();
-  const P0 = {latitude: 37.564362, longitude: 126.977011};
+  const [modal, setModal] = useState(false);
 
+  const [showOnlyMap, setShowOnlyMap] = useState(false);
+
+  const [center, setCenter] = useState<coor>();
+  const [pickMark, setPickMark] = useState('');
+
+  // 길안내모달
   const [visible, setVisible] = useState(false);
-  // ref
-  const bottomSheetRef = useRef<BottomSheetModal>(null);
-  const [pick, setPick] = useState(false);
-  // variables
-  const snapPoints = useMemo(() => ['40%'], []);
 
+  // map ref
+  const mapRef = useRef<NaverMapView>(null);
+
+  // ########## 바텀 시트 ##########
+  const bottomSheetRef = useRef<BottomSheetModal>(null);
+  const snapPoints = useMemo(() => [300], []);
   const handleSheetChanges = useCallback((index: number) => {
     console.log('handleSheetChanges', index);
   }, []);
-
   const sheetStyle = useMemo(
     () => ({
       ...styles.sheetContainer,
       shadowColor: 'black',
     }),
-    ['linen'],
+    [],
   );
-  useEffect(() => {
-    if (isFocused) {
-      dispatch(setBottomIdx(2));
+  // ########## END 바텀시트 ##########
+
+  // 추천 목록 가져오기
+  const _getRecomand = async () => {
+    let data;
+    //현재가 아닌 도착지와 목적지로
+    // data = {
+    //   route: [
+    //     [currentUserLocation.latitude, currentUserLocation.longitude],
+    //     [goalData.location.lat, goalData.location.lon],
+    //   ],
+    //   distance: 1,
+    // };
+
+    await commonAPI
+      ._postPathRecommend(data)
+      .then(res => {
+        console.log('path recomand res', res.data.data);
+      })
+      .catch(err => console.log('path recomand  ERR ', err));
+  };
+
+  // 경로 표시
+  const _getPath = async () => {
+    //위와 동일 현재 아니고 도착지로
+    setModal(true);
+    // let data = {
+    //   start: `${currentUserLocation.longitude},${currentUserLocation.latitude}`,
+    //   end: `${pickedRec.longitude},${pickedRec.latitude}`,
+    // };
+    let data = {};
+    await commonAPI
+      ._getPathLine(data)
+      .then(res => {
+        if (res.data.route) {
+          let temp;
+          if (currentUserLocation) {
+            temp = [
+              {
+                latitude: currentUserLocation.latitude,
+                longitude: currentUserLocation.longitude,
+              },
+            ];
+          }
+          res.data.route.map((item: any, index: number) => {
+            temp.push({latitude: item[1], longitude: item[0]});
+          });
+          console.log('temp', temp);
+          // setLineData(temp);
+        }
+      })
+      .catch(err => console.log('paht ERR', err));
+  };
+
+  const _getAddrByCoor = async () => {
+    const param = {
+      x: currentUserLocation.longitude,
+      y: currentUserLocation.latitude,
+    };
+    await commonAPI
+      ._getAddrByCoor(param)
+      .then(res => {
+        if (res?.data?.documents?.length > 0) {
+          // dispatch(setStart(res.data.documents[0].address_name));
+        }
+        console.log('add res', res.data.documents);
+      })
+      .catch(err => console.log('add err', err));
+  };
+
+  const _getMarkerImg = (item: any) => {
+    let isAc = false;
+    let isDc = false;
+    let close = modules._isClosed(item);
+    // console.log('is CLOSED? ::', close);
+    item.chargers.map((item, index) => {
+      if (
+        item.chgerTypeInfo === 'DC차데모+AC3상+DC콤보' ||
+        item.chgerTypeInfo === 'DC차데모+AC3상'
+      ) {
+        isAc = true;
+        isDc = true;
+      }
+
+      if (item.chgerTypeInfo === 'AC완속' || item.chgerTypeInfo === 'AC3상')
+        isAc = true;
+      else isDc = true;
+    });
+    if (!item) return;
+    if (!close) return require('@assets/marker_close.png');
+    if (isAc && isDc) return require('@assets/marker_mix.png');
+    if (isAc && !isDc) return require('@assets/marker_normal.png');
+    if (isDc && !isAc) return require('@assets/marker_fast.png');
+    if (!isAc && !isDc) return require('@assets/marker_normal.png');
+  };
+
+  const _onPressMyLocation = () => {
+    if (currentUserLocation) {
+      setCenter({
+        latitude: currentUserLocation.latitude,
+        longitude: currentUserLocation.longitude,
+        zoom: 16,
+      });
+    } else {
     }
-  }, [isFocused]);
+  };
 
   useEffect(() => {
-    if (goal) {
-      bottomSheetRef.current?.present();
-    } else {
-      bottomSheetRef.current?.close();
+    if (lineData?.length > 0) {
+      setTimeout(() => {
+        mapRef?.current?.animateToCoordinates(lineData, {
+          top: 500,
+          bottom: 500,
+          left: 275,
+          right: 275,
+        });
+        setModal(false);
+      }, 200);
     }
-    return () => {
-      dispatch(setGoal(false));
-    };
-  }, [isFocused, goal]);
+  }, [lineData]);
+
+  useEffect(() => {
+    if (currentUserLocation) {
+      _getAddrByCoor();
+      setCenter({
+        latitude: currentUserLocation.latitude,
+        longitude: currentUserLocation.longitude,
+        zoom: 16,
+      });
+    }
+    dispatch(setBottomIdx(2));
+  }, []);
+
+  useEffect(() => {
+    if (startData && !isSwitch) {
+      setCenter({
+        latitude: startData.location.lat,
+        longitude: startData.location.lon,
+        zoom: 16,
+      });
+      bottomSheetRef.current?.present();
+    }
+  }, [startData]);
+
+  useEffect(() => {
+    if (goalData && !isSwitch) {
+      setCenter({
+        latitude: goalData.location.lat,
+        longitude: goalData.location.lon,
+        zoom: 16,
+      });
+      bottomSheetRef.current?.present();
+    }
+  }, [goalData]);
+
+  // useEffect(() => {
+  //   return () => {
+  //     console.log('return');
+  //     dispatch(resetPath({}));
+  //   };
+  // }, []);
 
   return (
     <GestureHandlerRootView style={{flex: 1}}>
       <BottomSheetModalProvider>
         <SafeAreaView style={{...GlobalStyles.safeAreaStyle}}>
-          <View
-            style={{
-              position: 'absolute',
-              zIndex: 100,
-              width: '100%',
-            }}>
-            <PathSearchBox />
-          </View>
-          <NaverMapView
-            zoomControl={false}
-            style={{
-              width: '100%',
-              height: layout.height - _getHeight(60),
-            }}
-            scaleBar={false}
-            showsMyLocationButton={true}
-            center={{...P0, zoom: 16}}
-            onTouch={(e: any) => console.log(e.navtiveEvent)}
-            useTextureView={true}
-            // onCameraChange={e =>
-            //   console.log('onCameraChange', JSON.stringify(e))
-            // }
-            // onMapClick={e => console.log('onMapClick', JSON.stringify(e))}
-          >
-            <Marker
-              coordinate={P0}
-              onClick={() => console.log('onClick! p0')}
-            />
-          </NaverMapView>
-          {!showRecomend && (
-            <BottomSheetModal
-              style={sheetStyle}
-              ref={bottomSheetRef}
-              animateOnMount={true}
-              footerComponent={() => (
-                <BottomButton
-                  setRecomend={setShowRecomend}
-                  text="경로 설정"
-                  style={{marginHorizontal: 16}}
-                  setVisible={setVisible}
-                />
-              )}
-              index={0}
-              snapPoints={snapPoints}
-              onChange={handleSheetChanges}>
-              <StationListItem
-                setPick={setPick}
-                pick={pick}
-                style={{borderBottomWidth: 0}}
-                goal={goal}
-              />
-              {/* </View> */}
-            </BottomSheetModal>
-          )}
-
-          {showRecomend && (
+          {!showOnlyMap && (
             <View
               style={{
                 position: 'absolute',
-                bottom: 0,
-                width: '100%',
-                height: 196,
                 zIndex: 100,
-                // backgroundColor: 'pink',
+                width: '100%',
               }}>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                bounces={false}
-                style={{flex: 1}}>
-                <View style={{flexDirection: 'row', paddingTop: 4}}>
-                  {recomendList.map((item, index) => (
-                    <Shadow
-                      key={index}
-                      offset={[0, 1]}
-                      distance={3}
-                      style={{
-                        width: 169,
-                        height: 100,
-                      }}
-                      containerStyle={{
-                        marginHorizontal: 8,
-                      }}>
-                      <Pressable
-                        onPress={() => setPickedRecomend(index)}
-                        key={index}
-                        style={{
-                          flex: 1,
-                          backgroundColor: 'white',
-                          borderRadius: 3,
-                          borderWidth: 2,
-                          borderColor:
-                            index === pickedRecomend ? '#00C2FF' : 'white',
-                          paddingLeft: 6,
-                          paddingRight: _getWidth(18),
-                          paddingVertical: 6.68,
-                        }}>
-                        <Text
-                          style={{
-                            fontFamily: FontList.PretendardBold,
-                            color: 'black',
-                          }}>
-                          추천 충전기
-                        </Text>
-                        <View
-                          style={{
-                            flexDirection: 'row',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                          }}>
-                          <Text
-                            style={{
-                              fontFamily: FontList.PretendardRegular,
-                              color: 'black',
-                              lineHeight: 24,
-                            }}>
-                            낙동강 휴게소
-                          </Text>
-                          <Text
-                            style={{
-                              fontFamily: FontList.PretendardRegular,
-                              fontSize: 12,
-                              color: '#666666',
-                            }}>
-                            176.8km
-                          </Text>
-                        </View>
-                        <Text
-                          style={{
-                            fontFamily: FontList.PretendardRegular,
-                            fontSize: 12,
-                            color: '#666666',
-                            lineHeight: 24,
-                          }}>
-                          낙동강시 낙동강구
-                        </Text>
-                        <View
-                          style={{
-                            flexDirection: 'row',
-                            justifyContent: 'flex-end',
-                          }}>
-                          <Text
-                            style={{
-                              fontFamily: FontList.PretendardRegular,
-                              fontSize: 12,
-                              color: '#C6C6C6',
-                              lineHeight: 24,
-                            }}>
-                            {'급속 0  |'}
-                          </Text>
-                          <Text
-                            style={{
-                              fontFamily: FontList.PretendardRegular,
-                              fontSize: 12,
-                              color: '#666666',
-                              lineHeight: 24,
-                            }}>
-                            {'  완속 1'}
-                          </Text>
-                        </View>
-                      </Pressable>
-                    </Shadow>
-                  ))}
-                </View>
-              </ScrollView>
-              <View
-                style={{
-                  backgroundColor: 'white',
-                }}>
-                <BottomButton
-                  text="도착지 설정"
-                  style={{marginHorizontal: 16, marginTop: 8}}
-                  setVisible={setVisible}
-                />
-              </View>
+              <PathSearchBox
+                showOnlyMap={showOnlyMap}
+                setShowOnlyMap={setShowOnlyMap}
+                sheetRef={bottomSheetRef}
+              />
             </View>
           )}
 
-          <NavModal
-            visible={visible}
-            setVisible={setVisible}
-            title="길안내 연결"
-          />
+          <NaverMapView
+            ref={mapRef}
+            compass={false}
+            rotateGesturesEnabled={false}
+            onMapClick={e => {
+              bottomSheetRef.current?.close();
+            }}
+            zoomControl={false}
+            useTextureView={true}
+            style={{
+              height: layout.height - 60,
+            }}
+            onCameraChange={e => {
+              if (center) setCenter(undefined);
+            }}
+            scaleBar={false}
+            showsMyLocationButton={false}
+            tiltGesturesEnabled={false}
+            center={center}>
+            {/* 현재 위치 마커 */}
+            {currentUserLocation && (
+              <Marker
+                width={35}
+                height={35}
+                zIndex={100}
+                image={require('@assets/my_location.png')}
+                coordinate={currentUserLocation}
+              />
+            )}
+
+            {/* 출발지 마커 */}
+            {startData && (
+              <Marker
+                width={32}
+                height={65}
+                caption={{
+                  text: '출발',
+                  align: Align.Center,
+                  haloColor: '16B112',
+                  textSize: 13,
+                  color: 'ffffff',
+                }}
+                zIndex={100}
+                image={require('@assets/marker_normal.png')}
+                onClick={() => {
+                  setPickMark('start');
+                  setCenter({
+                    latitude: startData.location.lat,
+                    longitude: startData.location.lon,
+                    zoom: 16,
+                  });
+                  bottomSheetRef.current?.present();
+                }}
+                coordinate={{
+                  latitude: Number(startData.location.lat),
+                  longitude: Number(startData.location.lon),
+                }}
+              />
+            )}
+
+            {/* 도착지 마커 */}
+            {goalData && (
+              <Marker
+                width={32}
+                height={65}
+                onClick={() => {
+                  setPickMark('goal');
+                  setCenter({
+                    latitude: goalData.location.lat,
+                    longitude: goalData.location.lon,
+                    zoom: 16,
+                  });
+                  bottomSheetRef.current?.present();
+                }}
+                caption={{
+                  text: '도착',
+                  align: Align.Center,
+                  haloColor: '166DF0',
+                  textSize: 13,
+                  color: 'ffffff',
+                }}
+                image={require('@assets/marker_fast.png')}
+                coordinate={{
+                  latitude: goalData.location.lat,
+                  longitude: goalData.location.lon,
+                }}
+              />
+            )}
+
+            {/* 도착지 목적지 라인 */}
+            {/* <Path
+                coordinates={lineData}
+                width={7}
+                color={'#07B3FD'}
+                outlineColor={'#07B3FD'}
+                pattern={require('@assets/top_ic_history_w3.png')}
+                patternInterval={25}
+              /> */}
+
+            {/* 추천 중전기 마커들 */}
+            {/* <Marker
+              key={index}
+              width={32}
+              height={65}
+              onClick={() => {
+                console.log('item', item);
+                setCenter({
+                  latitude: item.location.lat,
+                  longitude: item.location.lon,
+                  zoom: 14,
+                });
+              }}
+              caption={{
+                text:
+                  item.chargers.length > 9
+                    ? '9+'
+                    : String(item.chargers.length),
+                align: Align.Center,
+                haloColor: 'A6A6A6',
+                textSize: 15,
+                color: 'ffffff',
+              }}
+              image={_getMarkerImg(item)}
+              coordinate={{
+                latitude: Number(item.location.lat),
+                longitude: Number(item.location.lon),
+              }}
+            /> */}
+          </NaverMapView>
+          <BottomSheetModal
+            style={sheetStyle}
+            ref={bottomSheetRef}
+            footerComponent={() => (
+              <Pressable
+                onPress={() => {
+                  //여기서 도착지 현위치 고정하기
+                }}
+                style={[
+                  {
+                    height: 54,
+                    backgroundColor: '#00239C',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: 8,
+                    marginTop: 'auto',
+                    marginBottom: 22,
+                    marginHorizontal: 16,
+                  },
+                ]}>
+                <Text
+                  style={{
+                    fontFamily: FontList.PretendardBold,
+                    fontSize: 16,
+                    color: 'white',
+                  }}>
+                  {pickMark === 'start'
+                    ? '현위치 설정'
+                    : pickMark === 'goal'
+                    ? '도착지 설정'
+                    : lastRef === 'start'
+                    ? '현위치 설정'
+                    : lastRef === 'goal' && '도착지 설정'}
+                </Text>
+              </Pressable>
+            )}
+            index={0}
+            snapPoints={snapPoints}
+            onChange={handleSheetChanges}>
+            <View>
+              {pickMark === 'start' && startData ? (
+                <PathBottomSheetItem
+                  item={startData}
+                  bottomSheetRef={bottomSheetRef}
+                />
+              ) : pickMark === 'goal' && goalData ? (
+                <PathBottomSheetItem
+                  item={goalData}
+                  bottomSheetRef={bottomSheetRef}
+                />
+              ) : lastRef === 'start' && startData ? (
+                <PathBottomSheetItem
+                  item={startData}
+                  bottomSheetRef={bottomSheetRef}
+                />
+              ) : (
+                lastRef === 'goal' &&
+                goalData && (
+                  <PathBottomSheetItem
+                    item={goalData}
+                    bottomSheetRef={bottomSheetRef}
+                  />
+                )
+              )}
+            </View>
+          </BottomSheetModal>
+
+          <Shadow
+            distance={3}
+            containerStyle={{
+              position: 'absolute',
+              zIndex: 500,
+              bottom: 131,
+              right: 16,
+            }}
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 36 / 2,
+              backgroundColor: 'white',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+            <Pressable
+              hitSlop={5}
+              onPress={() => {
+                _onPressMyLocation();
+              }}
+              style={{
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+              <Image
+                source={require('@assets/location.png')}
+                style={{width: 20, height: 20}}
+                resizeMode="contain"
+              />
+            </Pressable>
+          </Shadow>
           <BottomNav />
+          <Loading visible={modal} />
         </SafeAreaView>
       </BottomSheetModalProvider>
     </GestureHandlerRootView>

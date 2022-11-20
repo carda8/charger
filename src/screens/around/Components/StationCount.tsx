@@ -1,5 +1,5 @@
 import {View, Text, Pressable} from 'react-native';
-import React from 'react';
+import React, {Dispatch, SetStateAction} from 'react';
 import {Shadow} from 'react-native-shadow-2';
 import {_getHeight, _getWidth} from 'constants/utils';
 import FontList from 'constants/FontList';
@@ -7,8 +7,15 @@ import {BottomSheetModal} from '@gorhom/bottom-sheet';
 import {BottomSheetModalMethods} from '@gorhom/bottom-sheet/lib/typescript/types';
 interface props {
   bottomSheetRef: React.RefObject<BottomSheetModalMethods>;
+  stationList: any[];
+  setPick: Dispatch<SetStateAction<any>>;
 }
-const StationCount = ({bottomSheetRef}: props) => {
+
+const StationCount = ({bottomSheetRef, stationList, setPick}: props) => {
+  const _getListCount = () => {
+    return stationList?.length;
+  };
+
   return (
     <View
       style={{
@@ -29,6 +36,7 @@ const StationCount = ({bottomSheetRef}: props) => {
         }}>
         <Pressable
           onPress={() => {
+            setPick(null);
             bottomSheetRef.current?.present();
           }}
           style={{
@@ -47,7 +55,17 @@ const StationCount = ({bottomSheetRef}: props) => {
               fontSize: 16,
               color: 'black',
             }}>
-            주변 충전소00개
+            주변 충전소{' '}
+            <Text
+              style={{
+                includeFontPadding: false,
+                fontFamily: FontList.PretendardBold,
+                fontSize: 16,
+                color: 'black',
+              }}>
+              {_getListCount()}
+            </Text>
+            개
           </Text>
         </Pressable>
       </Shadow>

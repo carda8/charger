@@ -7,7 +7,7 @@ import {
   Image,
   ListRenderItem,
 } from 'react-native';
-import React from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import GlobalStyles from 'styles/GlobalStyles';
 import BottomNav from '@components/BottomNav';
@@ -17,25 +17,45 @@ import {_getHeight} from 'constants/utils';
 import FontList from 'constants/FontList';
 import PathSearchBox from '@screens/path/components/PathSearchBox';
 import {FlatList} from 'react-native-gesture-handler';
-import {useDispatch} from 'react-redux';
-import {setGoal} from 'redux/reducers/pathReducer';
+import {useDispatch, useSelector} from 'react-redux';
+import Loading from '@components/Loading';
+import {RootState} from 'redux/store';
+import {setGoalData, setStartData} from 'redux/reducers/pathReducer';
+import bottomSheet from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheet';
 
 const PathSearchMain = () => {
   const nav = useNavigation<commonTypes.navi>();
-  const history = ['선릉역', '이마트 트레이더스', '코스트코'];
-  const historyRecent = ['서문여자고등학교', '이마트 트레이더스', '홈플러스'];
+  const {userInfo} = useSelector((state: RootState) => state.authReducer);
+  const {keywordList, lastRef, goalData, startData} = useSelector(
+    (state: RootState) => state.pathReducer,
+  );
   const dispatch = useDispatch();
 
-  const _onPress = () => {
-    dispatch(setGoal(true));
+  const _onPress = (item: any) => {
+    console.log('item1', item);
+    console.log('last index', lastRef);
+    if (!lastRef || lastRef === 'goal') dispatch(setGoalData(item));
+    if (lastRef === 'start') dispatch(setStartData(item));
     nav.navigate('PathMain');
+    // nav.navigate('PathMain');
+  };
+
+  const _delelteItem = (target: any[], setTarget: any, index: any) => {
+    console.log('index', index);
+    let temp = [...target];
+    temp = target.filter((item, idx) => idx !== index);
+    setTarget(temp);
   };
 
   const renderItem: ListRenderItem<any> = item => {
     return (
       <>
         {item.index === 0 && (
-          <View style={{paddingHorizontal: 18, paddingTop: 15}}>
+          <View
+            style={{
+              paddingHorizontal: 18,
+              paddingTop: 16,
+            }}>
             <Text
               style={{
                 lineHeight: 28,
@@ -43,12 +63,12 @@ const PathSearchMain = () => {
                 fontSize: 16,
                 color: '#333333',
               }}>
-              최근 도착지
+              최근 기록
             </Text>
           </View>
         )}
         <Pressable
-          onPress={() => _onPress()}
+          onPress={() => _onPress(item.item)}
           style={{
             width: '100%',
             height: _getHeight(78),
@@ -63,22 +83,20 @@ const PathSearchMain = () => {
               alignItems: 'center',
               justifyContent: 'space-between',
             }}>
-            <View>
-              <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                <Image
-                  source={require('@assets/search_goal.png')}
-                  style={{width: 16, height: 16, marginRight: 6}}
-                  resizeMode="contain"
-                />
-                <Text
-                  style={{
-                    fontFamily: FontList.PretendardMedium,
-                    fontSize: 16,
-                    color: '#333333',
-                  }}>
-                  {item.item}
-                </Text>
-              </View>
+            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+              <Image
+                source={require('@assets/search_goal.png')}
+                style={{width: 16, height: 16, marginRight: 6}}
+                resizeMode="contain"
+              />
+              <Text
+                style={{
+                  fontFamily: FontList.PretendardMedium,
+                  fontSize: 16,
+                  color: '#333333',
+                }}>
+                {item.item.statNm}
+              </Text>
             </View>
 
             <View style={{flexDirection: 'row', alignItems: 'center'}}>
@@ -89,16 +107,18 @@ const PathSearchMain = () => {
                 }}>
                 10.01
               </Text>
-              <Image
-                source={require('@assets/search_close.png')}
-                style={{
-                  width: 12,
-                  height: 12,
-                  marginLeft: 10,
-                  tintColor: '#959595',
-                }}
-                resizeMode="contain"
-              />
+              <Pressable hitSlop={15} onPress={() => {}}>
+                <Image
+                  source={require('@assets/search_close.png')}
+                  style={{
+                    width: 12,
+                    height: 12,
+                    marginLeft: 10,
+                    tintColor: '#959595',
+                  }}
+                  resizeMode="contain"
+                />
+              </Pressable>
             </View>
           </View>
           <View style={{marginTop: 12}}>
@@ -107,7 +127,7 @@ const PathSearchMain = () => {
                 fontFamily: FontList.PretendardRegular,
                 color: '#959595',
               }}>
-              강남구 서초동 방배로 33-3
+              {item.item.addr}
             </Text>
           </View>
         </Pressable>
@@ -127,21 +147,33 @@ const PathSearchMain = () => {
       </View>
       <FlatList
         renderItem={item => renderItem(item)}
-        ListHeaderComponent={() => (
+        style={{paddingBottom: 60, marginBottom: 60}}
+        onEndReached={() => {}}
+        ListEmptyComponent={
           <>
-            <View style={{paddingHorizontal: 18, paddingTop: 15}}>
+            <View style={{margin: 16}}>
               <Text
                 style={{
-                  lineHeight: 28,
-                  fontFamily: FontList.PretendardRegular,
-                  fontSize: 16,
-                  color: '#333333',
+                  lineHeight: 24,
+                  color: '#7A7A7A',
+                  marginHorizontal: 16,
+                  // marginTop: 17.6,
+                  fontSize: 13,
                 }}>
-                최근 검색지
+                최근 검색지가 없습니다
               </Text>
             </View>
-            {history.map((item, idx) => (
+          </>
+        }
+        data={[]}
+        keyExtractor={(item, idx) => String(idx) + String(item)}
+        ListHeaderComponent={
+          <>
+            {keywordList.map((item, idx) => (
               <Pressable
+                onPress={() => {
+                  _onPress(item);
+                }}
                 key={idx}
                 style={{
                   width: '100%',
@@ -169,37 +201,15 @@ const PathSearchMain = () => {
                         fontSize: 16,
                         color: '#333333',
                       }}>
-                      {item}
+                      {item.statNm}
                     </Text>
-                  </View>
-                  <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                    <Text
-                      style={{
-                        fontFamily: FontList.PretendardRegular,
-                        color: '#C6C6C6',
-                      }}>
-                      10.01
-                    </Text>
-                    <Image
-                      source={require('@assets/search_close.png')}
-                      style={{
-                        width: 12,
-                        height: 12,
-                        marginLeft: 10,
-                        tintColor: '#959595',
-                      }}
-                      resizeMode="contain"
-                    />
                   </View>
                 </View>
               </Pressable>
             ))}
           </>
-        )}
-        data={historyRecent}
-        keyExtractor={(item, idx) => String(idx) + String(item)}
+        }
       />
-
       <BottomNav />
     </SafeAreaView>
   );

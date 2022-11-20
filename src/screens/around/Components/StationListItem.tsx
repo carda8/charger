@@ -10,16 +10,27 @@ import {
 import React, {useState, Dispatch, SetStateAction} from 'react';
 import {_getHeight, _getWidth} from 'constants/utils';
 import FontList from 'constants/FontList';
-import {useDispatch} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import {setGoal} from 'redux/reducers/pathReducer';
 import ChargerType from 'constants/ChargerType';
+import {BottomSheetModalMethods} from '@gorhom/bottom-sheet/lib/typescript/types';
+import modules from 'constants/utils/modules';
+import {useNavigation} from '@react-navigation/native';
+import {commonTypes} from '@types';
+import {RootState} from 'redux/store';
+import commonAPI from 'api/modules/commonAPI';
 interface props {
   item?: any;
   pick?: boolean;
-  setPick?: Dispatch<SetStateAction<boolean>>;
+  setPick?: Dispatch<SetStateAction<any>>;
   style: StyleProp<ViewStyle>;
-  goal?: boolean;
+  goal?: string;
   isRecent?: boolean;
+  clickedMarker?: any;
+  setClickedMarker?: Dispatch<SetStateAction<any>>;
+  bottomSheetRef?: React.RefObject<BottomSheetModalMethods>;
+  isPath?: boolean;
+  setNeedLogin?: Dispatch<SetStateAction<any>> | undefined;
 }
 
 const StationListItem = ({
@@ -28,14 +39,145 @@ const StationListItem = ({
   setPick,
   style,
   goal,
-  isRecent,
+  bottomSheetRef,
+  setClickedMarker,
+  isPath,
+  setNeedLogin,
 }: props) => {
   const [favorite, setFavorite] = useState(false);
   const dispatch = useDispatch();
+  const isClosed = modules._isClosed(item);
+  const nav = useNavigation<commonTypes.navi>();
+  const {userInfo} = useSelector((state: RootState) => state.authReducer);
+  const pathState = useSelector((state: RootState) => state.pathReducer);
+  console.log('item,', item);
+
+  const _sortChgerBySpeed = (item: any) => {
+    let normal = 0;
+    let fast = 0;
+    console.log('sort', item);
+    if (item) {
+      item?.chargers.map((item, index) => {
+        if (item.chgerTypeInfo === 'AC완속' || item.chgerTypeInfo === 'AC3상')
+          normal++;
+        else fast++;
+      });
+    }
+    const res = {
+      normal,
+      fast,
+    };
+    return res;
+  };
+
+  const _getChgerImg = (item: any) => {
+    let chgerImgTemp = {
+      dcCombo: false,
+      dcDemo: false,
+      ac3: false,
+      ac5: false,
+    };
+    // if (isPath) return chgerImgTemp;
+    let chgerImg = {
+      dcCombo: false,
+      dcDemo: false,
+      ac3: false,
+      ac5: false,
+    };
+    if (item) {
+      item.chargers.map((item, index) => {
+        if (item.chgerTypeInfo === 'DC차데모+AC3상+DC콤보') {
+          chgerImg.ac3 = true;
+          chgerImg.dcCombo = true;
+          chgerImg.dcDemo = true;
+        }
+        if (item.chgerTypeInfo === 'AC완속') {
+          chgerImg.ac5 = true;
+        }
+        if (item.chgerTypeInfo === 'DC콤보') {
+          chgerImg.dcCombo = true;
+        }
+        if (item.chgerTypeInfo === 'DC차데모+DC콤보') {
+          chgerImg.dcCombo = true;
+          chgerImg.dcDemo = true;
+        }
+        if (item.chgerTypeInfo === 'DC차데모+AC3상') {
+          chgerImg.dcDemo = true;
+          chgerImg.ac3 = true;
+        }
+        if (item.chgerTypeInfo === 'AC3상') {
+          chgerImg.ac3 = true;
+        }
+        if (item.chgerTypeInfo === 'DC차데모') {
+          chgerImg.dcDemo = true;
+        }
+      });
+    }
+    return chgerImg;
+  };
+
+  const _setUserStar = async () => {
+    if (userInfo?.id) {
+      const data = {
+        user_id: userInfo.id,
+        stat_id: item.statId,
+      };
+      await commonAPI
+        ._postUserStar(data)
+        .then(res => {
+          modules._updateUserInfo(dispatch, userInfo);
+          console.log('User Star RES', res.data);
+        })
+        .catch(err => console.log('err', err));
+
+      console.log('data', data);
+    }
+  };
+
+  const _delUserStar = async () => {
+    if (userInfo?.id) {
+      const data = {
+        user_id: userInfo.id,
+        stat_id: item.statId,
+      };
+      await commonAPI
+        ._deleteUserStar(data)
+        .then(res => console.log('User Star RES', res.data))
+        .catch(err => console.log('err', err));
+
+      console.log('data', data);
+    }
+  };
+
+  const _onPressed = () => {
+    if (userInfo?.id) {
+      setFavorite(!favorite);
+      if (!favorite) {
+        _setUserStar();
+      } else {
+        _delUserStar();
+      }
+    } else {
+      if (setNeedLogin) setNeedLogin(true);
+    }
+  };
   return (
     <Pressable
       onPress={() => {
-        setPick && setPick(true);
+        if (pick) {
+          bottomSheetRef?.current?.close();
+          nav.navigate('StationDetailMain', {item: item});
+        }
+
+        if (item) {
+          setClickedMarker &&
+            setClickedMarker({
+              latitude: Number(item.location.lat),
+              longitude: Number(item.location.lon),
+              zoom: 16,
+            });
+          setPick && setPick([item]);
+        }
       }}
       style={[
         {
@@ -54,31 +196,45 @@ const StationListItem = ({
           flexDirection: 'row',
           alignItems: 'center',
         }}>
+        <Image
+          source={require('@assets/main_bt_union2.png')}
+          style={{width: 20, height: 20}}
+          resizeMode="contain"
+        />
         <View
           style={{
-            width: _getWidth(20),
-            height: _getHeight(20),
-            backgroundColor: '#D9D9D9',
-          }}
-        />
-        <View style={{marginLeft: 4, marginRight: 6}}>
-          <Text
-            style={{
-              fontFamily: FontList.PretendardMedium,
-              fontSize: 16,
-              color: '#333333',
-            }}>
-            강남역 12번 출구
-          </Text>
+            marginLeft: 4,
+            marginRight: 6,
+            flexDirection: 'row',
+            flex: 1,
+          }}>
+          <View style={{flex: 4}}>
+            <Text
+              style={{
+                fontFamily: FontList.PretendardMedium,
+                fontSize: 16,
+                color: '#333333',
+              }}>
+              {item?.statNm ? item?.statNm : ''}
+              {'  '}
+              <Text
+                style={{
+                  fontFamily: FontList.PretendardRegular,
+                  fontSize: 14,
+                  color: '#333333',
+                }}>
+                1.5km
+              </Text>
+            </Text>
+          </View>
         </View>
-        <Text>1.5km</Text>
         <Pressable
           style={{
             marginLeft: 'auto',
             alignItems: 'center',
           }}
           hitSlop={10}
-          onPress={() => setFavorite(!favorite)}>
+          onPress={() => _onPressed()}>
           <Image
             source={
               favorite
@@ -101,8 +257,12 @@ const StationListItem = ({
             }}
             hitSlop={10}
             onPress={() => {
-              setPick && setPick(false);
-              goal && dispatch(setGoal(false));
+              bottomSheetRef?.current?.close();
+              // setPick && setPick(false);
+              if (goal) {
+                // pathState.textFocuse()
+                // bottomSheetRef?.current?.close();
+              }
             }}>
             <Image
               source={
@@ -128,49 +288,32 @@ const StationListItem = ({
             fontFamily: FontList.PretendardRegular,
             color: '#959595',
           }}>
-          {'경기도 성남시 분당구 판교로227번길 6'}
+          {item?.addr ? item?.addr : ''}
         </Text>
       </View>
-      <View style={{flexDirection: 'row', marginTop: 10}}>
-        <View
-          style={{
-            marginRight: 4,
-            width: 54,
-            height: 20,
-            backgroundColor: '#07B3FD',
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: 3,
-          }}>
-          <Text
+      {item?.parkingFree && (
+        <View style={{flexDirection: 'row', marginTop: 10}}>
+          <View
             style={{
-              fontFamily: FontList.PretendardRegular,
-              fontSize: 12,
-              color: 'white',
+              marginRight: 4,
+              width: 54,
+              height: 20,
+              backgroundColor: '#07B3FD',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 3,
             }}>
-            무료주차
-          </Text>
+            <Text
+              style={{
+                fontFamily: FontList.PretendardRegular,
+                fontSize: 12,
+                color: 'white',
+              }}>
+              무료주차
+            </Text>
+          </View>
         </View>
-        <View
-          style={{
-            marginRight: 4,
-            width: 54,
-            height: 20,
-            backgroundColor: '#07B3FD',
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: 3,
-          }}>
-          <Text
-            style={{
-              fontFamily: FontList.PretendardRegular,
-              fontSize: 12,
-              color: 'white',
-            }}>
-            무료주차
-          </Text>
-        </View>
-      </View>
+      )}
 
       <View
         style={{
@@ -192,9 +335,9 @@ const StationListItem = ({
               style={{
                 fontFamily: FontList.PretendardMedium,
                 fontSize: 16,
-                color: '#6FCF24',
+                color: isClosed ? '#6FCF24' : '#959595',
               }}>
-              충전가능
+              {isClosed ? '충전가능' : '충전불가'}
             </Text>
           </View>
           <View style={{flexDirection: 'row'}}>
@@ -203,7 +346,7 @@ const StationListItem = ({
                 fontFamily: FontList.PretendardRegular,
                 color: '#333333',
               }}>
-              급속 1
+              급속 {_sortChgerBySpeed(item).fast}
             </Text>
             <Text
               style={{
@@ -217,7 +360,7 @@ const StationListItem = ({
                 fontFamily: FontList.PretendardRegular,
                 color: '#333333',
               }}>
-              급속 1
+              완속 {_sortChgerBySpeed(item).normal}
             </Text>
           </View>
         </View>
@@ -229,66 +372,69 @@ const StationListItem = ({
           }}>
           <View
             style={{
-              width: _getWidth(40),
-              height: _getHeight(40),
+              width: 40,
+              height: 40,
               borderRadius: _getWidth(40) / 2,
               borderWidth: 1,
               alignItems: 'center',
               justifyContent: 'center',
-              borderColor: '#6FCF24',
+              borderColor: _getChgerImg(item).dcCombo ? '#6FCF24' : '#C6C6C6',
+              opacity: _getChgerImg(item).dcCombo ? 1 : 0.3,
             }}>
             <Image
               source={ChargerType.chargerLogo[0]}
-              style={{width: _getWidth(35), height: _getHeight(35)}}
+              style={{width: 35, height: 35}}
               resizeMode="contain"
             />
           </View>
           <View
             style={{
-              width: _getWidth(40),
-              height: _getHeight(40),
+              width: 40,
+              height: 40,
               borderRadius: _getWidth(40) / 2,
               borderWidth: 1,
               alignItems: 'center',
               justifyContent: 'center',
-              borderColor: '#6FCF24',
+              borderColor: _getChgerImg(item).dcDemo ? '#6FCF24' : '#C6C6C6',
+              opacity: _getChgerImg(item).dcDemo ? 1 : 0.3,
             }}>
             <Image
               source={ChargerType.chargerLogo[1]}
-              style={{width: _getWidth(30), height: _getHeight(30)}}
+              style={{width: 30, height: 30}}
               resizeMode="contain"
             />
           </View>
           <View
             style={{
-              width: _getWidth(40),
-              height: _getHeight(40),
+              width: 40,
+              height: 40,
               borderRadius: _getWidth(40) / 2,
               borderWidth: 1,
               alignItems: 'center',
               justifyContent: 'center',
-              borderColor: '#6FCF24',
+              borderColor: _getChgerImg(item).ac3 ? '#6FCF24' : '#C6C6C6',
+              opacity: _getChgerImg(item).ac3 ? 1 : 0.3,
             }}>
             <Image
               source={ChargerType.chargerLogo[2]}
-              style={{width: _getWidth(30), height: _getHeight(30)}}
+              style={{width: 30, height: 30}}
               resizeMode="contain"
             />
           </View>
           <View
             style={{
-              opacity: 0.3,
-              width: _getWidth(40),
-              height: _getHeight(40),
+              width: 40,
+              height: 40,
               borderRadius: _getWidth(40) / 2,
               borderWidth: 1,
               alignItems: 'center',
               justifyContent: 'center',
-              borderColor: '#C6C6C6',
+              borderColor: _getChgerImg(item).ac5 ? '#6FCF24' : '#C6C6C6',
+              opacity: _getChgerImg(item).ac5 ? 1 : 0.3,
             }}>
             <Image
               source={ChargerType.chargerLogo[3]}
-              style={{width: _getWidth(33), height: _getHeight(33)}}
+              style={{width: 33, height: 33}}
               resizeMode="contain"
             />
           </View>

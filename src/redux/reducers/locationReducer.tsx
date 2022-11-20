@@ -1,9 +1,9 @@
 import {createSlice, PayloadAction} from '@reduxjs/toolkit';
 interface loactionState {
-  currentUserLocation: {latitude?: number; longitude?: number};
+  currentUserLocation: {latitude: number; longitude: number} | undefined;
 }
 const initialState: loactionState = {
-  currentUserLocation: {latitude: 0, longitude: 0},
+  currentUserLocation: undefined,
 };
 const locationSlice = createSlice({
   name: 'location',

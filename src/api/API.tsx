@@ -14,14 +14,19 @@ const axiosConfig: AxiosRequestConfig = {
   },
   transformRequest: (data, headers) => {
     // data.encodeJson = true;
-    if (data) console.log('data', data);
+    if (data) console.log('API REQ data', data);
     const parsedData = JSON.stringify(data);
     return parsedData;
   },
   transformResponse: data => {
     if (data) {
-      const parsedReq = JSON.parse(data);
-      return parsedReq;
+      // console.log('## ORIGIN API RES DATA', data);
+      try {
+        const parsedReq = JSON.parse(data);
+        if (parsedReq) return parsedReq;
+      } catch {
+        return data;
+      }
     }
   },
 };

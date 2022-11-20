@@ -16,6 +16,7 @@ interface props {
   recomend?: boolean;
   setRecomend?: Dispatch<SetStateAction<boolean>>;
   disable?: boolean;
+  coor?: any;
 }
 
 // export type Nav = {
@@ -33,6 +34,8 @@ const BottomButton = ({
   recomend,
   setRecomend,
   disable,
+  coor,
+  b,
 }: props) => {
   const navi = useNavigation<commonTypes.navi>();
 

@@ -1,18 +1,62 @@
 import {createSlice} from '@reduxjs/toolkit';
 
 const pathSlice = createSlice({
-  name: 'auth',
-  initialState: {goal: false},
+  name: 'path',
+  initialState: {
+    keywordList: [],
+    lastRef: '',
+    goalData: '',
+    startData: '',
+    isGoalFinish: false,
+    isStartFinish: false,
+    isSwitch: false,
+  },
   reducers: {
-    setGoal: (state, action) => {
-      state.goal = action.payload;
+    setKeywordList: (state, actions) => {
+      state.keywordList = actions.payload;
     },
-    removeGodal: (state, action) => {
-      state.goal = action.payload;
+    setLastRef: (state, actions) => {
+      state.lastRef = actions.payload;
+    },
+    setGoalData: (state, actions) => {
+      state.isSwitch = false;
+      state.goalData = actions.payload;
+    },
+    setStartData: (state, actions) => {
+      state.isSwitch = false;
+      state.startData = actions.payload;
+    },
+    setIsGoalFinish: (state, actions) => {
+      state.isGoalFinish = actions.payload;
+    },
+    setIsStartFinish: (state, actions) => {
+      state.isStartFinish = actions.payload;
+    },
+    switchPosition: (state, action) => {
+      const copyStart = state.startData;
+      const copyGoal = state.goalData;
+      state.isSwitch = true;
+      state.startData = copyGoal;
+      state.goalData = copyStart;
+    },
+    resetPath: (state, action) => {
+      state.goalData = '';
+      state.startData = '';
+      state.keywordList = [];
+      state.lastRef = '';
     },
   },
 });
 
 const {actions, reducer} = pathSlice;
-export const {setGoal, removeGodal} = actions;
+export const {
+  setKeywordList,
+  setLastRef,
+  setIsGoalFinish,
+  setIsStartFinish,
+  setGoalData,
+  setStartData,
+  switchPosition,
+  resetPath,
+} = actions;
 export const pathReducer = reducer;

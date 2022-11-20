@@ -1,31 +1,132 @@
-import React from 'react';
+import React, {
+  useState,
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useRef,
+} from 'react';
 import {_getHeight, _getWidth} from 'constants/utils';
 import {commonTypes} from '@types';
 import {useNavigation} from '@react-navigation/native';
-import {
-  Image,
-  Keyboard,
-  Pressable,
-  Text,
-  TextInput,
-  useWindowDimensions,
-  View,
-} from 'react-native';
+import {Image, Keyboard, Pressable, Text, TextInput, View} from 'react-native';
 import FontList from 'constants/FontList';
+import {useDispatch, useSelector} from 'react-redux';
+import {RootState} from 'redux/store';
+import {BottomSheetModalMethods} from '@gorhom/bottom-sheet/lib/typescript/types';
+import commonAPI from 'api/modules/commonAPI';
+import {
+  setGoalData,
+  setIsGoalFinish,
+  setKeywordList,
+  setLastRef,
+  setStartData,
+  switchPosition,
+} from 'redux/reducers/pathReducer';
 
 interface props {
   editable?: boolean;
+  showOnlyMap?: boolean;
+  setShowOnlyMap?: Dispatch<SetStateAction<boolean>>;
+  sheetRef?: React.RefObject<BottomSheetModalMethods>;
 }
 
-const PathSearchBox = ({editable}: props) => {
-  const layout = useWindowDimensions();
+const PathSearchBox = ({
+  editable,
+  showOnlyMap,
+  setShowOnlyMap,
+  sheetRef,
+}: props) => {
   const nav = useNavigation<commonTypes.navi>();
+  const dispatch = useDispatch();
+  const {goalData, startData} = useSelector(
+    (state: RootState) => state.pathReducer,
+  );
+  const [home, setHome] = useState(false);
+  const [inputStart, setInputStart] = useState('');
+  const [inputGoal, setInputGoal] = useState('');
+
+  const startRef = useRef<TextInput>(null);
+  const goalRef = useRef<TextInput>(null);
+
+  const _resetLocation = () => {};
+
+  const _putHome = () => {
+    if (!home) {
+      setHome(true);
+    } else {
+      setHome(false);
+    }
+  };
+
+  const _getResult = async () => {
+    const data = {
+      keywords: startRef.current?.isFocused() ? inputStart : inputGoal,
+      offset: 0,
+      limit: 3,
+    };
+    await commonAPI
+      ._postAruondStation(data)
+      .then(res => {
+        if (res.data.data) dispatch(setKeywordList(res.data.data));
+      })
+      .catch(err => console.log('err', err));
+  };
+
+  const lastFocus = useRef('');
+  useEffect(() => {
+    if (startRef.current?.isFocused() && inputStart?.length > 1) {
+      if (lastFocus.current === 'goal') {
+        lastFocus.current = 'start';
+        dispatch(setLastRef(lastFocus.current));
+      }
+      _getResult();
+    }
+    if (!startRef.current?.isFocused() && inputGoal?.length > 1) {
+      if (lastFocus.current === 'start') {
+        lastFocus.current = 'goal';
+        dispatch(setLastRef(lastFocus.current));
+      }
+      _getResult();
+    }
+  }, [inputGoal, inputStart]);
+
+  const _onPressClose = () => {
+    setInputStart('');
+    setInputGoal('');
+    sheetRef?.current?.close();
+    dispatch(setGoalData(null));
+    dispatch(setStartData(null));
+    dispatch(setKeywordList([]));
+  };
+
+  const _onPressSwitch = () => {
+    sheetRef?.current?.close();
+    const copyStart = inputStart;
+    const copyGoal = inputGoal;
+    dispatch(switchPosition({}));
+    setInputStart(copyGoal);
+    setInputGoal(copyStart);
+  };
+
+  // 현위치
+  useEffect(() => {
+    setInputStart(startData?.statNm);
+  }, [startData]);
+  //도착지
+  useEffect(() => {
+    setInputGoal(goalData?.statNm);
+  }, [goalData]);
+
   return (
     <View style={{width: '100%', backgroundColor: 'white'}}>
       {/* 검색창 및 좌, 우 버튼 */}
       <View style={{flexDirection: 'row', marginHorizontal: 16, marginTop: 16}}>
         <View style={{flexDirection: 'row', alignItems: 'center', flex: 1}}>
-          <Pressable>
+          <Pressable
+            hitSlop={10}
+            onPress={() => {
+              _onPressSwitch();
+            }}>
             <Image
               source={require('@assets/switch_position.png')}
               style={{width: 16, height: 17}}
@@ -34,16 +135,16 @@ const PathSearchBox = ({editable}: props) => {
           </Pressable>
 
           <Pressable
-            onPress={() => {}}
             style={{
               flex: 1,
               marginHorizontal: 5,
             }}>
             <View style={{backgroundColor: '#F4F2F2', borderRadius: 3}}>
               <Pressable
-                onPress={() =>
-                  editable ? undefined : nav.navigate('PathSearchMain')
-                }
+                onPress={() => {
+                  editable ? undefined : nav.navigate('PathSearchMain');
+                  dispatch(setLastRef('start'));
+                }}
                 style={{
                   flexDirection: 'row',
                   alignItems: 'center',
@@ -57,7 +158,13 @@ const PathSearchBox = ({editable}: props) => {
                   현위치
                 </Text>
                 <TextInput
-                  onSubmitEditing={() => Keyboard.dismiss()}
+                  ref={startRef}
+                  onSubmitEditing={() => {
+                    Keyboard.dismiss();
+                  }}
+                  onFocus={() => dispatch(setLastRef('start'))}
+                  value={inputStart}
+                  onChangeText={setInputStart}
                   editable={editable ? true : false}
                   style={{
                     flex: 1,
@@ -71,9 +178,9 @@ const PathSearchBox = ({editable}: props) => {
               </Pressable>
 
               <Pressable
-                onPress={() =>
-                  editable ? undefined : nav.navigate('PathSearchMain')
-                }
+                onPress={() => {
+                  editable ? undefined : nav.navigate('PathSearchMain');
+                }}
                 style={{
                   flexDirection: 'row',
                   alignItems: 'center',
@@ -87,9 +194,15 @@ const PathSearchBox = ({editable}: props) => {
                   도착지
                 </Text>
                 <TextInput
+                  onFocus={() => dispatch(setLastRef('goal'))}
+                  ref={goalRef}
                   editable={editable ? true : false}
                   autoCapitalize="none"
-                  onSubmitEditing={() => Keyboard.dismiss()}
+                  value={inputGoal}
+                  onChangeText={setInputGoal}
+                  onSubmitEditing={() => {
+                    Keyboard.dismiss();
+                  }}
                   style={{
                     flex: 1,
                     height: 39,
@@ -101,8 +214,10 @@ const PathSearchBox = ({editable}: props) => {
             </View>
           </Pressable>
         </View>
-
-        <Pressable style={{top: 15}}>
+        <Pressable
+          hitSlop={5}
+          onPress={() => _onPressClose()}
+          style={{top: 15}}>
           <Image
             source={require('@assets/close_star.png')}
             style={{width: 14, height: 14}}
@@ -119,6 +234,9 @@ const PathSearchBox = ({editable}: props) => {
           marginHorizontal: 36,
         }}>
         <Pressable
+          onPress={() => {
+            _putHome();
+          }}
           style={{
             marginRight: 12,
             flexDirection: 'row',
@@ -128,7 +246,9 @@ const PathSearchBox = ({editable}: props) => {
             style={{
               width: 23,
               height: 23,
-              backgroundColor: '#0788FF',
+              backgroundColor: home ? '#0788FF' : 'white',
+              borderWidth: 1,
+              borderColor: '#EEEEEE',
               borderRadius: 23 / 2,
               alignItems: 'center',
               justifyContent: 'center',
@@ -136,7 +256,11 @@ const PathSearchBox = ({editable}: props) => {
             }}>
             <Image
               source={require('@assets/main_home.png')}
-              style={{width: 12, height: 12}}
+              style={{
+                width: 12,
+                height: 12,
+                tintColor: home ? 'white' : '#C6C6C6',
+              }}
               resizeMode="contain"
             />
           </View>
@@ -150,7 +274,10 @@ const PathSearchBox = ({editable}: props) => {
           </Text>
         </Pressable>
 
-        <Pressable
+        {/* <Pressable
+          onPress={() => {
+            nav.navigate('FavStationMain');
+          }}
           style={{
             flexDirection: 'row',
             alignItems: 'center',
@@ -181,117 +308,10 @@ const PathSearchBox = ({editable}: props) => {
             }}>
             즐겨찾기
           </Text>
-        </Pressable>
+        </Pressable> */}
       </View>
     </View>
   );
 };
 
 export default PathSearchBox;
-
-// <View
-//       style={{
-//         backgroundColor: 'white',
-//         width: '100%',
-//         alignItems: 'center',
-//         alignSelf: 'center',
-//         borderRadius: 3,
-//         paddingLeft: 16,
-//         paddingVertical: 16,
-//         paddingRight: 38,
-//       }}>
-//       <View style={{flexDirection: 'row'}}>
-//         <Pressable style={{backgroundColor: 'teal'}}>
-//           <Image
-//             source={require('@assets/switch_position.png')}
-//             style={{width: 17, height: 17, marginRight: 6}}
-//             resizeMode="contain"
-//           />
-//           <View
-//             style={{
-//               flex: 1,
-//               backgroundColor: '#F4F2F2',
-//               borderRadius: 3,
-//               overflow: 'hidden',
-//               paddingHorizontal: 10,
-//               paddingVertical: 3,
-//             }}>
-//             <View
-//               style={{
-//                 flexDirection: 'row',
-//                 alignItems: 'center',
-//               }}>
-//               <Text>현위치</Text>
-//               <View
-//                 style={{
-//                   flex: 1,
-//                   marginLeft: 5,
-//                   borderBottomWidth: 1,
-//                   borderColor: '#C6C6C6',
-//                 }}>
-//                 <TextInput
-//                   editable={false}
-//                   onSubmitEditing={() => Keyboard.dismiss()}
-//                   autoCapitalize="none"
-//                   placeholder="목적지를 검색하세요"
-//                   style={{
-//                     width: '100%',
-//                     height: 39,
-//                   }}
-//                 />
-//               </View>
-//             </View>
-//             <View
-//               style={{
-//                 flexDirection: 'row',
-//                 alignItems: 'center',
-//                 backgroundColor: '#F4F2F2',
-//               }}>
-//               <Text>도착지</Text>
-//               <View
-//                 style={{
-//                   flex: 1,
-//                   marginLeft: 5,
-//                 }}>
-//                 <TextInput
-//                   editable={false}
-//                   onSubmitEditing={() => Keyboard.dismiss()}
-//                   autoCapitalize="none"
-//                   placeholder="목적지를 검색하세요"
-//                   style={{
-//                     width: '100%',
-//                     height: 39,
-//                   }}
-//                 />
-//               </View>
-//             </View>
-//           </View>
-//         </Pressable>
-
-//         <Pressable style={{position: 'absolute', right: 19, top: 28}}>
-//           <Image
-//             source={require('@assets/close_star.png')}
-//             style={{
-//               width: 14,
-//               height: 14,
-//             }}
-//             resizeMode={'contain'}
-//           />
-//         </Pressable>
-//       </View>
-//       <View
-//         style={{
-//           width: 22,
-//           height: 22,
-//           alignItems: 'center',
-//           justifyContent: 'center',
-//           borderRadius: 22 / 2,
-//           backgroundColor: '#0788FF',
-//         }}>
-//         <Image
-//           source={require('@assets/main_home.png')}
-//           style={{width: 11, height: 11}}
-//           resizeMode="contain"
-//         />
-//       </View>
-//     </View>

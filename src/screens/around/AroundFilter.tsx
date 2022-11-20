@@ -1,4 +1,11 @@
-import {View, Text, Pressable, Image, useWindowDimensions} from 'react-native';
+import {
+  View,
+  Text,
+  Pressable,
+  Image,
+  useWindowDimensions,
+  StyleSheet,
+} from 'react-native';
 import React, {useEffect, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import GlobalStyles from 'styles/GlobalStyles';
@@ -26,6 +33,7 @@ const AroundFilter = () => {
   const [busiList, setBusiList] = useState<busiType[]>();
 
   const layout = useWindowDimensions();
+  const WIDTH = (layout.width - 32 - 48) / 4;
 
   const [speed, setSpeed] = useState<string[]>([]);
   const [fee, setFee] = useState<string[]>([]);
@@ -205,6 +213,7 @@ const AroundFilter = () => {
           <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
             {dumSpeed.map((item, index) => (
               <Pressable
+                key={index}
                 onPress={() => {
                   _setOption(speed, item, setSpeed);
                 }}
@@ -434,8 +443,126 @@ const AroundFilter = () => {
               flexDirection: 'row',
               flexWrap: 'wrap',
             }}>
-            {ChargerType.chargerLogo.map((item, idx) => (
-              <View key={idx}>
+            <View style={{flex: 1}}>
+              <View
+                style={{
+                  height: WIDTH,
+                  ...styles.warpper,
+                }}>
+                {ChargerType.chargerLogo.map(
+                  (item, index) =>
+                    index < 4 && (
+                      <Pressable
+                        onPress={() => {
+                          _setOption(chargerType, item, setChargerType);
+                        }}
+                        style={{
+                          ...styles.innerView,
+                          borderWidth: 1,
+                          opacity: _getOpasity(chargerType, item),
+                          borderColor: _getColor(chargerType, item),
+                          borderRadius: 4,
+                          marginRight: index < 3 ? 16 : 0,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}>
+                        <Image
+                          source={item}
+                          resizeMode={'contain'}
+                          style={{width: '80%', height: '80%'}}
+                        />
+                      </Pressable>
+                    ),
+                )}
+              </View>
+
+              <View
+                style={{
+                  ...styles.warpper,
+                }}>
+                {ChargerType.chargerType.map(
+                  (item, index) =>
+                    index < 4 && (
+                      <View
+                        style={{
+                          ...styles.innerView,
+                          marginRight: index < 3 ? 16 : 0,
+                        }}>
+                        <Text
+                          style={{
+                            fontFamily: FontList.PretendardRegular,
+                            fontSize: 12,
+                            color: '#333333',
+                          }}>
+                          {item}
+                        </Text>
+                      </View>
+                    ),
+                )}
+              </View>
+              {/* 두 번째 라인 */}
+              <View
+                style={{
+                  height: WIDTH,
+                  ...styles.warpper,
+                  marginTop: 15,
+                }}>
+                {ChargerType.chargerLogo.map(
+                  (item, index) =>
+                    index > 3 && (
+                      <Pressable
+                        onPress={() => {
+                          _setOption(chargerType, item, setChargerType);
+                        }}
+                        style={{
+                          ...styles.innerView,
+                          borderWidth: 1,
+                          opacity: _getOpasity(chargerType, item),
+                          borderColor: _getColor(chargerType, item),
+                          borderRadius: 4,
+                          marginRight: index > 3 ? (index > 4 ? 32 : 16) : 0,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}>
+                        <Image
+                          source={item}
+                          resizeMode={'contain'}
+                          style={{width: '80%', height: '80%'}}
+                        />
+                      </Pressable>
+                    ),
+                )}
+              </View>
+
+              <View
+                style={{
+                  ...styles.warpper,
+                }}>
+                {ChargerType.chargerType.map(
+                  (item, index) =>
+                    index > 3 && (
+                      <View
+                        style={{
+                          ...styles.innerView,
+                          marginRight: index > 3 ? (index > 4 ? 32 : 16) : 0,
+                        }}>
+                        <Text
+                          style={{
+                            fontFamily: FontList.PretendardRegular,
+                            fontSize: 12,
+                            color: '#333333',
+                          }}>
+                          {item}
+                        </Text>
+                      </View>
+                    ),
+                )}
+              </View>
+            </View>
+          </View>
+        </View>
+
+        {/* <View key={idx}>
                 <View
                   style={{
                     marginBottom: 15,
@@ -469,10 +596,7 @@ const AroundFilter = () => {
                     <Text>{ChargerType.chargerType[idx]}</Text>
                   </View>
                 </View>
-              </View>
-            ))}
-          </View>
-        </View>
+              </View> */}
 
         <View
           style={{
@@ -568,3 +692,15 @@ const AroundFilter = () => {
 };
 
 export default AroundFilter;
+
+const styles = StyleSheet.create({
+  warpper: {
+    flexDirection: 'row',
+    // marginHorizontal: 16,
+  },
+  innerView: {
+    flex: 1 / 4,
+    // backgroundColor: 'gray',
+    alignItems: 'center',
+  },
+});

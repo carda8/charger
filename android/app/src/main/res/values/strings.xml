@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">마이차저</string>
+    <string name="kakao_app_key">88d23f96a850039b90165f95ed67f01b</string>
 </resources>
