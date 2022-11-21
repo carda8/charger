@@ -44,6 +44,8 @@ const pathSlice = createSlice({
       state.startData = '';
       state.keywordList = [];
       state.lastRef = '';
+      state.isStartFinish = false;
+      state.isGoalFinish = false;
     },
   },
 });

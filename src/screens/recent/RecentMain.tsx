@@ -21,7 +21,7 @@ const RecentMain = () => {
 
   const _getHistory = () => {
     console.log('userinfo', userInfo);
-    if (userInfo?.histories) {
+    if (userInfo?.histories?.length > 0) {
       const temp = [...userInfo?.histories].reverse();
       setRecent(temp);
     }

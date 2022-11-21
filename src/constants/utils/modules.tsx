@@ -33,7 +33,7 @@ export default {
     if (item?.chargers?.length > 0) {
       let close = false;
       close = item.chargers.find(
-        (item, index) =>
+        (item: any, index: number) =>
           item.statInfo === '충전대기' || item.statInfo === '충전중',
       );
       if (close) return true;

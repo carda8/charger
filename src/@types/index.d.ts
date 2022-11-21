@@ -6,6 +6,14 @@ declare module commonTypes {
     statNm?: string;
     parkingFree?: boolean;
   };
+  type userAddr = {
+    address: string;
+    name: string;
+    location: {
+      lon: number;
+      lat: number;
+    };
+  };
   //Stack Navigation Types
   type RootStackParamList = {
     Login: undefined;
@@ -25,7 +33,7 @@ declare module commonTypes {
     SearchMain: undefined;
     PathSearchMain: undefined;
 
-    HomeMain: {addr?: string} | undefined;
+    HomeMain: {addr?: userAddr} | undefined;
     HomeSearch: {addr?: string} | undefined;
     HomePostCode: undefined;
 
@@ -43,6 +51,10 @@ declare module commonTypes {
     MyPagePolicy: undefined;
     MyPageInfo: undefined;
     MyPageRetire: undefined;
+
+    PolicyPersonal: undefined;
+    PolicyLocation: undefined;
+    PolicyUse: undefined;
   };
   type navi = NativeStackNavigationProp<RootStackParamList>;
 

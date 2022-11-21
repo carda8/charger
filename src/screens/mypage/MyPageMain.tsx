@@ -19,7 +19,7 @@ const MyPageMain = () => {
   const myPageItems = [
     '앱 설정',
     '마이차저 설정',
-    '이용약관 및 정책',
+    '서비스 이용 동의',
     '서비스 소개',
   ];
 

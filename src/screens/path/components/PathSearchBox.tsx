@@ -28,6 +28,7 @@ interface props {
   showOnlyMap?: boolean;
   setShowOnlyMap?: Dispatch<SetStateAction<boolean>>;
   sheetRef?: React.RefObject<BottomSheetModalMethods>;
+  setRec?: Dispatch<SetStateAction<boolean>>;
 }
 
 const PathSearchBox = ({
@@ -35,6 +36,7 @@ const PathSearchBox = ({
   showOnlyMap,
   setShowOnlyMap,
   sheetRef,
+  setRec,
 }: props) => {
   const nav = useNavigation<commonTypes.navi>();
   const dispatch = useDispatch();
@@ -94,6 +96,7 @@ const PathSearchBox = ({
     setInputStart('');
     setInputGoal('');
     sheetRef?.current?.close();
+    if (setRec) setRec(false);
     dispatch(setGoalData(null));
     dispatch(setStartData(null));
     dispatch(setKeywordList([]));

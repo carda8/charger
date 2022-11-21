@@ -39,7 +39,7 @@ interface props {
   bottomSheetRef: React.RefObject<BottomSheetModalMethods>;
 }
 
-const SearchMain = ({bottomSheetRef}: props) => {
+const SearchMain = () => {
   const nav = useNavigation<commonTypes.navi>();
   const [input, setInput] = useState('');
 

@@ -1,4 +1,5 @@
 import {createSlice, PayloadAction} from '@reduxjs/toolkit';
+import {commonTypes} from '@types';
 
 interface userInfo {
   id?: string;
@@ -8,10 +9,11 @@ interface userInfo {
   car_brand?: string;
   car_model?: string;
   chgerType?: string[];
+  addressInfo?: commonTypes.userAddr;
 }
 
 interface initialState {
-  userInfo?: userInfo;
+  userInfo?: userInfo | undefined;
   autoLogin?: false;
   fcmToken?: string;
   isGuest?: false;
@@ -21,11 +23,11 @@ const initialState: initialState = {
   userInfo: {
     id: '',
     name: '',
-    favorites: [''],
-    histories: [''],
+    favorites: [],
+    histories: [],
     car_brand: '',
     car_model: '',
-    chgerType: [''],
+    chgerType: [],
   },
   autoLogin: false,
   fcmToken: '',
@@ -48,9 +50,18 @@ const authSlice = createSlice({
     setIsGuest: (state, action) => {
       state.isGuest = action.payload;
     },
+    resetUserInfo: state => {
+      state.userInfo = undefined;
+    },
   },
 });
 
 const {actions, reducer} = authSlice;
-export const {setUserInfo, setFcmToken, setAutoLogin, setIsGuest} = actions;
+export const {
+  setUserInfo,
+  setFcmToken,
+  setAutoLogin,
+  setIsGuest,
+  resetUserInfo,
+} = actions;
 export const authReducer = reducer;

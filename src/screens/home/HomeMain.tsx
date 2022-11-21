@@ -5,19 +5,22 @@ import GlobalStyles from 'styles/GlobalStyles';
 import HeaderCenter from '@components/HeaderCenter';
 import BottomNav from '@components/BottomNav';
 import FontList from 'constants/FontList';
-import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
+import {useNavigation} from '@react-navigation/native';
 import {commonTypes} from '@types';
 import HomeSearchItem from './components/HomeSearchItem';
 import NavModal from '@components/NavModal';
+import {useSelector} from 'react-redux';
+import {RootState} from 'redux/store';
 
 const HomeMain = () => {
   const nav = useNavigation<commonTypes.navi>();
   const data = [1, 1, 1, 1, 1];
   const [visible, setVisible] = useState(false);
-  const addr =
-    useRoute<RouteProp<commonTypes.RootStackParamList, 'HomeMain'>>().params
-      ?.addr;
-
+  const {userInfo} = useSelector((state: RootState) => state.authReducer);
+  // const addr =
+  //   useRoute<RouteProp<commonTypes.RootStackParamList, 'HomeMain'>>().params
+  //     ?.addr;
+  console.log('User Addr', userInfo?.addressInfo);
   const renderItem: ListRenderItem<any> = item => {
     return <HomeSearchItem setVisible={setVisible} visible={visible} />;
   };
@@ -61,7 +64,7 @@ const HomeMain = () => {
                     fontSize: 15,
                     color: '#333333',
                   }}>
-                  {addr}
+                  {userInfo?.addressInfo?.address}
                 </Text>
               </View>
               <Pressable
@@ -90,7 +93,7 @@ const HomeMain = () => {
           </View>
         </View>
       </View>
-      {addr ? (
+      {userInfo?.addressInfo ? (
         <FlatList
           data={data}
           keyExtractor={(item, index) => String(index)}

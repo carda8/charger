@@ -48,7 +48,7 @@ const Home = () => {
   const isFocused = useIsFocused();
   const [visible, setVisible] = useState(false);
   const [modal, setModal] = useState(false);
-
+  const [modalLogin, setModalLogin] = useState(false);
   const imgPath: path = {
     main1: require('@assets/main_near.png'),
     main2: require('@assets/main_onroad.png'),
@@ -72,7 +72,12 @@ const Home = () => {
       case 1:
         return nav.navigate('PathMain');
       case 2:
-        return setVisible(!visible);
+        if (userInfo?.addressInfo) {
+          return nav.navigate('HomeMain', {addr: userInfo?.addressInfo});
+        }
+        if (!userInfo?.id) return setModalLogin(true);
+        else return setVisible(!visible);
+
       case 3:
         return nav.navigate('AroundMain', {isFavorite: true});
       default:
@@ -182,6 +187,17 @@ const Home = () => {
         positivePress={() => nav.navigate('HomeSearch')}
         negative={true}
         negativeTitle="아니요"
+      />
+      <MyModal
+        title="집 등록하기"
+        text={'로그인이 필요한 기능입니다.'}
+        visible={modalLogin}
+        setVisible={setModalLogin}
+        positive={true}
+        positiveTitle="확인"
+        // positivePress={() => nav.navigate('HomeSearch')}
+        // negative={true}
+        // negativeTitle="아니요"
       />
       <BottomNav />
       <Loading visible={modal} />

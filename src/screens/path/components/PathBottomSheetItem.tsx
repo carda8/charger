@@ -17,6 +17,7 @@ import {useNavigation} from '@react-navigation/native';
 import {commonTypes} from '@types';
 import {RootState} from 'redux/store';
 import commonAPI from 'api/modules/commonAPI';
+import modules from 'constants/utils/modules';
 interface props {
   item?: any;
   style?: StyleProp<ViewStyle>;
@@ -194,7 +195,6 @@ const PathBottomSheetItem = ({style, bottomSheetRef, item}: props) => {
           paddingHorizontal: _getWidth(24),
           width: '100%',
           backgroundColor: 'white',
-          borderBottomWidth: 1,
           borderBottomColor: '#F5F5F5',
           paddingVertical: 18,
           // height: _getHeight(),
@@ -342,7 +342,7 @@ const PathBottomSheetItem = ({style, bottomSheetRef, item}: props) => {
                 fontSize: 16,
                 color: '#959595',
               }}>
-              {'충전가능여부'}{' '}
+              {modules._isClosed(item) ? '충전 가능' : '충전 불가'}{' '}
             </Text>
           </View>
           <View style={{flexDirection: 'row'}}>

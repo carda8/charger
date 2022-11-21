@@ -19,6 +19,10 @@ export default {
     const res = await _postAPI('search/histories', params);
     return res;
   },
+  _postUserAddr: async (params: any) => {
+    const res = await _postAPI('address', params);
+    return res;
+  },
   _deleteUserHistory: async (params: any) => {
     const res = await _delAPI('search/histories', params);
     return res;
@@ -76,6 +80,11 @@ export default {
 
   _getAddrByCoor: async (params: any) => {
     const res = await _getAPI('search/address/geo', params);
+    return res;
+  },
+
+  _getSearchAddr: async (params: any) => {
+    const res = await _getAPI('search/address', params);
     return res;
   },
 };

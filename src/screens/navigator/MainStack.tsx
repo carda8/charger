@@ -32,6 +32,9 @@ import StationReportPage from '@screens/stationDetail/StationReportPage';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {BottomSheetModalProvider} from '@gorhom/bottom-sheet';
 import NotificationDetail from '@screens/main/NotificationDetail';
+import PolicyPersonal from '@screens/mypage/policy/PolicyPersonal';
+import PolicyLocation from '@screens/mypage/policy/PolicyLocation';
+import PolicyUse from '@screens/mypage/policy/PolicyUse';
 
 const Stack = createNativeStackNavigator<commonTypes.RootStackParamList>();
 
@@ -133,6 +136,11 @@ const MainStack = () => {
             <Stack.Screen name="MyPageInfo" component={MyPageInfo} />
             {/* 마이페이지 계정 탈퇴 완료 */}
             <Stack.Screen name="MyPageRetire" component={MyPageRetire} />
+
+            {/* 마이페이지 약관 페이지들 */}
+            <Stack.Screen name="PolicyPersonal" component={PolicyPersonal} />
+            <Stack.Screen name="PolicyLocation" component={PolicyLocation} />
+            <Stack.Screen name="PolicyUse" component={PolicyUse} />
           </Stack.Navigator>
         </BottomSheetModalProvider>
       </GestureHandlerRootView>

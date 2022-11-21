@@ -76,6 +76,7 @@ const SnsButton = ({text, snsType, navigation, idx, setLoading}: props) => {
               chgerType: resData.chgerType,
               favorites: resData.favorites,
               histories: resData.histories,
+              addressInfo: resData?.addressInfo,
             }),
           );
         }

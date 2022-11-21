@@ -20,7 +20,13 @@ import {FlatList} from 'react-native-gesture-handler';
 import {useDispatch, useSelector} from 'react-redux';
 import Loading from '@components/Loading';
 import {RootState} from 'redux/store';
-import {setGoalData, setStartData} from 'redux/reducers/pathReducer';
+import {
+  setGoalData,
+  setIsGoalFinish,
+  setIsStartFinish,
+  setKeywordList,
+  setStartData,
+} from 'redux/reducers/pathReducer';
 import bottomSheet from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheet';
 
 const PathSearchMain = () => {
@@ -34,8 +40,17 @@ const PathSearchMain = () => {
   const _onPress = (item: any) => {
     console.log('item1', item);
     console.log('last index', lastRef);
-    if (!lastRef || lastRef === 'goal') dispatch(setGoalData(item));
-    if (lastRef === 'start') dispatch(setStartData(item));
+    if (!lastRef || lastRef === 'goal') {
+      dispatch(setGoalData(item));
+      dispatch(setKeywordList([]));
+      dispatch(setIsGoalFinish(false));
+    }
+    if (lastRef === 'start') {
+      dispatch(setStartData(item));
+      dispatch(setKeywordList([]));
+      dispatch(setIsStartFinish(false));
+    }
+
     nav.navigate('PathMain');
     // nav.navigate('PathMain');
   };

@@ -1,4 +1,4 @@
-import {View, Text, Pressable, Image} from 'react-native';
+import {View, Text, Pressable, Image, useWindowDimensions} from 'react-native';
 import React from 'react';
 import FontList from 'constants/FontList';
 import {commonTypes} from '@types';
@@ -19,6 +19,7 @@ interface props {
 const HomeHeader = ({title, subTitle, goBack, backTitle}: props) => {
   const nav = useNavigation<commonTypes.navi>();
   const {userInfo} = useSelector((state: RootState) => state.authReducer);
+  const layout = useWindowDimensions();
   return (
     <>
       <View
@@ -78,9 +79,12 @@ const HomeHeader = ({title, subTitle, goBack, backTitle}: props) => {
             style={{width: _getWidth(89), height: _getHeight(89)}}
             resizeMode="contain"
           />
-          <View style={{marginLeft: 24, flex: 1}}>
+          <View style={{marginLeft: 24}}>
             <Text
-              style={{fontFamily: FontList.PretendardLight, color: '#858585'}}>
+              style={{
+                fontFamily: FontList.PretendardRegular,
+                color: '#858585',
+              }}>
               {/* 등록된 정보가 없습니다. */}
               반갑습니다
             </Text>
@@ -93,31 +97,18 @@ const HomeHeader = ({title, subTitle, goBack, backTitle}: props) => {
               {userInfo?.name ? userInfo?.name : '마이차저'}님
             </Text>
             {userInfo?.car_brand ? (
-              <View style={{flexDirection: 'row', flex: 1, flexWrap: 'wrap'}}>
+              <View style={{flexDirection: 'row'}}>
                 <Text
+                  numberOfLines={1}
                   style={{
+                    width: layout.width * 0.6,
                     fontFamily: FontList.PretendardMedium,
                     fontSize: 14,
                     color: '#858585',
                   }}>
-                  {userInfo?.car_brand}{' '}
-                </Text>
-                <Text
-                  style={{
-                    fontFamily: FontList.PretendardMedium,
-                    fontSize: 14,
-                    color: '#858585',
-                  }}>
-                  {userInfo?.car_model}
-                  {' | '}
-                </Text>
-                <Text
-                  style={{
-                    fontFamily: FontList.PretendardMedium,
-                    fontSize: 14,
-                    color: '#858585',
-                  }}>
-                  {userInfo?.chgerType}
+                  {userInfo?.car_brand}
+                  {userInfo?.car_model} {' | '}
+                  {userInfo?.chgerType?.join(' ')}
                 </Text>
               </View>
             ) : (

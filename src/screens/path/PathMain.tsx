@@ -11,7 +11,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import GlobalStyles from 'styles/GlobalStyles';
 import BottomNav from '@components/BottomNav';
 import {useDispatch, useSelector} from 'react-redux';
-import NaverMapView, {Align, Marker} from 'react-native-nmap';
+import NaverMapView, {Align, Marker, Path} from 'react-native-nmap';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {_getHeight, _getWidth} from 'constants/utils';
 import PathSearchBox from './components/PathSearchBox';
@@ -26,7 +26,13 @@ import {setBottomIdx} from 'redux/reducers/navReducer';
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import {commonTypes} from '@types';
 import PathBottomSheetItem from './components/PathBottomSheetItem';
-import {resetPath} from 'redux/reducers/pathReducer';
+import {
+  resetPath,
+  setIsGoalFinish,
+  setIsStartFinish,
+} from 'redux/reducers/pathReducer';
+import MyModal from '@components/MyModal';
+import PathRecommendList from './components/PathRecommendList';
 
 interface coor {
   latitude: number;
@@ -37,9 +43,8 @@ interface coor {
 const PathMain = () => {
   const dispatch = useDispatch();
   const nav = useNavigation<commonTypes.navi>();
-  const {goalData, startData, isSwitch, lastRef} = useSelector(
-    (state: RootState) => state.pathReducer,
-  );
+  const {goalData, startData, isSwitch, lastRef, isGoalFinish, isStartFinish} =
+    useSelector((state: RootState) => state.pathReducer);
 
   const {currentUserLocation} = useSelector(
     (state: RootState) => state.locationReducer,
@@ -51,9 +56,12 @@ const PathMain = () => {
   const [modal, setModal] = useState(false);
 
   const [showOnlyMap, setShowOnlyMap] = useState(false);
+  const [finishPosition, setFinishPosition] = useState(false);
 
   const [center, setCenter] = useState<coor>();
   const [pickMark, setPickMark] = useState('');
+  // 추천 표시 여부
+  const [showRec, setShowRec] = useState(false);
 
   // 길안내모달
   const [visible, setVisible] = useState(false);
@@ -63,7 +71,7 @@ const PathMain = () => {
 
   // ########## 바텀 시트 ##########
   const bottomSheetRef = useRef<BottomSheetModal>(null);
-  const snapPoints = useMemo(() => [300], []);
+  const snapPoints = useMemo(() => [280], []);
   const handleSheetChanges = useCallback((index: number) => {
     console.log('handleSheetChanges', index);
   }, []);
@@ -99,30 +107,25 @@ const PathMain = () => {
   // 경로 표시
   const _getPath = async () => {
     //위와 동일 현재 아니고 도착지로
-    setModal(true);
-    // let data = {
-    //   start: `${currentUserLocation.longitude},${currentUserLocation.latitude}`,
-    //   end: `${pickedRec.longitude},${pickedRec.latitude}`,
-    // };
-    let data = {};
+    // setModal(true);
+    console.log(' ### get path ###');
+    console.log('startData', startData);
+    console.log('goalData', goalData);
+    let data = {
+      start: `${startData.location.lon},${startData.location.lat}`,
+      end: `${goalData.location.lon},${goalData.location.lat}`,
+    };
+    // let data = {};
     await commonAPI
       ._getPathLine(data)
       .then(res => {
         if (res.data.route) {
-          let temp;
-          if (currentUserLocation) {
-            temp = [
-              {
-                latitude: currentUserLocation.latitude,
-                longitude: currentUserLocation.longitude,
-              },
-            ];
-          }
+          let temp: any[] = [];
           res.data.route.map((item: any, index: number) => {
             temp.push({latitude: item[1], longitude: item[0]});
           });
-          console.log('temp', temp);
-          // setLineData(temp);
+          console.log('temp', res.data.route);
+          setLineData(temp);
         }
       })
       .catch(err => console.log('paht ERR', err));
@@ -185,8 +188,8 @@ const PathMain = () => {
     if (lineData?.length > 0) {
       setTimeout(() => {
         mapRef?.current?.animateToCoordinates(lineData, {
-          top: 500,
-          bottom: 500,
+          top: 550,
+          bottom: 700,
           left: 275,
           right: 275,
         });
@@ -219,6 +222,11 @@ const PathMain = () => {
   }, [startData]);
 
   useEffect(() => {
+    console.log('cccccccccccc', goalData, startData);
+    if (goalData && startData && lineData.length > 0) _getPath();
+  }, [startData, goalData]);
+
+  useEffect(() => {
     if (goalData && !isSwitch) {
       setCenter({
         latitude: goalData.location.lat,
@@ -229,12 +237,22 @@ const PathMain = () => {
     }
   }, [goalData]);
 
-  // useEffect(() => {
-  //   return () => {
-  //     console.log('return');
-  //     dispatch(resetPath({}));
-  //   };
-  // }, []);
+  useEffect(() => {
+    console.log('### ###', isStartFinish, isGoalFinish);
+    if (isStartFinish && isGoalFinish && !showRec) {
+      _getPath();
+      setShowRec(true);
+    } else {
+      setShowRec(false);
+    }
+  }, [isStartFinish, isGoalFinish]);
+
+  useEffect(() => {
+    return () => {
+      console.log('return');
+      dispatch(resetPath({}));
+    };
+  }, []);
 
   return (
     <GestureHandlerRootView style={{flex: 1}}>
@@ -251,6 +269,7 @@ const PathMain = () => {
                 showOnlyMap={showOnlyMap}
                 setShowOnlyMap={setShowOnlyMap}
                 sheetRef={bottomSheetRef}
+                setRec={setShowRec}
               />
             </View>
           )}
@@ -345,14 +364,16 @@ const PathMain = () => {
             )}
 
             {/* 도착지 목적지 라인 */}
-            {/* <Path
+            {lineData.length > 0 && showRec && (
+              <Path
                 coordinates={lineData}
                 width={7}
-                color={'#07B3FD'}
-                outlineColor={'#07B3FD'}
+                color={'#093BBC'}
+                outlineColor={'#093BBC'}
                 pattern={require('@assets/top_ic_history_w3.png')}
                 patternInterval={25}
-              /> */}
+              />
+            )}
 
             {/* 추천 중전기 마커들 */}
             {/* <Marker
@@ -384,12 +405,29 @@ const PathMain = () => {
               }}
             /> */}
           </NaverMapView>
+
+          {showRec && <PathRecommendList />}
+
           <BottomSheetModal
             style={sheetStyle}
             ref={bottomSheetRef}
             footerComponent={() => (
               <Pressable
                 onPress={() => {
+                  console.log('pick', pickMark, 'last ref', lastRef);
+                  // return;
+                  if (pickMark === 'start' || lastRef === 'start') {
+                    dispatch(setIsStartFinish(true));
+                    setFinishPosition(true);
+                    bottomSheetRef.current?.close();
+                  }
+                  if (pickMark === 'goal' || lastRef === 'goal') {
+                    dispatch(setIsGoalFinish(true));
+                    setFinishPosition(true);
+                    bottomSheetRef.current?.close();
+                  }
+                  console.log('picked', pickMark);
+                  console.log('lastref', lastRef);
                   //여기서 도착지 현위치 고정하기
                 }}
                 style={[
@@ -456,7 +494,8 @@ const PathMain = () => {
             containerStyle={{
               position: 'absolute',
               zIndex: 500,
-              bottom: 131,
+              top: showRec ? 150 : undefined,
+              bottom: showRec ? undefined : 131,
               right: 16,
             }}
             style={{
@@ -483,6 +522,17 @@ const PathMain = () => {
               />
             </Pressable>
           </Shadow>
+          <MyModal
+            positive
+            positiveTitle="확인"
+            setVisible={setFinishPosition}
+            visible={finishPosition}
+            title={
+              pickMark === 'start' || lastRef === 'start'
+                ? '현위치 설정 완료'
+                : '도착지 설정 완료'
+            }
+          />
           <BottomNav />
           <Loading visible={modal} />
         </SafeAreaView>

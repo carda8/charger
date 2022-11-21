@@ -11,9 +11,14 @@ import {Shadow} from 'react-native-shadow-2';
 import {useNavigation} from '@react-navigation/native';
 import {commonTypes} from '@types';
 import MyModal from '@components/MyModal';
+import {useDispatch, useSelector} from 'react-redux';
+import {RootState} from 'redux/store';
+import {resetUserInfo, setUserInfo} from 'redux/reducers/authReducer';
 
 const MyPageConfigPage = () => {
   const nav = useNavigation<commonTypes.navi>();
+  const {userInfo} = useSelector((state: RootState) => state.authReducer);
+  const dispatch = useDispatch();
   const [isEnabled, setIsEnabled] = useState(false);
   const [isEnabled2, setIsEnabled2] = useState(false);
   const [isEnabled3, setIsEnabled3] = useState(false);
@@ -30,6 +35,7 @@ const MyPageConfigPage = () => {
     '즐겨찾기한 충전소의 상태가 변경에 대한 알림 설정이에요',
     '이벤트, 포인트 등에 대한 알림 설정이에요!',
   ];
+
   const toggleSwitch = (idx: number) => {
     switch (idx) {
       case 0:
@@ -40,6 +46,7 @@ const MyPageConfigPage = () => {
         return setIsEnabled3(previousState => !previousState);
     }
   };
+
   const _getState = (idx: number) => {
     switch (idx) {
       case 0:
@@ -50,6 +57,12 @@ const MyPageConfigPage = () => {
         return isEnabled3;
     }
   };
+
+  const _onPressLogout = () => {
+    nav.reset({routes: [{name: 'Login'}]});
+    dispatch(resetUserInfo());
+  };
+
   return (
     <SafeAreaView style={{...GlobalStyles.safeAreaStyle}}>
       <HeaderCenter title="앱설정" leftBack />
@@ -62,35 +75,70 @@ const MyPageConfigPage = () => {
           }}>
           로그인 정보
         </Text>
-        <Pressable
-          onPress={() => {
-            nav.navigate('Login');
-          }}
-          style={{
-            width: '100%',
-            height: _getHeight(43),
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexDirection: 'row',
-          }}>
-          <Text
+        {userInfo?.id ? (
+          <View
             style={{
-              fontFamily: FontList.PretendardSemiBold,
-              fontSize: 17,
-              color: '#333333',
+              marginTop: 20,
+              flexDirection: 'row',
+              justifyContent: 'space-between',
             }}>
-            로그인 하세요
-          </Text>
-          <Image
-            source={require('@assets/mypage_arrow.png')}
-            style={{width: _getWidth(8), height: _getHeight(16)}}
-            resizeMode="contain"
-          />
-        </Pressable>
-        <Text
-          style={{fontFamily: FontList.PretendardRegular, color: '#333333'}}>
-          {'기록해놓은 내역들이 사라지지 않도록 5초만에\n내 계정에 저장하세요.'}
-        </Text>
+            <Text
+              style={{
+                fontFamily: FontList.PretendardSemiBold,
+                fontSize: 16,
+                color: '#333333',
+              }}>
+              {userInfo.name}님
+            </Text>
+            <Pressable onPress={() => _onPressLogout()}>
+              <Text
+                style={{
+                  fontFamily: FontList.PretendardMedium,
+                  color: '#959595',
+                  textDecorationLine: 'underline',
+                }}>
+                로그아웃
+              </Text>
+            </Pressable>
+          </View>
+        ) : (
+          <>
+            <Pressable
+              onPress={() => {
+                nav.navigate('Login');
+              }}
+              style={{
+                width: '100%',
+                height: _getHeight(43),
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexDirection: 'row',
+              }}>
+              <Text
+                style={{
+                  fontFamily: FontList.PretendardSemiBold,
+                  fontSize: 17,
+                  color: '#333333',
+                }}>
+                로그인 하세요
+              </Text>
+              <Image
+                source={require('@assets/mypage_arrow.png')}
+                style={{width: _getWidth(8), height: _getHeight(16)}}
+                resizeMode="contain"
+              />
+            </Pressable>
+            <Text
+              style={{
+                fontFamily: FontList.PretendardRegular,
+                color: '#333333',
+              }}>
+              {
+                '기록해놓은 내역들이 사라지지 않도록 5초만에\n내 계정에 저장하세요.'
+              }
+            </Text>
+          </>
+        )}
 
         <View style={{marginTop: _getHeight(45)}}>
           <Text
@@ -106,7 +154,7 @@ const MyPageConfigPage = () => {
 
       {switchTitle.map((item, idx) => (
         <View
-        key={idx}
+          key={idx}
           style={{
             height: _getHeight(93),
             justifyContent: 'center',
@@ -120,8 +168,6 @@ const MyPageConfigPage = () => {
               justifyContent: 'space-between',
               paddingHorizontal: 16,
             }}>
-
-              
             <Text
               style={{
                 fontFamily: FontList.PretendardMedium,
