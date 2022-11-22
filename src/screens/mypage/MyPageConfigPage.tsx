@@ -14,6 +14,8 @@ import MyModal from '@components/MyModal';
 import {useDispatch, useSelector} from 'react-redux';
 import {RootState} from 'redux/store';
 import {resetUserInfo, setUserInfo} from 'redux/reducers/authReducer';
+import commonAPI from 'api/modules/commonAPI';
+import Loading from '@components/Loading';
 
 const MyPageConfigPage = () => {
   const nav = useNavigation<commonTypes.navi>();
@@ -23,6 +25,8 @@ const MyPageConfigPage = () => {
   const [isEnabled2, setIsEnabled2] = useState(false);
   const [isEnabled3, setIsEnabled3] = useState(false);
   const [modal, setModal] = useState(false);
+  const [modalLogin, setModalLogin] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const switchTitle = [
     '기본 알림',
@@ -63,6 +67,25 @@ const MyPageConfigPage = () => {
     dispatch(resetUserInfo());
   };
 
+  const _onPressRetire = async () => {
+    setLoading(true);
+    const data = {
+      user_id: userInfo?.id,
+    };
+
+    await commonAPI
+      ._delUserRetire(data)
+      .then(res => {
+        console.log('retire res', res);
+        dispatch(resetUserInfo());
+        nav.reset({routes: [{name: 'Login'}, {name: 'MyPageRetire'}]});
+      })
+      .catch(err => {
+        console.log('retire err', err);
+      })
+      .finally(() => setLoading(false));
+  };
+
   return (
     <SafeAreaView style={{...GlobalStyles.safeAreaStyle}}>
       <HeaderCenter title="앱설정" leftBack />
@@ -90,7 +113,7 @@ const MyPageConfigPage = () => {
               }}>
               {userInfo.name}님
             </Text>
-            <Pressable onPress={() => _onPressLogout()}>
+            <Pressable onPress={() => setModalLogin(true)}>
               <Text
                 style={{
                   fontFamily: FontList.PretendardMedium,
@@ -229,21 +252,34 @@ const MyPageConfigPage = () => {
           </View>
         </View>
       ))}
-      <Pressable
-        onPress={() => {
-          setModal(true);
-        }}
-        hitSlop={10}
-        style={{paddingHorizontal: 16, marginTop: _getHeight(40)}}>
-        <Text
-          style={{
-            fontFamily: FontList.PretendardRegular,
-            fontSize: 13,
-            color: '#959595',
-          }}>
-          회원탈퇴
-        </Text>
-      </Pressable>
+      {userInfo?.id && (
+        <Pressable
+          onPress={() => {
+            setModal(true);
+          }}
+          hitSlop={10}
+          style={{paddingHorizontal: 16, marginTop: _getHeight(40)}}>
+          <Text
+            style={{
+              fontFamily: FontList.PretendardRegular,
+              fontSize: 13,
+              color: '#959595',
+            }}>
+            회원탈퇴
+          </Text>
+        </Pressable>
+      )}
+
+      <MyModal
+        title="정말 로그아웃 하시겠어요?"
+        positive
+        positiveTitle="네"
+        negative
+        negativeTitle="아니요"
+        visible={modalLogin}
+        setVisible={setModalLogin}
+        positivePress={() => _onPressLogout()}
+      />
       <MyModal
         title="정말 탈퇴 하시겠어요?"
         positive
@@ -252,10 +288,10 @@ const MyPageConfigPage = () => {
         negativeTitle="아니요"
         visible={modal}
         setVisible={setModal}
-        positivePress={() =>
-          nav.reset({routes: [{name: 'Login'}, {name: 'MyPageRetire'}]})
-        }
+        positivePress={() => _onPressRetire()}
       />
+
+      <Loading visible={loading} />
       <BottomNav />
     </SafeAreaView>
   );

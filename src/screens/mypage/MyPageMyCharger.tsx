@@ -7,7 +7,7 @@ import {
   useWindowDimensions,
   StyleSheet,
 } from 'react-native';
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import GlobalStyles from 'styles/GlobalStyles';
 import ServiceString from '@components/ServiceString';
@@ -24,22 +24,65 @@ import MyModal from '@components/MyModal';
 import {RootState} from 'redux/store';
 import commonAPI from 'api/modules/commonAPI';
 import Loading from '@components/Loading';
+import modules from 'constants/utils/modules';
 
 interface props {
   text: string;
+  lineHeight?: number;
 }
 
 const MyPageMyCharger = () => {
   const {userInfo} = useSelector((state: RootState) => state.authReducer);
-  console.log('userInfo', userInfo);
+  const _convert = (userInfoCar: string) => {
+    switch (userInfoCar) {
+      case '현대자동차':
+        return '현대';
+      case '기아자동차':
+        return '기아';
+      case 'BENZ':
+        return '벤츠';
+      case 'AUDI':
+        return '아우디';
+      case 'Genesis':
+        return '제네시스';
+      case 'TESLA':
+        return '테슬라';
+      case 'GM':
+        return '쉐보레';
+      case 'BMW':
+        return 'BMW';
+      default:
+        return;
+    }
+  };
 
   const [modal, setModal] = useState(false);
   const [showModel, setShowModel] = useState(false);
 
-  const [selectedModel, setSelectedModel] = useState('');
-  const [selectedBrand, setSelectedBrand] = useState('');
-  const [type, setType] = useState<any[]>([]);
+  const [selectedModel, setSelectedModel] = useState(
+    userInfo?.car_model ? userInfo?.car_model : '',
+  );
+  const [selectedBrand, setSelectedBrand] = useState(
+    userInfo?.car_brand ? _convert(userInfo?.car_brand) : '',
+  );
+  const [type, setType] = useState<any[]>(
+    userInfo?.chgerType ? userInfo.chgerType : [],
+  );
   const [isReady, setIsReady] = useState(false);
+
+  // useEffect(() => {
+  //   if (userInfo?.car_brand) {
+  //     setSelectedBrand(userInfo.car_brand);
+  //   }
+  //   if (userInfo?.car_model) {
+  //     setSelectedModel(userInfo.car_model);
+  //   }
+  //   if (userInfo?.chgerType) {
+  //     if (userInfo.chgerType.length > 0) {
+  //       setType(userInfo.chgerType);
+  //     }
+  //   }
+  // }, []);
 
   const layout = useWindowDimensions();
   const WIDTH = (layout.width - 32 - 48) / 4;
@@ -52,6 +95,7 @@ const MyPageMyCharger = () => {
 
   const [loading, setLoading] = useState(false);
   const [etcOrigin, setEtcOrigin] = useState<any[]>([]);
+
   const Title = ({text, lineHeight}: props) => {
     return (
       <Text
@@ -70,8 +114,8 @@ const MyPageMyCharger = () => {
   const _filterList = (brand: string) => {
     let temp = [...carList];
     let modelList: any[] = [];
-    temp = temp.filter((item, index) => item.car_brand === brand);
-    temp.map((item, index) => modelList.push(item.car_model));
+    temp = temp.filter((item: any, index: number) => item.car_brand === brand);
+    temp.map((item: any, index) => modelList.push(item.car_model));
     if (modelList.length > 0) return modelList;
     else return [];
   };
@@ -88,9 +132,11 @@ const MyPageMyCharger = () => {
       'BMW',
     ];
 
-    const res = carList.filter(item => !mainCarList.includes(item.car_brand));
+    const res = carList.filter(
+      (item: any) => !mainCarList.includes(item.car_brand),
+    );
     let temp: any[] = [];
-    res.map((item, index) => {
+    res.map((item: any, index) => {
       temp.push(item.car_brand);
       temp.push(item.car_model);
     });
@@ -98,8 +144,6 @@ const MyPageMyCharger = () => {
     const uniqueArr = [...set];
     setCarListEtc(uniqueArr);
     setEtcOrigin(res);
-    console.log('set', set);
-    console.log('filter res', res);
   };
 
   const _onPressEtcModel = (item: string) => {
@@ -143,28 +187,20 @@ const MyPageMyCharger = () => {
   };
 
   const _onPress = () => {
-    const res = etcOrigin?.find(item => item.car_model === selectedModel);
+    // const res = etcOrigin?.find(item => item.car_model === selectedModel);
 
     if (!isReady) {
       setModal(!modal);
     } else {
-      dispatch(
-        setUserInfo({
-          ...userInfo,
-          car_brand: res ? res.car_brand : selectedBrand,
-          car_model: selectedModel,
-          chgerType: type.join(' '),
-        }),
-      );
-      nav.navigate('Home');
+      return _putUserDB();
       // 차량 정보 업데이트 나오면 수정 필요 11.15
       // _postUserDB();
     }
   };
 
-  const _postUserDB = () => {
+  const _putUserDB = async () => {
     const res = etcOrigin?.find(item => item.car_model === selectedModel);
-
+    setLoading(true);
     const data: commonTypes.saveUserDB = {
       car_brand: res ? res.car_brand : selectedBrand,
       car_model: selectedModel,
@@ -173,17 +209,18 @@ const MyPageMyCharger = () => {
       user_id: userInfo?.id,
     };
     console.log('data', data);
-    if (data.user_id) {
-      commonAPI
-        ._postSaveUserInfo(data)
-        .then(res => {
-          console.log('_postSaveUserInfo :: res', res);
-          nav.navigate('Home');
-        })
-        .catch(err => console.log('err', err));
-    } else {
-      nav.navigate('Home');
-    }
+    // return;
+    await commonAPI
+      ._putEditUserInfo(data)
+      .then(result => {
+        console.log('res', result);
+        modules
+          ._updateUserInfo(dispatch, userInfo)
+          .then(() => nav.navigate('AccountCarInfoFinish'))
+          .catch(err => console.log('Mycharger err', err));
+      })
+      .catch(err => console.log('err', err))
+      .finally(() => setLoading(false));
   };
 
   const _getCarList = async () => {
@@ -195,7 +232,7 @@ const MyPageMyCharger = () => {
         console.log('res', data);
         if (data.length > 0) {
           let temp: any[] = [];
-          data.map((item, index) => {
+          data.map((item: any) => {
             temp.push(item.car_brand);
           });
           const set = new Set(temp);
@@ -227,10 +264,12 @@ const MyPageMyCharger = () => {
   };
 
   const _autoSetType = () => {
-    const res = carList.find(item => item.car_model === selectedModel);
+    const res: any = carList.find(
+      (item: any) => item.car_model === selectedModel,
+    );
     if (res) {
       let temp: any[] = [];
-      res.chagers.map(item => {
+      res.chagers.map((item: any) => {
         temp.push(item.name);
       });
       console.log('temp', temp);
@@ -250,8 +289,9 @@ const MyPageMyCharger = () => {
   }, [carList]);
 
   useEffect(() => {
-    setSelectedModel('');
-    setType([]);
+    // setSelectedModel('');
+    // setType([]);
+    console.log('brand', selectedBrand);
   }, [selectedBrand]);
 
   useEffect(() => {
@@ -300,6 +340,8 @@ const MyPageMyCharger = () => {
                   <Pressable
                     onPress={() => {
                       setSelectedBrand(ModelList.modelName[idx]);
+                      setSelectedModel('');
+                      setType([]);
                     }}
                     style={{
                       width: 56,

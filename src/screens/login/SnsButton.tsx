@@ -85,7 +85,7 @@ const SnsButton = ({text, snsType, navigation, idx, setLoading}: props) => {
       })
       .catch(err => {
         dispatch(setUserInfo({...userInfo, id: userEmail, name: userName}));
-        navigation.navigate('AccountFinish');
+        navigation.navigate('AccountPolicy');
         console.log('check user err', err);
       })
       .finally(() => setLoading(false));

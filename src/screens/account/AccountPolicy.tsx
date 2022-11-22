@@ -13,6 +13,7 @@ import MyModal from '@components/MyModal';
 
 interface check {
   [key: string]: boolean;
+  location: boolean;
   personal: boolean;
   service: boolean;
   all: boolean;
@@ -26,6 +27,7 @@ const AccountPolicy = () => {
   const navi = useNavigation<commonTypes.navi>();
   // const [modal, setModal] = useState(false);
   const [check, setCheck] = useState<check>({
+    location: false,
     personal: false,
     service: false,
     all: false,
@@ -48,18 +50,28 @@ const AccountPolicy = () => {
     switch (target) {
       case Object.keys(check)[0]:
         return setCheck({
-          personal: !check.personal,
+          location: !check.location,
+          personal: check.personal,
           service: check.service,
           all: false,
         });
       case Object.keys(check)[1]:
         return setCheck({
-          personal: check.personal,
-          service: !check.service,
+          location: check.location,
+          personal: !check.personal,
+          service: check.service,
           all: false,
         });
       case Object.keys(check)[2]:
         return setCheck({
+          location: check.location,
+          personal: check.personal,
+          service: !check.service,
+          all: false,
+        });
+      case Object.keys(check)[3]:
+        return setCheck({
+          location: !check.location,
           personal: !check.all,
           service: !check.all,
           all: !check.all,
@@ -72,17 +84,19 @@ const AccountPolicy = () => {
   useEffect(() => {
     if (!check.all) {
       if (check.personal && check.service)
-        setCheck({personal: true, service: true, all: true});
+        setCheck({location: true, personal: true, service: true, all: true});
     }
   }, [check]);
 
   const _getTitle = (target: string) => {
     switch (target) {
       case Object.keys(check)[0]:
-        return '(필수)개인정보 수집 및 이용 안내';
+        return '(필수)위치정보 수집 이용 동의';
       case Object.keys(check)[1]:
-        return '(필수)서비스 이용약관 동의';
+        return '(필수)개인정보 수집 이용 동의';
       case Object.keys(check)[2]:
+        return '(필수)서비스 이용 동의';
+      case Object.keys(check)[3]:
         return '(전체)이용약관 전체동의';
       default:
         return '';
@@ -113,7 +127,7 @@ const AccountPolicy = () => {
             {_getTitle(target)}
           </Text>
         </View>
-        {target !== Object.keys(check)[2] && (
+        {target !== Object.keys(check)[3] && (
           <Pressable
             hitSlop={17}
             onPress={() => {
@@ -145,6 +159,8 @@ const AccountPolicy = () => {
           <CheckPolicy target={Object.keys(check)[1]} />
           <Divider />
           <CheckPolicy target={Object.keys(check)[2]} />
+          <Divider />
+          <CheckPolicy target={Object.keys(check)[3]} />
         </View>
         <BottomButton
           style={{backgroundColor: check.all ? '#00239C' : '#C4C4C4'}}

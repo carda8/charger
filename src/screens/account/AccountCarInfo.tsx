@@ -31,6 +31,7 @@ import {API} from 'api/API';
 import commonAPI from 'api/modules/commonAPI';
 import Loading from '@components/Loading';
 import {cos} from 'react-native-reanimated';
+import modules from 'constants/utils/modules';
 
 interface props {
   text: string;
@@ -161,7 +162,7 @@ const AccountCarInfo = () => {
           ...userInfo,
           car_brand: res ? res.car_brand : selectedBrand,
           car_model: selectedModel,
-          chgerType: type.join(' '),
+          chgerType: type,
         }),
       );
       _postUserDB();
@@ -184,7 +185,12 @@ const AccountCarInfo = () => {
         ._postSaveUserInfo(data)
         .then(res => {
           console.log('_postSaveUserInfo :: res', res);
-          nav.navigate('Home');
+          modules
+            ._updateUserInfo(dispatch, userInfo)
+            .then(() => {
+              nav.navigate('AccountCarInfoFinish');
+            })
+            .catch(err => console.log('carinfo err', err));
         })
         .catch(err => console.log('err', err));
     } else {

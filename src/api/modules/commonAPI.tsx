@@ -1,10 +1,14 @@
 import {commonTypes} from '@types';
-import {_delAPI, _getAPI, _postAPI} from 'api/apiModules';
+import {_delAPI, _getAPI, _postAPI, _putAPI} from 'api/apiModules';
 
 export default {
   // user
   _postSaveUserInfo: async (params: commonTypes.saveUserDB) => {
     const res = await _postAPI('login', params);
+    return res;
+  },
+  _putEditUserInfo: async (params: commonTypes.saveUserDB) => {
+    const res = await _putAPI('users', params);
     return res;
   },
   _getUserInfo: async (params: any) => {
@@ -25,6 +29,10 @@ export default {
   },
   _deleteUserHistory: async (params: any) => {
     const res = await _delAPI('search/histories', params);
+    return res;
+  },
+  _delUserRetire: async (params: any) => {
+    const res = await _delAPI('users', params);
     return res;
   },
   // common

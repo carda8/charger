@@ -1,5 +1,5 @@
 import {View, Text, Pressable, Image, useWindowDimensions} from 'react-native';
-import React from 'react';
+import React, {Dispatch, SetStateAction} from 'react';
 import FontList from 'constants/FontList';
 import {commonTypes} from '@types';
 import {useNavigation} from '@react-navigation/native';
@@ -14,12 +14,43 @@ interface props {
   // nav?: commonTypes.nav;
   goBack?: boolean;
   backTitle?: string;
+  setModalCar?: Dispatch<SetStateAction<boolean>>;
+  setModalLogin?: Dispatch<SetStateAction<boolean>>;
 }
 
-const HomeHeader = ({title, subTitle, goBack, backTitle}: props) => {
+const HomeHeader = ({
+  title,
+  subTitle,
+  goBack,
+  backTitle,
+  setModalCar,
+  setModalLogin,
+}: props) => {
   const nav = useNavigation<commonTypes.navi>();
   const {userInfo} = useSelector((state: RootState) => state.authReducer);
   const layout = useWindowDimensions();
+  const _convert = (userInfoCar: string) => {
+    switch (userInfoCar) {
+      case '현대자동차':
+        return '현대';
+      case '기아자동차':
+        return '기아';
+      case 'BENZ':
+        return '벤츠';
+      case 'AUDI':
+        return '아우디';
+      case 'Genesis':
+        return '제네시스';
+      case 'TESLA':
+        return '테슬라';
+      case 'GM':
+        return '쉐보레';
+      case 'BMW':
+        return 'BMW';
+      default:
+        return;
+    }
+  };
   return (
     <>
       <View
@@ -85,17 +116,19 @@ const HomeHeader = ({title, subTitle, goBack, backTitle}: props) => {
                 fontFamily: FontList.PretendardRegular,
                 color: '#858585',
               }}>
-              {/* 등록된 정보가 없습니다. */}
-              반갑습니다
+              {userInfo?.name ? '반갑습니다' : '등록된 정보가 없습니다.'}
             </Text>
-            <Text
-              style={{
-                fontFamily: FontList.PretendardMedium,
-                color: '#333333',
-                fontSize: 18,
-              }}>
-              {userInfo?.name ? userInfo?.name : '마이차저'}님
-            </Text>
+            {userInfo?.name && (
+              <Text
+                style={{
+                  fontFamily: FontList.PretendardMedium,
+                  color: '#333333',
+                  fontSize: 18,
+                }}>
+                {userInfo?.name && userInfo?.name + '님'}
+              </Text>
+            )}
+
             {userInfo?.car_brand ? (
               <View style={{flexDirection: 'row'}}>
                 <Text
@@ -106,15 +139,20 @@ const HomeHeader = ({title, subTitle, goBack, backTitle}: props) => {
                     fontSize: 14,
                     color: '#858585',
                   }}>
-                  {userInfo?.car_brand}
-                  {userInfo?.car_model} {' | '}
+                  {_convert(userInfo?.car_brand)} {userInfo?.car_model} {' | '}
                   {userInfo?.chgerType?.join(' ')}
                 </Text>
               </View>
             ) : (
               <Pressable
                 onPress={() => {
-                  nav.navigate('AccountCarInfo');
+                  if (!userInfo?.id && setModalLogin) {
+                    return setModalLogin(true);
+                  }
+                  if (userInfo?.id && setModalCar) {
+                    return setModalCar(true);
+                  }
+                  // nav.navigate('AccountCarInfo');
                 }}
                 style={{
                   width: _getWidth(104),

@@ -43,6 +43,28 @@ export const _postAPI = async (url: string, params: any) => {
   return resGet;
 };
 
+export const _putAPI = async (url: string, params: any) => {
+  console.log('url', url, params);
+  // API.post('hi', {{data: dat}})
+  const resGet = await API.put(url, params)
+    .then(result => {
+      return result;
+    })
+    .catch(e => {
+      const data = {
+        error: e,
+        url: url,
+        params: params,
+      };
+      // ErrorHandler(data);
+      console.log('## ERROR GET API', e);
+      console.log('## ERROR URL', url);
+      console.log('## ERROR PARAMS ', params);
+      return e;
+    });
+  return resGet;
+};
+
 export const _delAPI = async (url: string, params: any) => {
   const resGet = await API.delete(url, {params: params})
     .then(result => {

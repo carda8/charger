@@ -49,6 +49,7 @@ const Home = () => {
   const [visible, setVisible] = useState(false);
   const [modal, setModal] = useState(false);
   const [modalLogin, setModalLogin] = useState(false);
+  const [modalCar, setModalCar] = useState(false);
   const imgPath: path = {
     main1: require('@assets/main_near.png'),
     main2: require('@assets/main_onroad.png'),
@@ -139,9 +140,11 @@ const Home = () => {
     return () => {};
   }, [isFocused]);
 
+  useEffect(() => {}, []);
+
   return (
     <SafeAreaView style={{...GlobalStyles.safeAreaStyle}}>
-      <HomeHeader />
+      <HomeHeader setModalCar={setModalCar} setModalLogin={setModalLogin} />
 
       <ScrollView contentContainerStyle={{backgroundColor: '#F5F5F5', flex: 1}}>
         <View style={{...styles.mainButtonCtn}}>
@@ -198,6 +201,19 @@ const Home = () => {
         // positivePress={() => nav.navigate('HomeSearch')}
         // negative={true}
         // negativeTitle="아니요"
+      />
+      <MyModal
+        title="차량등록"
+        text={`차량등록을 하시면 맞춤서비스를
+          이용하실 수 있습니다. 
+          차량등록을 하시겠습니까?`}
+        visible={modalCar}
+        setVisible={setModalCar}
+        positive={true}
+        positiveTitle="네"
+        positivePress={() => nav.navigate('AccountCarInfo')}
+        negative={true}
+        negativeTitle="아니요"
       />
       <BottomNav />
       <Loading visible={modal} />
