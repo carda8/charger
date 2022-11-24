@@ -36,6 +36,7 @@ const PathSearchMain = () => {
     (state: RootState) => state.pathReducer,
   );
   const dispatch = useDispatch();
+  console.log('keywordk', keywordList);
 
   const _onPress = (item: any) => {
     console.log('item1', item);
@@ -184,44 +185,49 @@ const PathSearchMain = () => {
         keyExtractor={(item, idx) => String(idx) + String(item)}
         ListHeaderComponent={
           <>
-            {keywordList.map((item, idx) => (
-              <Pressable
-                onPress={() => {
-                  _onPress(item);
-                }}
-                key={idx}
-                style={{
-                  width: '100%',
-                  height: _getHeight(48),
-                  paddingHorizontal: 18,
-                  borderBottomWidth: idx === 2 ? 4 : 1,
-                  borderColor: '#F6F6F6',
-                  justifyContent: 'center',
-                }}>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                  }}>
-                  <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                    <Image
-                      source={require('@assets/search_history.png')}
-                      style={{width: 16, height: 16, marginRight: 6}}
-                      resizeMode="contain"
-                    />
-                    <Text
+            {keywordList.map(
+              (item, idx) =>
+                idx < 3 && (
+                  <Pressable
+                    onPress={() => {
+                      _onPress(item);
+                    }}
+                    key={idx}
+                    style={{
+                      width: '100%',
+                      height: _getHeight(48),
+                      paddingHorizontal: 18,
+                      borderBottomWidth: idx === 2 ? 4 : 1,
+                      borderColor: '#F6F6F6',
+                      justifyContent: 'center',
+                    }}>
+                    <View
                       style={{
-                        fontFamily: FontList.PretendardMedium,
-                        fontSize: 16,
-                        color: '#333333',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
                       }}>
-                      {item.statNm}
-                    </Text>
-                  </View>
-                </View>
-              </Pressable>
-            ))}
+                      <View
+                        style={{flexDirection: 'row', alignItems: 'center'}}>
+                        <Image
+                          source={require('@assets/search_history.png')}
+                          style={{width: 16, height: 16, marginRight: 6}}
+                          resizeMode="contain"
+                        />
+                        <Text
+                          style={{
+                            fontFamily: FontList.PretendardMedium,
+                            fontSize: 16,
+                            color: '#333333',
+                          }}>
+                          {console.log('item', item)}
+                          {item.address_name}
+                        </Text>
+                      </View>
+                    </View>
+                  </Pressable>
+                ),
+            )}
           </>
         }
       />

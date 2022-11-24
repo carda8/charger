@@ -15,6 +15,7 @@ import {RootState} from 'redux/store';
 import {BottomSheetModalMethods} from '@gorhom/bottom-sheet/lib/typescript/types';
 import commonAPI from 'api/modules/commonAPI';
 import {
+  resetPath,
   setGoalData,
   setIsGoalFinish,
   setKeywordList,
@@ -29,6 +30,7 @@ interface props {
   setShowOnlyMap?: Dispatch<SetStateAction<boolean>>;
   sheetRef?: React.RefObject<BottomSheetModalMethods>;
   setRec?: Dispatch<SetStateAction<boolean>>;
+  setRecomandList?: Dispatch<SetStateAction<any>>;
 }
 
 const PathSearchBox = ({
@@ -37,6 +39,7 @@ const PathSearchBox = ({
   setShowOnlyMap,
   sheetRef,
   setRec,
+  setRecomandList,
 }: props) => {
   const nav = useNavigation<commonTypes.navi>();
   const dispatch = useDispatch();
@@ -50,8 +53,6 @@ const PathSearchBox = ({
   const startRef = useRef<TextInput>(null);
   const goalRef = useRef<TextInput>(null);
 
-  const _resetLocation = () => {};
-
   const _putHome = () => {
     if (!home) {
       setHome(true);
@@ -61,17 +62,32 @@ const PathSearchBox = ({
   };
 
   const _getResult = async () => {
+    // const data = {
+    //   keywords: startRef.current?.isFocused() ? inputStart : inputGoal,
+    //   offset: 0,
+    //   limit: 3,
+    // };
+
     const data = {
-      keywords: startRef.current?.isFocused() ? inputStart : inputGoal,
-      offset: 0,
-      limit: 3,
+      query: startRef.current?.isFocused() ? inputStart : inputGoal,
+      // offset: 0,
+      // limit: 3,
     };
+
     await commonAPI
-      ._postAruondStation(data)
+      ._getSearchAddr(data)
       .then(res => {
-        if (res.data.data) dispatch(setKeywordList(res.data.data));
+        console.log('SEARCH RES', res);
+        if (res.data.documents) dispatch(setKeywordList(res.data.documents));
       })
       .catch(err => console.log('err', err));
+
+    // await commonAPI
+    //   ._postAruondStation(data)
+    //   .then(res => {
+    //     if (res.data.data) dispatch(setKeywordList(res.data.data));
+    //   })
+    //   .catch(err => console.log('err', err));
   };
 
   const lastFocus = useRef('');
@@ -95,11 +111,13 @@ const PathSearchBox = ({
   const _onPressClose = () => {
     setInputStart('');
     setInputGoal('');
+    if (setRecomandList) setRecomandList([]);
     sheetRef?.current?.close();
     if (setRec) setRec(false);
-    dispatch(setGoalData(null));
-    dispatch(setStartData(null));
-    dispatch(setKeywordList([]));
+    // dispatch(setGoalData(null));
+    // dispatch(setStartData(null));
+    // dispatch(setKeywordList([]));
+    dispatch(resetPath({}));
   };
 
   const _onPressSwitch = () => {

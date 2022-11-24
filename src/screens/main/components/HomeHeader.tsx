@@ -30,6 +30,7 @@ const HomeHeader = ({
   const {userInfo} = useSelector((state: RootState) => state.authReducer);
   const layout = useWindowDimensions();
   const _convert = (userInfoCar: string) => {
+    console.log('userInfo car', userInfo);
     switch (userInfoCar) {
       case '현대자동차':
         return '현대';
@@ -48,7 +49,7 @@ const HomeHeader = ({
       case 'BMW':
         return 'BMW';
       default:
-        return;
+        return userInfo?.car_brand;
     }
   };
   return (

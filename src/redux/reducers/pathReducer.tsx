@@ -13,6 +13,7 @@ const pathSlice = createSlice({
   },
   reducers: {
     setKeywordList: (state, actions) => {
+      console.log('action', actions.payload);
       state.keywordList = actions.payload;
     },
     setLastRef: (state, actions) => {

@@ -63,6 +63,8 @@ const PathMain = () => {
   // 추천 표시 여부
   const [showRec, setShowRec] = useState(false);
 
+  // const [convertedCoor, setConvertedCoor] = useState([]);
+  const [recomandList, setRecomandList] = useState([]);
   // 길안내모달
   const [visible, setVisible] = useState(false);
 
@@ -85,23 +87,35 @@ const PathMain = () => {
   // ########## END 바텀시트 ##########
 
   // 추천 목록 가져오기
-  const _getRecomand = async () => {
+  const _getRecomand = async (routes: any) => {
     let data;
     //현재가 아닌 도착지와 목적지로
-    // data = {
-    //   route: [
-    //     [currentUserLocation.latitude, currentUserLocation.longitude],
-    //     [goalData.location.lat, goalData.location.lon],
-    //   ],
-    //   distance: 1,
-    // };
-
+    data = {
+      route: routes,
+      distance: 1,
+    };
+    console.log('getreco data', data);
+    //
     await commonAPI
       ._postPathRecommend(data)
       .then(res => {
+        console.log('res data', res);
         console.log('path recomand res', res.data.data);
+        if (res.data.data) {
+          setRecomandList(res.data.data);
+        }
       })
       .catch(err => console.log('path recomand  ERR ', err));
+  };
+
+  const _convertCoor = (routes: any) => {
+    let temp: any[] = [];
+    routes.map((item: any, index: any) => {
+      temp.push([item[1], item[0]]);
+    });
+    // setConvertedCoor(temp);
+    _getRecomand(temp);
+    console.log('converted temp', temp);
   };
 
   // 경로 표시
@@ -124,7 +138,10 @@ const PathMain = () => {
           res.data.route.map((item: any, index: number) => {
             temp.push({latitude: item[1], longitude: item[0]});
           });
+
           console.log('temp', res.data.route);
+          _convertCoor(res.data.route);
+          console.log('origin temp', temp);
           setLineData(temp);
         }
       })
@@ -266,6 +283,7 @@ const PathMain = () => {
                 width: '100%',
               }}>
               <PathSearchBox
+                setRecomandList={setRecomandList}
                 showOnlyMap={showOnlyMap}
                 setShowOnlyMap={setShowOnlyMap}
                 sheetRef={bottomSheetRef}
@@ -376,34 +394,39 @@ const PathMain = () => {
             )}
 
             {/* 추천 중전기 마커들 */}
-            {/* <Marker
-              key={index}
-              width={32}
-              height={65}
-              onClick={() => {
-                console.log('item', item);
-                setCenter({
-                  latitude: item.location.lat,
-                  longitude: item.location.lon,
-                  zoom: 14,
-                });
-              }}
-              caption={{
-                text:
-                  item.chargers.length > 9
-                    ? '9+'
-                    : String(item.chargers.length),
-                align: Align.Center,
-                haloColor: 'A6A6A6',
-                textSize: 15,
-                color: 'ffffff',
-              }}
-              image={_getMarkerImg(item)}
-              coordinate={{
-                latitude: Number(item.location.lat),
-                longitude: Number(item.location.lon),
-              }}
-            /> */}
+            {recomandList.length > 0 &&
+              recomandList.map((item, index) => (
+                <>
+                  <Marker
+                    key={index}
+                    width={32}
+                    height={65}
+                    onClick={() => {
+                      // console.log('item', item);
+                      // setCenter({
+                      //   latitude: item.location.lat,
+                      //   longitude: item.location.lon,
+                      //   zoom: 14,
+                      // });
+                    }}
+                    caption={{
+                      text:
+                        item.chargers.length > 9
+                          ? '9+'
+                          : String(item.chargers.length),
+                      align: Align.Center,
+                      haloColor: 'A6A6A6',
+                      textSize: 15,
+                      color: 'ffffff',
+                    }}
+                    image={_getMarkerImg(item)}
+                    coordinate={{
+                      latitude: Number(item.location.lat),
+                      longitude: Number(item.location.lon),
+                    }}
+                  />
+                </>
+              ))}
           </NaverMapView>
 
           {showRec && <PathRecommendList />}
