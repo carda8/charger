@@ -62,7 +62,7 @@ const Home = () => {
   const btnStr = [
     '내 주변\n충전소 찾기',
     '경로상\n충전소 찾기',
-    '집으로\n안내받기',
+    '마이홈\n충전소',
     '즐겨찾는\n충전소',
   ];
 
@@ -101,6 +101,7 @@ const Home = () => {
         );
         console.log(position);
         setModal(false);
+        if (!userInfo?.car_brand) setModalCar(true);
       },
       error => {
         setModal(false);
@@ -139,8 +140,6 @@ const Home = () => {
     }
     return () => {};
   }, [isFocused]);
-
-  useEffect(() => {}, []);
 
   return (
     <SafeAreaView style={{...GlobalStyles.safeAreaStyle}}>

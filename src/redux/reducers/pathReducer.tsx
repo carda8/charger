@@ -10,11 +10,14 @@ const pathSlice = createSlice({
     isGoalFinish: false,
     isStartFinish: false,
     isSwitch: false,
+    recomendStationData: '',
   },
   reducers: {
     setKeywordList: (state, actions) => {
-      console.log('action', actions.payload);
       state.keywordList = actions.payload;
+    },
+    setRecomendStationData: (state, actions) => {
+      state.recomendStationData = actions.payload;
     },
     setLastRef: (state, actions) => {
       state.lastRef = actions.payload;
@@ -60,6 +63,7 @@ export const {
   setGoalData,
   setStartData,
   switchPosition,
+  setRecomendStationData,
   resetPath,
 } = actions;
 export const pathReducer = reducer;

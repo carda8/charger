@@ -49,6 +49,9 @@ const PathSearchBox = ({
   const [home, setHome] = useState(false);
   const [inputStart, setInputStart] = useState('');
   const [inputGoal, setInputGoal] = useState('');
+  const {currentUserLocation} = useSelector(
+    (state: RootState) => state.locationReducer,
+  );
 
   const startRef = useRef<TextInput>(null);
   const goalRef = useRef<TextInput>(null);
@@ -69,18 +72,36 @@ const PathSearchBox = ({
     // };
 
     const data = {
-      query: startRef.current?.isFocused() ? inputStart : inputGoal,
-      // offset: 0,
-      // limit: 3,
+      searchKeyword: startRef.current?.isFocused() ? inputStart : inputGoal,
+      currentXY: [
+        currentUserLocation?.latitude,
+        currentUserLocation?.longitude,
+      ],
     };
+    console.log('result data', data);
 
     await commonAPI
-      ._getSearchAddr(data)
+      ._postSearchBase(data)
       .then(res => {
-        console.log('SEARCH RES', res);
-        if (res.data.documents) dispatch(setKeywordList(res.data.documents));
+        console.log('origin', res.data.data);
+        let temp = JSON.parse(JSON.stringify(res.data.data));
+        // console.log('temp1', temp);
+        temp.map((item, index) => {
+          item.location.lat = Number(res.data.data[index].location.lon);
+          item.location.lon = Number(res.data.data[index].location.lat);
+        });
+        console.log('temp', temp);
+        if (res.data.data) dispatch(setKeywordList(temp));
       })
       .catch(err => console.log('err', err));
+
+    // await commonAPI
+    //   ._getSearchAddr(data)
+    //   .then(res => {
+    //     console.log('SEARCH RES', res);
+    //     if (res.data.documents) dispatch(setKeywordList(res.data.documents));
+    //   })
+    //   .catch(err => console.log('err', err));
 
     // await commonAPI
     //   ._postAruondStation(data)
@@ -131,11 +152,11 @@ const PathSearchBox = ({
 
   // 현위치
   useEffect(() => {
-    setInputStart(startData?.statNm);
+    setInputStart(startData?.name);
   }, [startData]);
   //도착지
   useEffect(() => {
-    setInputGoal(goalData?.statNm);
+    setInputGoal(goalData?.name);
   }, [goalData]);
 
   return (

@@ -24,8 +24,7 @@ import {ScrollView} from 'react-native-gesture-handler';
 import {BottomSheetModalMethods} from '@gorhom/bottom-sheet/lib/typescript/types';
 import {useDispatch, useSelector} from 'react-redux';
 import {RootState} from 'redux/store';
-import dayjs from 'dayjs';
-import {setAroundKey, setAroundKeyData} from 'redux/reducers/aroundReducer';
+import {setAroundKeyData} from 'redux/reducers/aroundReducer';
 import Loading from '@components/Loading';
 import modules from 'constants/utils/modules';
 
@@ -33,10 +32,6 @@ interface keywordParam {
   keywords: string;
   offset: number;
   limit: number;
-}
-
-interface props {
-  bottomSheetRef: React.RefObject<BottomSheetModalMethods>;
 }
 
 const SearchMain = () => {
@@ -52,6 +47,9 @@ const SearchMain = () => {
   const [modalNoRes, setModalNoRes] = useState(false);
   const [showNoRes, setShowNoRes] = useState(false);
   const {userInfo} = useSelector((state: RootState) => state.authReducer);
+  const {currentUserLocation} = useSelector(
+    (state: RootState) => state.locationReducer,
+  );
 
   const dispatch = useDispatch();
 
@@ -110,31 +108,30 @@ const SearchMain = () => {
     // setModal(true);
     if (!(input.length > 1)) return;
     if (input) {
-      const data: keywordParam = {
-        keywords: input,
-        offset: 0,
-        limit: 3,
+      // const data: keywordParam = {
+      //   keywords: input,
+      //   offset: 0,
+      //   limit: 3,
+      // };
+      const data = {
+        searchKeyword: '야구장',
+        currentXY: [cur, 126.8881368],
       };
-
-      commonAPI
-        ._postAruondStation(data)
-        .then(res => {
-          console.log('res', res?.data.data);
-          if (res?.data.data.length > 0) {
-            setRest(res?.data.data);
-            setShowNoRes(false);
-          } else {
-            setShowNoRes(true);
-            // setModalNoRes(!modalNoRes);
-          }
-        })
-        .catch(err => console.log('## ERROR', err))
-        .finally(
-          () => {},
-          // setTimeout(() => {
-          //   setModal(false);
-          // }, 700),
-        );
+      await commonAPI._postSearchBase();
+      // await commonAPI
+      //   ._postAruondStation(data)
+      //   .then(res => {
+      //     console.log('res', res?.data.data);
+      //     if (res?.data.data.length > 0) {
+      //       setRest(res?.data.data);
+      //       setShowNoRes(false);
+      //     } else {
+      //       setShowNoRes(true);
+      //       // setModalNoRes(!modalNoRes);
+      //     }
+      //   })
+      //   .catch(err => console.log('## ERROR', err))
+      //   .finally(() => {});
     }
   };
 

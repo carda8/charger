@@ -225,7 +225,7 @@ const PathBottomSheetItem = ({style, bottomSheetRef, item}: props) => {
                 fontSize: 16,
                 color: '#333333',
               }}>
-              {item.statNm}
+              {item.name}
               {'  '}
               <Text
                 style={{
@@ -291,12 +291,12 @@ const PathBottomSheetItem = ({style, bottomSheetRef, item}: props) => {
             fontFamily: FontList.PretendardRegular,
             color: '#959595',
           }}>
-          {item.addr}{' '}
+          {item.address}{' '}
         </Text>
       </View>
 
       {/* 무료주차 여부 */}
-      {item.parkingFree === 'Y' && (
+      {item?.statNm && item.parkingFree === 'Y' && (
         <View style={{flexDirection: 'row', marginTop: 10}}>
           <View
             style={{
@@ -319,132 +319,134 @@ const PathBottomSheetItem = ({style, bottomSheetRef, item}: props) => {
           </View>
         </View>
       )}
-
-      <View
-        style={{
-          marginTop: 10,
-          paddingVertical: 12,
-          paddingLeft: 16,
-          paddingRight: 10,
-          flexDirection: 'row',
-          alignItems: 'center',
-        }}>
+      {item?.statNm && (
         <View
           style={{
-            alignItems: 'center',
-            alignSelf: 'flex-start',
-            marginRight: _getWidth(36),
-          }}>
-          <View style={{marginBottom: 2}}>
-            <Text
-              style={{
-                fontFamily: FontList.PretendardMedium,
-                fontSize: 16,
-                color: '#959595',
-              }}>
-              {modules._isClosed(item) ? '충전 가능' : '충전 불가'}{' '}
-            </Text>
-          </View>
-          <View style={{flexDirection: 'row'}}>
-            <Text
-              style={{
-                fontFamily: FontList.PretendardRegular,
-                color: '#333333',
-              }}>
-              급속 {_sortChgerBySpeed(item)?.fast}
-            </Text>
-            <Text
-              style={{
-                fontFamily: FontList.PretendardRegular,
-                color: '#333333',
-              }}>
-              {' | '}
-            </Text>
-            <Text
-              style={{
-                fontFamily: FontList.PretendardRegular,
-                color: '#333333',
-              }}>
-              완속 {_sortChgerBySpeed(item)?.normal}
-            </Text>
-          </View>
-        </View>
-        <View
-          style={{
+            marginTop: 10,
+            paddingVertical: 12,
+            paddingLeft: 16,
+            paddingRight: 10,
             flexDirection: 'row',
-            justifyContent: 'space-between',
-            flex: 1,
+            alignItems: 'center',
           }}>
           <View
             style={{
-              width: 40,
-              height: 40,
-              borderRadius: _getWidth(40) / 2,
-              borderWidth: 1,
               alignItems: 'center',
-              justifyContent: 'center',
-              borderColor: _getChgerImg(item).dcCombo ? '#6FCF24' : '#C6C6C6',
-              opacity: _getChgerImg(item).dcCombo ? 1 : 0.3,
+              alignSelf: 'flex-start',
+              marginRight: _getWidth(36),
             }}>
-            <Image
-              source={ChargerType.chargerLogo[0]}
-              style={{width: 35, height: 35}}
-              resizeMode="contain"
-            />
+            <View style={{marginBottom: 2}}>
+              <Text
+                style={{
+                  fontFamily: FontList.PretendardMedium,
+                  fontSize: 16,
+                  color: '#959595',
+                }}>
+                {modules._isClosed(item) ? '충전 가능' : '충전 불가'}{' '}
+              </Text>
+            </View>
+
+            <View style={{flexDirection: 'row'}}>
+              <Text
+                style={{
+                  fontFamily: FontList.PretendardRegular,
+                  color: '#333333',
+                }}>
+                급속 {_sortChgerBySpeed(item)?.fast}
+              </Text>
+              <Text
+                style={{
+                  fontFamily: FontList.PretendardRegular,
+                  color: '#333333',
+                }}>
+                {' | '}
+              </Text>
+              <Text
+                style={{
+                  fontFamily: FontList.PretendardRegular,
+                  color: '#333333',
+                }}>
+                완속 {_sortChgerBySpeed(item)?.normal}
+              </Text>
+            </View>
           </View>
           <View
             style={{
-              width: 40,
-              height: 40,
-              borderRadius: _getWidth(40) / 2,
-              borderWidth: 1,
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderColor: _getChgerImg(item).dcDemo ? '#6FCF24' : '#C6C6C6',
-              opacity: _getChgerImg(item).dcDemo ? 1 : 0.3,
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              flex: 1,
             }}>
-            <Image
-              source={ChargerType.chargerLogo[1]}
-              style={{width: 30, height: 30}}
-              resizeMode="contain"
-            />
-          </View>
-          <View
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: _getWidth(40) / 2,
-              borderWidth: 1,
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderColor: _getChgerImg(item).ac3 ? '#6FCF24' : '#C6C6C6',
-              opacity: _getChgerImg(item).ac3 ? 1 : 0.3,
-            }}>
-            <Image
-              source={ChargerType.chargerLogo[2]}
-              style={{width: 30, height: 30}}
-              resizeMode="contain"
-            />
-          </View>
-          <View
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: _getWidth(40) / 2,
-              borderWidth: 1,
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderColor: _getChgerImg(item).ac5 ? '#6FCF24' : '#C6C6C6',
-              opacity: _getChgerImg(item).ac5 ? 1 : 0.3,
-            }}>
-            <Image
-              source={ChargerType.chargerLogo[3]}
-              style={{width: 33, height: 33}}
-              resizeMode="contain"
-            />
+            <View
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: _getWidth(40) / 2,
+                borderWidth: 1,
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderColor: _getChgerImg(item).dcCombo ? '#6FCF24' : '#C6C6C6',
+                opacity: _getChgerImg(item).dcCombo ? 1 : 0.3,
+              }}>
+              <Image
+                source={ChargerType.chargerLogo[0]}
+                style={{width: 35, height: 35}}
+                resizeMode="contain"
+              />
+            </View>
+            <View
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: _getWidth(40) / 2,
+                borderWidth: 1,
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderColor: _getChgerImg(item).dcDemo ? '#6FCF24' : '#C6C6C6',
+                opacity: _getChgerImg(item).dcDemo ? 1 : 0.3,
+              }}>
+              <Image
+                source={ChargerType.chargerLogo[1]}
+                style={{width: 30, height: 30}}
+                resizeMode="contain"
+              />
+            </View>
+            <View
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: _getWidth(40) / 2,
+                borderWidth: 1,
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderColor: _getChgerImg(item).ac3 ? '#6FCF24' : '#C6C6C6',
+                opacity: _getChgerImg(item).ac3 ? 1 : 0.3,
+              }}>
+              <Image
+                source={ChargerType.chargerLogo[2]}
+                style={{width: 30, height: 30}}
+                resizeMode="contain"
+              />
+            </View>
+            <View
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: _getWidth(40) / 2,
+                borderWidth: 1,
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderColor: _getChgerImg(item).ac5 ? '#6FCF24' : '#C6C6C6',
+                opacity: _getChgerImg(item).ac5 ? 1 : 0.3,
+              }}>
+              <Image
+                source={ChargerType.chargerLogo[3]}
+                style={{width: 33, height: 33}}
+                resizeMode="contain"
+              />
+            </View>
           </View>
         </View>
-      </View>
+      )}
     </Pressable>
   );
 };

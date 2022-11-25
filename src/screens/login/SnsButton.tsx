@@ -21,6 +21,8 @@ import {
   GoogleSignin,
   statusCodes,
 } from '@react-native-google-signin/google-signin';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import StorageKeys from 'constants/StorageKeys';
 
 interface props {
   text: string;
@@ -63,9 +65,11 @@ const SnsButton = ({text, snsType, navigation, idx, setLoading}: props) => {
 
     await commonAPI
       ._getUserInfo(data)
-      .then(res => {
+      .then(async res => {
         if (res) {
           const resData = res.data;
+          console.log('resData', resData);
+          console.log('resData2', res);
           dispatch(
             setUserInfo({
               // ...userInfo,
@@ -79,9 +83,10 @@ const SnsButton = ({text, snsType, navigation, idx, setLoading}: props) => {
               addressInfo: resData?.addressInfo,
             }),
           );
+          await AsyncStorage.setItem(StorageKeys.KEY.AUTO_LOGIN, resData.id);
+          navigation.navigate('Home');
+          console.log('check user res', res);
         }
-        navigation.navigate('Home');
-        console.log('check user res', res);
       })
       .catch(err => {
         dispatch(setUserInfo({...userInfo, id: userEmail, name: userName}));

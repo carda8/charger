@@ -95,4 +95,9 @@ export default {
     const res = await _getAPI('search/address', params);
     return res;
   },
+
+  _postSearchBase: async (params: any) => {
+    const res = await _postAPI('search/base', params);
+    return res;
+  },
 };

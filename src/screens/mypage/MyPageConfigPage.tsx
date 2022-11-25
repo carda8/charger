@@ -16,6 +16,8 @@ import {RootState} from 'redux/store';
 import {resetUserInfo, setUserInfo} from 'redux/reducers/authReducer';
 import commonAPI from 'api/modules/commonAPI';
 import Loading from '@components/Loading';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import StorageKeys from 'constants/StorageKeys';
 
 const MyPageConfigPage = () => {
   const nav = useNavigation<commonTypes.navi>();
@@ -62,9 +64,14 @@ const MyPageConfigPage = () => {
     }
   };
 
-  const _onPressLogout = () => {
+  const _onPressLogout = async () => {
     nav.reset({routes: [{name: 'Login'}]});
-    dispatch(resetUserInfo());
+    try {
+      await AsyncStorage.removeItem(StorageKeys.KEY.AUTO_LOGIN);
+      dispatch(resetUserInfo());
+    } catch {
+      console.log('### logout FAIL!!!');
+    }
   };
 
   const _onPressRetire = async () => {
@@ -75,10 +82,16 @@ const MyPageConfigPage = () => {
 
     await commonAPI
       ._delUserRetire(data)
-      .then(res => {
+      .then(async res => {
         console.log('retire res', res);
         dispatch(resetUserInfo());
-        nav.reset({routes: [{name: 'Login'}, {name: 'MyPageRetire'}]});
+        try {
+          await AsyncStorage.removeItem(StorageKeys.KEY.AUTO_LOGIN);
+          dispatch(resetUserInfo());
+          nav.reset({routes: [{name: 'Login'}, {name: 'MyPageRetire'}]});
+        } catch {
+          console.log('### logout FAIL!!!');
+        }
       })
       .catch(err => {
         console.log('retire err', err);

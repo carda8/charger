@@ -23,14 +23,10 @@ import commonAPI from 'api/modules/commonAPI';
 import Loading from '@components/Loading';
 import modules from 'constants/utils/modules';
 import {setBottomIdx} from 'redux/reducers/navReducer';
-import {useIsFocused, useNavigation} from '@react-navigation/native';
+import {useNavigation} from '@react-navigation/native';
 import {commonTypes} from '@types';
 import PathBottomSheetItem from './components/PathBottomSheetItem';
-import {
-  resetPath,
-  setIsGoalFinish,
-  setIsStartFinish,
-} from 'redux/reducers/pathReducer';
+import {setIsGoalFinish, setIsStartFinish} from 'redux/reducers/pathReducer';
 import MyModal from '@components/MyModal';
 import PathRecommendList from './components/PathRecommendList';
 
@@ -43,8 +39,15 @@ interface coor {
 const PathMain = () => {
   const dispatch = useDispatch();
   const nav = useNavigation<commonTypes.navi>();
-  const {goalData, startData, isSwitch, lastRef, isGoalFinish, isStartFinish} =
-    useSelector((state: RootState) => state.pathReducer);
+  const {
+    goalData,
+    startData,
+    isSwitch,
+    lastRef,
+    isGoalFinish,
+    isStartFinish,
+    recomendStationData,
+  } = useSelector((state: RootState) => state.pathReducer);
 
   const {currentUserLocation} = useSelector(
     (state: RootState) => state.locationReducer,
@@ -114,7 +117,7 @@ const PathMain = () => {
       temp.push([item[1], item[0]]);
     });
     // setConvertedCoor(temp);
-    _getRecomand(temp);
+    if (!showRec && recomandList.length === 0) _getRecomand(temp);
     console.log('converted temp', temp);
   };
 
@@ -125,10 +128,19 @@ const PathMain = () => {
     console.log(' ### get path ###');
     console.log('startData', startData);
     console.log('goalData', goalData);
-    let data = {
-      start: `${startData.location.lon},${startData.location.lat}`,
-      end: `${goalData.location.lon},${goalData.location.lat}`,
-    };
+    let data;
+    if (recomandList.length === 0) {
+      data = {
+        start: `${startData.location.lon},${startData.location.lat}`,
+        end: `${goalData.location.lon},${goalData.location.lat}`,
+      };
+    } else {
+      data = {
+        start: `${startData.location.lon},${startData.location.lat}`,
+        end: `${recomendStationData.location.lon},${recomendStationData.location.lat}`,
+      };
+    }
+
     // let data = {};
     await commonAPI
       ._getPathLine(data)
@@ -239,7 +251,6 @@ const PathMain = () => {
   }, [startData]);
 
   useEffect(() => {
-    console.log('cccccccccccc', goalData, startData);
     if (goalData && startData && lineData.length > 0) _getPath();
   }, [startData, goalData]);
 
@@ -265,9 +276,16 @@ const PathMain = () => {
   }, [isStartFinish, isGoalFinish]);
 
   useEffect(() => {
+    if (recomendStationData) {
+      _getPath();
+    }
+  }, [recomendStationData]);
+
+  useEffect(() => {
     return () => {
       console.log('return');
-      dispatch(resetPath({}));
+      // dispatch(resetPath({}));
+      // setRecomandList([]);
     };
   }, []);
 
@@ -321,7 +339,7 @@ const PathMain = () => {
                 coordinate={currentUserLocation}
               />
             )}
-
+            {console.log('stardate', startData)}
             {/* 출발지 마커 */}
             {startData && (
               <Marker
@@ -346,8 +364,8 @@ const PathMain = () => {
                   bottomSheetRef.current?.present();
                 }}
                 coordinate={{
-                  latitude: Number(startData.location.lat),
-                  longitude: Number(startData.location.lon),
+                  latitude: startData.location.lat,
+                  longitude: startData.location.lon,
                 }}
               />
             )}
@@ -402,12 +420,12 @@ const PathMain = () => {
                     width={32}
                     height={65}
                     onClick={() => {
-                      // console.log('item', item);
-                      // setCenter({
-                      //   latitude: item.location.lat,
-                      //   longitude: item.location.lon,
-                      //   zoom: 14,
-                      // });
+                      console.log('item', item);
+                      setCenter({
+                        latitude: item.location.lat,
+                        longitude: item.location.lon,
+                        zoom: 14,
+                      });
                     }}
                     caption={{
                       text:
@@ -429,7 +447,12 @@ const PathMain = () => {
               ))}
           </NaverMapView>
 
-          {showRec && <PathRecommendList />}
+          {showRec && (
+            <PathRecommendList
+              recomandList={recomandList}
+              setCenter={setCenter}
+            />
+          )}
 
           <BottomSheetModal
             style={sheetStyle}

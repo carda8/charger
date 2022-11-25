@@ -168,7 +168,9 @@ const HomeSearch = () => {
       )}
       <MyModal
         title="등록완료"
-        text={'집이 성공적으로 등록되었습니다.\n이어서 집으로 안내를 받을까요?'}
+        text={
+          '집이 성공적으로 등록되었습니다.\n이어서 마이홈 충전소 안내를 받을까요?'
+        }
         positive
         positiveTitle="네"
         positivePress={() => nav.navigate('HomeMain')}

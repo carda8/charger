@@ -35,7 +35,6 @@ const BottomButton = ({
   setRecomend,
   disable,
   coor,
-  b,
 }: props) => {
   const navi = useNavigation<commonTypes.navi>();
 

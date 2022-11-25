@@ -10,6 +10,10 @@ import FontList from 'constants/FontList';
 import BottomButton from '@components/BottomButton';
 import routertype from '@router/routertype';
 import MyModal from '@components/MyModal';
+import commonAPI from 'api/modules/commonAPI';
+import {useSelector} from 'react-redux';
+import {RootState} from 'redux/store';
+import Loading from '@components/Loading';
 
 interface check {
   [key: string]: boolean;
@@ -25,6 +29,8 @@ interface props {
 
 const AccountPolicy = () => {
   const navi = useNavigation<commonTypes.navi>();
+  const {userInfo} = useSelector((state: RootState) => state.authReducer);
+  const [loading, setLoading] = useState(false);
   // const [modal, setModal] = useState(false);
   const [check, setCheck] = useState<check>({
     location: false,
@@ -71,7 +77,7 @@ const AccountPolicy = () => {
         });
       case Object.keys(check)[3]:
         return setCheck({
-          location: !check.location,
+          location: !check.all,
           personal: !check.all,
           service: !check.all,
           all: !check.all,
@@ -83,7 +89,7 @@ const AccountPolicy = () => {
 
   useEffect(() => {
     if (!check.all) {
-      if (check.personal && check.service)
+      if (check.personal && check.service && check.location)
         setCheck({location: true, personal: true, service: true, all: true});
     }
   }, [check]);
@@ -101,6 +107,29 @@ const AccountPolicy = () => {
       default:
         return '';
     }
+  };
+  const _onPress = async () => {
+    setLoading(true);
+    const data = {
+      user_id: userInfo?.id,
+      name: userInfo?.name,
+      car_brand: '',
+      car_model: '',
+      chgerType: [''],
+    };
+
+    await commonAPI
+      ._postSaveUserInfo(data)
+      .then(res => {
+        console.log('then res', res);
+        navi.navigate('AccountFinish');
+      })
+      .catch(err => {
+        console.log('err res', err);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   const CheckPolicy = ({target}: props) => {
@@ -162,13 +191,36 @@ const AccountPolicy = () => {
           <Divider />
           <CheckPolicy target={Object.keys(check)[3]} />
         </View>
-        <BottomButton
+        {/* <BottomButton
           style={{backgroundColor: check.all ? '#00239C' : '#C4C4C4'}}
           text={'동의하고 시작하기'}
           loading={check.all ? false : true}
           screen={routertype.AccountFinish}
-        />
+        /> */}
       </View>
+      <View style={{height: 54, marginHorizontal: 18, marginBottom: 22}}>
+        <Pressable
+          onPress={() => {
+            if (check.all) _onPress();
+          }}
+          style={{
+            flex: 1,
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: check.all ? '#00239C' : '#C4C4C4',
+            borderRadius: 8,
+          }}>
+          <Text
+            style={{
+              fontFamily: FontList.PretendardBold,
+              fontSize: 16,
+              color: 'white',
+            }}>
+            동의하고 시작하기
+          </Text>
+        </Pressable>
+      </View>
+      <Loading visible={loading} />
       {/* <MyModal
         visible={modal}
         setVisible={setModal}

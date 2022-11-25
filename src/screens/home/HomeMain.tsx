@@ -1,5 +1,5 @@
 import {View, Text, Pressable, FlatList, ListRenderItem} from 'react-native';
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import GlobalStyles from 'styles/GlobalStyles';
 import HeaderCenter from '@components/HeaderCenter';
@@ -25,10 +25,18 @@ const HomeMain = () => {
     return <HomeSearchItem setVisible={setVisible} visible={visible} />;
   };
 
+  const _getAround = () => {};
+
+  useEffect(() => {
+    if (userInfo?.addressInfo?.location) {
+      _getAround();
+    }
+  }, []);
+
   return (
     <SafeAreaView style={{...GlobalStyles.safeAreaStyle}}>
       <HeaderCenter
-        title="집으로 안내"
+        title="마이홈 충전소"
         leftBack
         rightBack
         backTitle="닫기"

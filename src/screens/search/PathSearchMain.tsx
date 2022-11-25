@@ -41,6 +41,7 @@ const PathSearchMain = () => {
   const _onPress = (item: any) => {
     console.log('item1', item);
     console.log('last index', lastRef);
+    // return;
     if (!lastRef || lastRef === 'goal') {
       dispatch(setGoalData(item));
       dispatch(setKeywordList([]));
@@ -57,8 +58,8 @@ const PathSearchMain = () => {
   };
 
   const _delelteItem = (target: any[], setTarget: any, index: any) => {
-    console.log('index', index);
     let temp = [...target];
+    console.log('index', index);
     temp = target.filter((item, idx) => idx !== index);
     setTarget(temp);
   };
@@ -220,8 +221,8 @@ const PathSearchMain = () => {
                             fontSize: 16,
                             color: '#333333',
                           }}>
-                          {console.log('item', item)}
-                          {item.address_name}
+                          {/* {console.log('item', item)} */}
+                          {item.name}
                         </Text>
                       </View>
                     </View>

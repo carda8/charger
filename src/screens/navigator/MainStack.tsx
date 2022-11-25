@@ -1,4 +1,5 @@
-import React from 'react';
+import React, {useState, useEffect} from 'react';
+import {View, ActivityIndicator} from 'react-native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {NavigationContainer} from '@react-navigation/native';
 import Login from '../login/Login';
@@ -35,10 +36,64 @@ import NotificationDetail from '@screens/main/NotificationDetail';
 import PolicyPersonal from '@screens/mypage/policy/PolicyPersonal';
 import PolicyLocation from '@screens/mypage/policy/PolicyLocation';
 import PolicyUse from '@screens/mypage/policy/PolicyUse';
-
+import StorageKeys from 'constants/StorageKeys';
+import {useDispatch} from 'react-redux';
+import commonAPI from 'api/modules/commonAPI';
+import {setUserInfo} from 'redux/reducers/authReducer';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const Stack = createNativeStackNavigator<commonTypes.RootStackParamList>();
-
 const MainStack = () => {
+  const dispatch = useDispatch();
+  const [loading, setLoading] = useState(false);
+  const [initRoute, setInitRoute] =
+    useState<keyof commonTypes.RootStackParamList>();
+
+  const _getInfo = async (savedId: string) => {
+    const data = {user_id: savedId};
+    console.log('data', data);
+    const res: any = await commonAPI
+      ._getUserInfo(data)
+      .then(res => {
+        console.log('res autologin', res);
+        dispatch(setUserInfo(res.data));
+        return res.data;
+      })
+      .catch(err => {
+        console.log('err autologin', err);
+        return err;
+      });
+    console.log('ressss', res);
+    if (res) {
+      setInitRoute('Home');
+      setLoading(true);
+    } else {
+      setInitRoute('Login');
+      setLoading(true);
+    }
+  };
+
+  const _checkAutoLogin = async () => {
+    const resAuto = await AsyncStorage.getItem(StorageKeys.KEY.AUTO_LOGIN);
+    if (resAuto) {
+      _getInfo(resAuto);
+    } else {
+      setLoading(true);
+      setInitRoute('Login');
+    }
+  };
+
+  useEffect(() => {
+    console.log('1');
+    _checkAutoLogin();
+  }, []);
+
+  if (!loading)
+    return (
+      <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
+        <ActivityIndicator />
+      </View>
+    );
+
   return (
     <NavigationContainer>
       <GestureHandlerRootView
@@ -47,7 +102,7 @@ const MainStack = () => {
         <BottomSheetModalProvider>
           <Stack.Navigator
             screenOptions={{headerShown: false}}
-            initialRouteName={'Login'}>
+            initialRouteName={initRoute}>
             <Stack.Screen
               name="Login"
               component={Login}
