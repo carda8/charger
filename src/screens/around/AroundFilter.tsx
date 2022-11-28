@@ -15,8 +15,20 @@ import FontList from 'constants/FontList';
 import {_getHeight} from 'constants/utils';
 import {API} from 'api/API';
 import ChargerType from 'constants/ChargerType';
-import {useDispatch} from 'react-redux';
-import {setFilter} from 'redux/reducers/aroundReducer';
+import {useDispatch, useSelector} from 'react-redux';
+import {
+  setArea,
+  setCanUse,
+  setChgerFree,
+  setChgerType,
+  setCompany,
+  setFilter,
+  setFreePark,
+  setPickall,
+  setRoad,
+  setSpeed,
+} from 'redux/reducers/aroundReducer';
+import {RootState} from 'redux/store';
 
 interface busiType {
   key: string;
@@ -30,6 +42,7 @@ interface optionView {
 
 const AroundFilter = () => {
   const dispatch = useDispatch();
+  const {filter} = useSelector((state: RootState) => state.aroundReducer);
   const [showAvailable, setShowAvailable] = useState(false);
   const [pickAll, setPickAll] = useState(false);
   const [pickedBusi, setPickedBusi] = useState<string[]>([]);
@@ -38,12 +51,12 @@ const AroundFilter = () => {
   const layout = useWindowDimensions();
   const WIDTH = (layout.width - 32 - 48) / 4;
 
-  const [speed, setSpeed] = useState<string[]>([]);
-  const [fee, setFee] = useState<string[]>([]);
-  const [parking, setParking] = useState<string[]>([]);
-  const [area, setArea] = useState<string[]>([]);
-  const [road, setRoad] = useState<string[]>([]);
-  const [chargerType, setChargerType] = useState<string[]>([]);
+  // const [speed, setSpeed] = useState<string[]>([]);
+  // const [fee, setFee] = useState<string[]>([]);
+  // const [parking, setParking] = useState<string[]>([]);
+  // const [area, setArea] = useState<string[]>([]);
+  // const [road, setRoad] = useState<string[]>([]);
+  // const [chargerType, setChargerType] = useState<string[]>([]);
 
   const dumSpeed = ['완속', '급속', '초고속'];
   const dumFee = ['유료 충전소', '무료 충전소'];
@@ -119,35 +132,30 @@ const AroundFilter = () => {
     }
   };
 
-  const _getColor = (state: string[], data: any) => {
-    const temp = state.filter((item, index) => item === data);
-    if (temp.length > 0) {
-      return '#07B3FD';
-    } else return '#333333';
-  };
+  // const _getColor = (state: string[], data: any) => {
+  //   const temp = state.filter((item, index) => item === data);
+  //   if (temp.length > 0) {
+  //     return '#07B3FD';
+  //   } else return '#333333';
+  // };
 
-  const _getOpasity = (state: string[], data: any) => {
-    const temp = state.filter((item, index) => item === data);
-    if (temp.length > 0) {
-      return 1;
-    } else return 0.3;
-  };
-
-  // 충전속도, 충전소 유무료, 충전기 설치 장소, 도로, 충전기 타입, 주차여부,
-  // 충전기 사업자,
-  useEffect(() => {
-    console.log('speed', speed);
-  }, [speed]);
-
-  useEffect(() => {
-    console.log('parking', parking);
-  }, [parking]);
+  // const _getOpasity = (state: string[], data: any) => {
+  // const temp = state.filter((item, index) => item === data);
+  //   if (temp.length > 0) {
+  //     return 1;
+  //   } else return 0.3;
+  // };
 
   useEffect(() => {
     if (!busiList) {
       _getInfo();
     }
   }, []);
+
+  useEffect(() => {
+    console.log('filter', filter);
+    // console.log('filter', filter.freePark?.includes('무료주차'));
+  }, [filter]);
 
   return (
     <SafeAreaView style={{...GlobalStyles.safeAreaStyle}}>
@@ -165,7 +173,8 @@ const AroundFilter = () => {
         }}>
         <Pressable
           onPress={() => {
-            setShowAvailable(!showAvailable);
+            dispatch(setCanUse());
+            // setShowAvailable(!showAvailable);
           }}
           hitSlop={10}
           style={{
@@ -185,15 +194,15 @@ const AroundFilter = () => {
             style={{
               width: 16,
               height: 16,
-              borderWidth: showAvailable ? undefined : 1,
+              borderWidth: filter.canUse ? undefined : 1,
               borderColor: '#C6C6C6',
-              backgroundColor: showAvailable ? '#07B3FD' : undefined,
+              backgroundColor: filter.canUse ? '#07B3FD' : undefined,
               borderRadius: 2,
               marginLeft: 6,
               alignItems: 'center',
               justifyContent: 'center',
             }}>
-            {showAvailable && (
+            {filter.canUse && (
               <Image
                 source={require('@assets/check_filter.png')}
                 style={{width: 8, height: 8}}
@@ -224,7 +233,8 @@ const AroundFilter = () => {
               <Pressable
                 key={index}
                 onPress={() => {
-                  _setOption(speed, item, setSpeed);
+                  dispatch(setSpeed(item));
+                  // _setOption(speed, item, setSpeed);
                 }}
                 style={{
                   alignSelf: 'flex-start',
@@ -234,12 +244,14 @@ const AroundFilter = () => {
                   borderRadius: 24,
                   marginRight: 6,
                   marginBottom: 10,
-                  borderColor: _getColor(speed, item),
+                  borderColor: filter.speed?.includes(item)
+                    ? '#07B3FD'
+                    : '#333333',
                 }}>
                 <Text
                   style={{
                     fontFamily: FontList.PretendardRegular,
-                    color: _getColor(speed, item),
+                    color: filter.speed?.includes(item) ? '#07B3FD' : '#333333',
                     fontSize: 16,
                   }}>
                   {item}
@@ -269,7 +281,8 @@ const AroundFilter = () => {
             {dumFee.map((item, index) => (
               <Pressable
                 onPress={() => {
-                  _setOption(fee, item, setFee);
+                  dispatch(setChgerFree(item));
+                  // _setOption(fee, item, setFee);
                 }}
                 style={{
                   alignSelf: 'flex-start',
@@ -279,13 +292,17 @@ const AroundFilter = () => {
                   borderRadius: 24,
                   marginRight: 6,
                   marginBottom: 10,
-                  borderColor: _getColor(fee, item),
+                  borderColor: filter.chgerFree?.includes(item)
+                    ? '#07B3FD'
+                    : '#333333',
                 }}>
                 <Text
                   style={{
                     fontFamily: FontList.PretendardRegular,
                     fontSize: 16,
-                    color: _getColor(fee, item),
+                    color: filter.chgerFree?.includes(item)
+                      ? '#07B3FD'
+                      : '#333333',
                   }}>
                   {item}
                 </Text>
@@ -311,31 +328,60 @@ const AroundFilter = () => {
             </Text>
           </View>
           <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
-            {dumPark.map((item, index) => (
-              <Pressable
-                onPress={() => {
-                  _setOption(parking, item, setParking);
-                }}
+            <Pressable
+              onPress={() => {
+                dispatch(setFreePark('무료주차'));
+              }}
+              style={{
+                alignSelf: 'flex-start',
+                paddingHorizontal: 13,
+                paddingVertical: 6.5,
+                borderWidth: 1,
+                borderRadius: 24,
+                marginRight: 6,
+                marginBottom: 10,
+                borderColor: filter.freePark?.includes('무료주차')
+                  ? '#07B3FD'
+                  : '#333333',
+              }}>
+              <Text
                 style={{
-                  alignSelf: 'flex-start',
-                  paddingHorizontal: 13,
-                  paddingVertical: 6.5,
-                  borderWidth: 1,
-                  borderRadius: 24,
-                  marginRight: 6,
-                  marginBottom: 10,
-                  borderColor: _getColor(parking, item),
+                  fontFamily: FontList.PretendardRegular,
+                  fontSize: 16,
+                  color: filter.freePark?.includes('무료주차')
+                    ? '#07B3FD'
+                    : '#333333',
                 }}>
-                <Text
-                  style={{
-                    fontFamily: FontList.PretendardRegular,
-                    fontSize: 16,
-                    color: _getColor(parking, item),
-                  }}>
-                  {item}
-                </Text>
-              </Pressable>
-            ))}
+                무료주차
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={() => {
+                dispatch(setFreePark('입주민 전용'));
+              }}
+              style={{
+                alignSelf: 'flex-start',
+                paddingHorizontal: 13,
+                paddingVertical: 6.5,
+                borderWidth: 1,
+                borderRadius: 24,
+                marginRight: 6,
+                marginBottom: 10,
+                borderColor: filter.freePark?.includes('입주민 전용')
+                  ? '#07B3FD'
+                  : '#333333',
+              }}>
+              <Text
+                style={{
+                  fontFamily: FontList.PretendardRegular,
+                  fontSize: 16,
+                  color: filter.freePark?.includes('입주민 전용')
+                    ? '#07B3FD'
+                    : '#333333',
+                }}>
+                입주민 전용
+              </Text>
+            </Pressable>
           </View>
         </View>
 
@@ -359,7 +405,8 @@ const AroundFilter = () => {
             {dumArea.map((item, index) => (
               <Pressable
                 onPress={() => {
-                  _setOption(area, item, setArea);
+                  dispatch(setArea(item));
+                  // _setOption(area, item, setArea);
                 }}
                 style={{
                   alignSelf: 'flex-start',
@@ -369,13 +416,15 @@ const AroundFilter = () => {
                   borderRadius: 24,
                   marginRight: 6,
                   marginBottom: 10,
-                  borderColor: _getColor(area, item),
+                  borderColor: filter.area?.includes(item)
+                    ? '#07B3FD'
+                    : '#333333',
                 }}>
                 <Text
                   style={{
                     fontFamily: FontList.PretendardRegular,
                     fontSize: 16,
-                    color: _getColor(area, item),
+                    color: filter.area?.includes(item) ? '#07B3FD' : '#333333',
                   }}>
                   {item}
                 </Text>
@@ -404,7 +453,8 @@ const AroundFilter = () => {
             {dumRoad.map((item, index) => (
               <Pressable
                 onPress={() => {
-                  _setOption(road, item, setRoad);
+                  dispatch(setRoad(item));
+                  // _setOption(road, item, setRoad);
                 }}
                 style={{
                   alignSelf: 'flex-start',
@@ -414,13 +464,15 @@ const AroundFilter = () => {
                   borderRadius: 24,
                   marginRight: 6,
                   marginBottom: 10,
-                  borderColor: _getColor(road, item),
+                  borderColor: filter.road?.includes(item)
+                    ? '#07B3FD'
+                    : '#333333',
                 }}>
                 <Text
                   style={{
                     fontFamily: FontList.PretendardRegular,
                     fontSize: 16,
-                    color: _getColor(road, item),
+                    color: filter.road?.includes(item) ? '#07B3FD' : '#333333',
                   }}>
                   {item}
                 </Text>
@@ -463,13 +515,26 @@ const AroundFilter = () => {
                     index < 4 && (
                       <Pressable
                         onPress={() => {
-                          _setOption(chargerType, item, setChargerType);
+                          console.log('item,', ChargerType.chargerType[index]);
+                          dispatch(
+                            setChgerType(ChargerType.chargerType[index]),
+                          );
+                          // dispatch(setChgerType(item))
+                          // _setOption(chargerType, item, setChargerType);
                         }}
                         style={{
                           ...styles.innerView,
                           borderWidth: 1,
-                          opacity: _getOpasity(chargerType, item),
-                          borderColor: _getColor(chargerType, item),
+                          opacity: filter.chgerType?.includes(
+                            ChargerType.chargerType[index],
+                          )
+                            ? 1
+                            : 0.3,
+                          borderColor: filter.chgerType?.includes(
+                            ChargerType.chargerType[index],
+                          )
+                            ? '#07B3FD'
+                            : '#333333',
                           borderRadius: 4,
                           marginRight: index < 3 ? 16 : 0,
                           alignItems: 'center',
@@ -521,13 +586,25 @@ const AroundFilter = () => {
                     index > 3 && (
                       <Pressable
                         onPress={() => {
-                          _setOption(chargerType, item, setChargerType);
+                          console.log('item,', ChargerType.chargerType[index]);
+                          dispatch(
+                            setChgerType(ChargerType.chargerType[index]),
+                          );
+                          // _setOption(chargerType, item, setChargerType);
                         }}
                         style={{
                           ...styles.innerView,
                           borderWidth: 1,
-                          opacity: _getOpasity(chargerType, item),
-                          borderColor: _getColor(chargerType, item),
+                          opacity: filter.chgerType?.includes(
+                            ChargerType.chargerType[index],
+                          )
+                            ? 1
+                            : 0.3,
+                          borderColor: filter.chgerType?.includes(
+                            ChargerType.chargerType[index],
+                          )
+                            ? '#07B3FD'
+                            : '#333333',
                           borderRadius: 4,
                           marginRight: index > 3 ? (index > 4 ? 32 : 16) : 0,
                           alignItems: 'center',
@@ -593,8 +670,8 @@ const AroundFilter = () => {
                       borderColor: _getColor(chargerType, item),
                       alignItems: 'center',
                       justifyContent: 'center',
-                      opacity: _getOpasity(chargerType, item),
-                    }}>
+                      // opacity: _getOpasity(chargerType, item),
+                    // }}>
                     <Image
                       source={item}
                       style={{width: '85%', height: '85%'}}
@@ -625,7 +702,10 @@ const AroundFilter = () => {
           </View>
           <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
             <Pressable
-              onPress={() => _pickAll()}
+              onPress={() => {
+                dispatch(setPickall());
+                _pickAll();
+              }}
               style={{
                 alignItems: 'center',
                 flexDirection: 'row',
@@ -657,8 +737,9 @@ const AroundFilter = () => {
                 <Pressable
                   key={idx}
                   onPress={() => {
-                    console.warn(idx);
-                    _onPressBusi(item.key);
+                    // console.warn(idx);
+                    dispatch(setCompany(item.key));
+                    // _onPressBusi(item.key);
                     // _pickBusi(idx);
                   }}
                   style={{
@@ -671,15 +752,19 @@ const AroundFilter = () => {
                     style={{
                       width: 16,
                       height: 16,
-                      borderWidth: _isPicked(item.key) ? undefined : 1,
-                      backgroundColor: _isPicked(item.key)
-                        ? '#07B3FD'
-                        : undefined,
+                      borderWidth:
+                        filter.company?.includes(item.key) || pickAll
+                          ? undefined
+                          : 1,
+                      backgroundColor:
+                        filter.company?.includes(item.key) || pickAll
+                          ? '#07B3FD'
+                          : undefined,
                       alignItems: 'center',
                       justifyContent: 'center',
                       marginRight: 8,
                     }}>
-                    {_isPicked(item?.key) && (
+                    {(filter.company?.includes(item.key) || pickAll) && (
                       <Image
                         source={require('@assets/check_filter.png')}
                         style={{width: 8, height: 8}}

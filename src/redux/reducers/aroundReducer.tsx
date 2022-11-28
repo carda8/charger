@@ -45,10 +45,14 @@ interface aroundKeyData {
 }
 interface filter {
   canUse?: any;
-  speed?: any;
-  freePark?: any;
-  company?: any;
-  chgerType?: any;
+  speed?: any[];
+  freePark?: any[];
+  company?: any[];
+  chgerType?: any[];
+  chgerFree?: any[];
+  area?: any[];
+  road?: any[];
+  pickAll?: boolean;
 }
 
 interface aroundInit {
@@ -85,11 +89,15 @@ const initialState: aroundInit = {
     zscode: '',
   },
   filter: {
-    canUse: '',
-    speed: '',
-    freePark: '',
-    company: '',
-    chgerType: '',
+    canUse: false,
+    speed: [],
+    freePark: [],
+    company: [],
+    chgerType: [],
+    chgerFree: [],
+    area: [],
+    road: [],
+    pickAll: false,
   },
 };
 
@@ -114,10 +122,93 @@ const aroundSlice = createSlice({
     setFilter: (state, action: PayloadAction<filter>) => {
       state.filter = action.payload;
     },
+    setFreePark: (state, action) => {
+      let temp = [];
+      if (state.filter.freePark?.includes(action.payload)) {
+        temp = state.filter.freePark?.filter(item => item !== action.payload);
+        state.filter.freePark = temp;
+      } else {
+        state.filter.freePark?.push(action.payload);
+      }
+    },
+    setChgerFree: (state, action) => {
+      let temp = [];
+      if (state.filter.chgerFree?.includes(action.payload)) {
+        temp = state.filter.chgerFree?.filter(item => item !== action.payload);
+        state.filter.chgerFree = temp;
+      } else {
+        state.filter.chgerFree?.push(action.payload);
+      }
+    },
+    setArea: (state, action) => {
+      let temp = [];
+      if (state.filter.area?.includes(action.payload)) {
+        temp = state.filter.area?.filter(item => item !== action.payload);
+        state.filter.area = temp;
+      } else {
+        state.filter.area?.push(action.payload);
+      }
+    },
+    setRoad: (state, action) => {
+      let temp = [];
+      if (state.filter.road?.includes(action.payload)) {
+        temp = state.filter.road?.filter(item => item !== action.payload);
+        state.filter.road = temp;
+      } else {
+        state.filter.road?.push(action.payload);
+      }
+    },
+    setSpeed: (state, action) => {
+      let temp = [];
+      if (state.filter.speed?.includes(action.payload)) {
+        temp = state.filter.speed?.filter(item => item !== action.payload);
+        state.filter.speed = temp;
+      } else {
+        state.filter.speed?.push(action.payload);
+      }
+    },
+    setCanUse: state => {
+      state.filter.canUse = !state.filter.canUse;
+    },
+    setCompany: (state, action) => {
+      let temp = [];
+      if (state.filter.company?.includes(action.payload)) {
+        temp = state.filter.company?.filter(item => item !== action.payload);
+        state.filter.company = temp;
+      } else {
+        state.filter.company?.push(action.payload);
+      }
+    },
+    setChgerType: (state, action) => {
+      let temp = [];
+      if (state.filter.chgerType?.includes(action.payload)) {
+        temp = state.filter.chgerType?.filter(item => item !== action.payload);
+        state.filter.chgerType = temp;
+      } else {
+        state.filter.chgerType?.push(action.payload);
+      }
+    },
+    setPickall: state => {
+      state.filter.company = [];
+      state.filter.pickAll = !state.filter.pickAll;
+    },
   },
 });
 
 const {actions, reducer} = aroundSlice;
-export const {setAroundKey, removeAroundKey, setAroundKeyData, setFilter} =
-  actions;
+export const {
+  setAroundKey,
+  removeAroundKey,
+  setAroundKeyData,
+  setFilter,
+  setChgerType,
+  setFreePark,
+  setChgerFree,
+  setArea,
+  setRoad,
+  setSpeed,
+  setCanUse,
+  setCompany,
+  setPickall,
+} = actions;
 export const aroundReducer = reducer;
