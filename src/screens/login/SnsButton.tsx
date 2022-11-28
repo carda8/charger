@@ -84,6 +84,7 @@ const SnsButton = ({text, snsType, navigation, idx, setLoading}: props) => {
             }),
           );
           await AsyncStorage.setItem(StorageKeys.KEY.AUTO_LOGIN, resData.id);
+          await AsyncStorage.setItem(StorageKeys.KEY.SNS_TYPE, snsType);
           navigation.navigate('Home');
           console.log('check user res', res);
         }

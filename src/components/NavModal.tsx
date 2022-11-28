@@ -21,6 +21,7 @@ interface props {
   isPath?: any;
   //버튼이 하나인 경우 positive 사용
   setVisible: React.Dispatch<React.SetStateAction<boolean>>;
+  startCoor?: any;
   // positivePress?: () => void;
 }
 
@@ -32,6 +33,7 @@ const NavModal = ({
   coor,
   item,
   isPath,
+  startCoor,
 }: props) => {
   //   const GOOGLE_PLAY_STORE_LINK = 'market://details?id=io.github.Antodo';
   //route?y=${“도착”}&x=${“도착”}&sX=${“출발”}&sY=${“출발”}
@@ -41,14 +43,19 @@ const NavModal = ({
   const path = useSelector((state: RootState) => state.pathReducer);
 
   //dummy
-  const USER_Lat = currentUserLocation?.latitude
+  const USER_Lat = startCoor
+    ? startCoor?.latitude
+    : currentUserLocation?.latitude
     ? currentUserLocation.latitude
     : 37.5246544;
-  const USER_Lon = currentUserLocation?.longitude
+  const USER_Lon = startCoor
+    ? startCoor?.longitude
+    : currentUserLocation?.longitude
     ? currentUserLocation.longitude
     : 126.8881368;
 
   const _getCoor = (target: any) => {
+    console.log('coooooooooooooooor', coor);
     let res;
     if (target === 'kakao') {
       res = coor?.latitude

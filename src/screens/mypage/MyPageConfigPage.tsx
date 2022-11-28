@@ -1,5 +1,5 @@
 import {View, Text, Pressable, Image} from 'react-native';
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import GlobalStyles from 'styles/GlobalStyles';
 import BottomNav from '@components/BottomNav';
@@ -18,6 +18,7 @@ import commonAPI from 'api/modules/commonAPI';
 import Loading from '@components/Loading';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import StorageKeys from 'constants/StorageKeys';
+import SnsList from 'constants/SnsList';
 
 const MyPageConfigPage = () => {
   const nav = useNavigation<commonTypes.navi>();
@@ -29,6 +30,7 @@ const MyPageConfigPage = () => {
   const [modal, setModal] = useState(false);
   const [modalLogin, setModalLogin] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [img, setImg] = useState();
 
   const switchTitle = [
     '기본 알림',
@@ -68,6 +70,7 @@ const MyPageConfigPage = () => {
     nav.reset({routes: [{name: 'Login'}]});
     try {
       await AsyncStorage.removeItem(StorageKeys.KEY.AUTO_LOGIN);
+      await AsyncStorage.removeItem(StorageKeys.KEY.SNS_TYPE);
       dispatch(resetUserInfo());
     } catch {
       console.log('### logout FAIL!!!');
@@ -99,6 +102,19 @@ const MyPageConfigPage = () => {
       .finally(() => setLoading(false));
   };
 
+  const _getSNS = async () => {
+    const res = await AsyncStorage.getItem(StorageKeys.KEY.SNS_TYPE);
+    console.log('res,', res);
+    if (res === SnsList.apple) setImg(require('@assets/My_apple.png'));
+    if (res === SnsList.google) setImg(require('@assets/My_google.png'));
+    if (res === SnsList.kakao) setImg(require('@assets/My_kakao.png'));
+    if (res === SnsList.naver) setImg(require('@assets/My_naver.png'));
+  };
+
+  useEffect(() => {
+    _getSNS();
+  }, []);
+
   return (
     <SafeAreaView style={{...GlobalStyles.safeAreaStyle}}>
       <HeaderCenter title="앱설정" leftBack />
@@ -117,15 +133,27 @@ const MyPageConfigPage = () => {
               marginTop: 20,
               flexDirection: 'row',
               justifyContent: 'space-between',
+              alignItems: 'center',
             }}>
-            <Text
-              style={{
-                fontFamily: FontList.PretendardSemiBold,
-                fontSize: 16,
-                color: '#333333',
-              }}>
-              {userInfo.name}님
-            </Text>
+            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+              <Image
+                source={img}
+                style={{
+                  width: 34,
+                  height: 34,
+                  resizeMode: 'contain',
+                  marginRight: 10,
+                }}
+              />
+              <Text
+                style={{
+                  fontFamily: FontList.PretendardSemiBold,
+                  fontSize: 16,
+                  color: '#333333',
+                }}>
+                {userInfo.id}
+              </Text>
+            </View>
             <Pressable onPress={() => setModalLogin(true)}>
               <Text
                 style={{

@@ -5,31 +5,57 @@ import GlobalStyles from 'styles/GlobalStyles';
 import HeaderCenter from '@components/HeaderCenter';
 import BottomNav from '@components/BottomNav';
 import FontList from 'constants/FontList';
-import {useNavigation} from '@react-navigation/native';
+import {useIsFocused, useNavigation} from '@react-navigation/native';
 import {commonTypes} from '@types';
 import HomeSearchItem from './components/HomeSearchItem';
 import NavModal from '@components/NavModal';
-import {useSelector} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import {RootState} from 'redux/store';
+import commonAPI from 'api/modules/commonAPI';
+import modules from 'constants/utils/modules';
+import Loading from '@components/Loading';
+import {setUserInfo} from 'redux/reducers/authReducer';
 
 const HomeMain = () => {
   const nav = useNavigation<commonTypes.navi>();
-  const data = [1, 1, 1, 1, 1];
   const [visible, setVisible] = useState(false);
   const {userInfo} = useSelector((state: RootState) => state.authReducer);
-  // const addr =
-  //   useRoute<RouteProp<commonTypes.RootStackParamList, 'HomeMain'>>().params
-  //     ?.addr;
-  console.log('User Addr', userInfo?.addressInfo);
+  const [coor, setCoor] = useState({});
+  const [startCorr, setStartCoor] = useState({});
+  const [myHomeList, setMyHomeList] = useState([]);
+
   const renderItem: ListRenderItem<any> = item => {
-    return <HomeSearchItem setVisible={setVisible} visible={visible} />;
+    const renderData = item.item;
+    return (
+      <HomeSearchItem
+        setVisible={setVisible}
+        visible={visible}
+        renderData={renderData}
+        setCoor={setCoor}
+        setStartCoor={setStartCoor}
+      />
+    );
   };
 
-  const _getAround = () => {};
+  const _getMyStation = async () => {
+    const data = {
+      location: `${userInfo?.addressInfo?.location.lon},${userInfo?.addressInfo?.location.lat}`,
+      distance: '1',
+    };
+    await commonAPI
+      ._getMyHome(data)
+      .then(res => {
+        if (res.data.data.length > 0) {
+          console.log('getMyHome res', res.data.data);
+          setMyHomeList(res.data.data);
+        }
+      })
+      .catch(err => console.log('getMyHome err', err));
+  };
 
   useEffect(() => {
     if (userInfo?.addressInfo?.location) {
-      _getAround();
+      _getMyStation();
     }
   }, []);
 
@@ -103,10 +129,15 @@ const HomeMain = () => {
       </View>
       {userInfo?.addressInfo ? (
         <FlatList
-          data={data}
+          data={myHomeList}
           keyExtractor={(item, index) => String(index)}
           style={{marginBottom: 60}}
           renderItem={item => renderItem(item)}
+          ListEmptyComponent={
+            <View style={{margin: 16}}>
+              <Text>집 근처 충전소가 없습니다</Text>
+            </View>
+          }
           ListHeaderComponent={
             <View style={{paddingHorizontal: 16, marginTop: 12}}>
               <Text
@@ -124,7 +155,16 @@ const HomeMain = () => {
         <></>
       )}
 
-      <NavModal visible={visible} setVisible={setVisible} title="길안내 연결" />
+      <NavModal
+        visible={visible}
+        setVisible={setVisible}
+        title="길안내 연결"
+        coor={coor}
+        startCoor={{
+          latitude: userInfo?.addressInfo?.location.lat,
+          longitude: userInfo?.addressInfo?.location.lon,
+        }}
+      />
       <BottomNav />
     </SafeAreaView>
   );

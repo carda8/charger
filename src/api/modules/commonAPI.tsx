@@ -35,6 +35,10 @@ export default {
     const res = await _delAPI('users', params);
     return res;
   },
+  _getMyHome: async (params: any) => {
+    const res = await _getAPI('search/nearby', params);
+    return res;
+  },
   // common
   _getCarInfoList: async (params: any) => {
     const res = await _getAPI('car-infos', params);

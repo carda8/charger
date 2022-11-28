@@ -42,7 +42,7 @@ const SearchMain = () => {
 
   const [visible, setVisible] = useState(false);
 
-  const [res, setRest] = useState([]);
+  const [res, setRes] = useState([]);
   const [modal, setModal] = useState(false);
   const [modalNoRes, setModalNoRes] = useState(false);
   const [showNoRes, setShowNoRes] = useState(false);
@@ -70,6 +70,9 @@ const SearchMain = () => {
   };
 
   const _postUserHistory = async (item: any) => {
+    dispatch(setAroundKeyData(item));
+    nav.navigate('AroundMain');
+    return;
     const data = {
       user_id: userInfo?.id,
       stat_id: item.statId,
@@ -108,22 +111,29 @@ const SearchMain = () => {
     // setModal(true);
     if (!(input.length > 1)) return;
     if (input) {
-      // const data: keywordParam = {
-      //   keywords: input,
-      //   offset: 0,
-      //   limit: 3,
-      // };
       const data = {
-        searchKeyword: '야구장',
-        currentXY: [cur, 126.8881368],
+        searchKeyword: input,
+        currentXY: [
+          currentUserLocation?.latitude,
+          currentUserLocation?.longitude,
+        ],
       };
-      await commonAPI._postSearchBase();
+      await commonAPI
+        ._postSearchBase(data)
+        .then(res => {
+          setRes(res.data.data);
+          console.log('res', res.data.data);
+        })
+        .catch(err => {
+          setRes([]);
+          console.log('err', err);
+        });
       // await commonAPI
       //   ._postAruondStation(data)
       //   .then(res => {
       //     console.log('res', res?.data.data);
       //     if (res?.data.data.length > 0) {
-      //       setRest(res?.data.data);
+      //       setRes(res?.data.data);
       //       setShowNoRes(false);
       //     } else {
       //       setShowNoRes(true);
@@ -226,47 +236,51 @@ const SearchMain = () => {
         {/* input 존재 시 리스트업 */}
         {input && res.length > 0 && (
           <>
-            {res.map((item, index) => (
-              <Pressable
-                onPress={() => {
-                  console.log('item', item);
-                  _postUserHistory(item);
-                }}
-                key={index}
-                style={{
-                  paddingVertical: 3,
-                  justifyContent: 'center',
-                  borderColor: '#F6F6F6',
-                  borderBottomWidth: res.length - 1 === index ? 4 : 1,
-                }}>
-                <View
-                  style={{
-                    height: 48,
-                    marginHorizontal: 18,
-                    // borderBottomWidth: 1,
-                    borderColor: '#F6F6F6',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                  }}>
-                  <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                    <Image
-                      source={require('@assets/search.png')}
-                      style={{width: 14, height: 14, marginRight: 6}}
-                      resizeMode="contain"
-                    />
-                    <Text
+            {res.map(
+              (item, index) =>
+                index < 3 && (
+                  <Pressable
+                    onPress={() => {
+                      console.log('item', item);
+                      _postUserHistory(item);
+                    }}
+                    key={index}
+                    style={{
+                      paddingVertical: 3,
+                      justifyContent: 'center',
+                      borderColor: '#F6F6F6',
+                      borderBottomWidth: res.length - 1 === index ? 4 : 1,
+                    }}>
+                    <View
                       style={{
-                        fontFamily: FontList.PretendardMedium,
-                        fontSize: 16,
-                        color: '#333333',
+                        height: 48,
+                        marginHorizontal: 18,
+                        // borderBottomWidth: 1,
+                        borderColor: '#F6F6F6',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
                       }}>
-                      {item?.statNm}
-                    </Text>
-                  </View>
-                </View>
-              </Pressable>
-            ))}
+                      <View
+                        style={{flexDirection: 'row', alignItems: 'center'}}>
+                        <Image
+                          source={require('@assets/search.png')}
+                          style={{width: 14, height: 14, marginRight: 6}}
+                          resizeMode="contain"
+                        />
+                        <Text
+                          style={{
+                            fontFamily: FontList.PretendardMedium,
+                            fontSize: 16,
+                            color: '#333333',
+                          }}>
+                          {item?.name}
+                        </Text>
+                      </View>
+                    </View>
+                  </Pressable>
+                ),
+            )}
           </>
         )}
         <Text

@@ -40,11 +40,21 @@ interface aroundKeyData {
   useTime?: string;
   zcode?: string;
   zscode?: string;
+  name?: string;
+  address?: string;
+}
+interface filter {
+  canUse?: any;
+  speed?: any;
+  freePark?: any;
+  company?: any;
+  chgerType?: any;
 }
 
 interface aroundInit {
   aroundKey: string;
   aroundKeyData: aroundKeyData | undefined;
+  filter: filter;
 }
 
 const initialState: aroundInit = {
@@ -74,6 +84,13 @@ const initialState: aroundInit = {
     zcode: '',
     zscode: '',
   },
+  filter: {
+    canUse: '',
+    speed: '',
+    freePark: '',
+    company: '',
+    chgerType: '',
+  },
 };
 
 const aroundSlice = createSlice({
@@ -94,9 +111,13 @@ const aroundSlice = createSlice({
     ) => {
       state.aroundKeyData = action.payload;
     },
+    setFilter: (state, action: PayloadAction<filter>) => {
+      state.filter = action.payload;
+    },
   },
 });
 
 const {actions, reducer} = aroundSlice;
-export const {setAroundKey, removeAroundKey, setAroundKeyData} = actions;
+export const {setAroundKey, removeAroundKey, setAroundKeyData, setFilter} =
+  actions;
 export const aroundReducer = reducer;

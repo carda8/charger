@@ -135,6 +135,10 @@ const AroundFilter = () => {
   }, [speed]);
 
   useEffect(() => {
+    console.log('parking', parking);
+  }, [parking]);
+
+  useEffect(() => {
     if (!busiList) {
       _getInfo();
     }

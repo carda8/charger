@@ -40,13 +40,10 @@ const StationReportPage = () => {
               alignItems: 'center',
               marginTop: 15.4,
             }}>
-            <View
-              style={{
-                width: 20,
-                height: 20,
-                backgroundColor: '#D9D9D9',
-                marginRight: 4,
-              }}
+            <Image
+              source={require('@assets/main_bt_union2.png')}
+              style={{width: 20, height: 20}}
+              resizeMode="contain"
             />
             <Text
               style={{
@@ -143,11 +140,11 @@ const StationReportPage = () => {
             onPress={() => setModal(!modal)}
             style={{
               height: 54,
-              backgroundColor: '#C4C4C4',
               marginTop: 24,
               borderRadius: 8,
               alignItems: 'center',
               justifyContent: 'center',
+              backgroundColor: '#C4C4C4',
             }}>
             <Text
               style={{
@@ -162,7 +159,7 @@ const StationReportPage = () => {
       </ScrollView>
 
       <MyModal
-        title="고장제보가 접수되었습니다."
+        title="준비중인 기능입니다"
         positive
         positiveTitle="확인"
         positivePress={() => nav.goBack()}

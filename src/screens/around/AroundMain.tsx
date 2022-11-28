@@ -75,10 +75,12 @@ const AroundMain = () => {
   // ref
   const bottomSheetRef = useRef<BottomSheetModal>(null);
   const bottomSheetStarRef = useRef<BottomSheetModal>(null);
+  const bottomSheetAddr = useRef<BottomSheetModal>(null);
 
   // variables
   const snapPoints = useMemo(() => [pick ? 300 : '80%'], [pick]);
   const snapPointsStar = useMemo(() => ['82%'], []);
+  const snapPointAddr = useMemo(() => [200], []);
 
   // callbacks
   const handleSheetChanges = useCallback((index: number) => {
@@ -157,13 +159,14 @@ const AroundMain = () => {
   useEffect(() => {
     if (initRef.current > 1) _init();
   }, [covering]);
-
+  console.log('aroundKeyDataaroundKeyData', aroundKeyData);
   useEffect(() => {
     // console.log(33);
     if (aroundKeyData?.location) {
+      bottomSheetAddr.current?.present();
       setClickedMarker({
-        latitude: aroundKeyData.location?.lat,
-        longitude: aroundKeyData.location?.lon,
+        latitude: Number(aroundKeyData.location?.lon),
+        longitude: Number(aroundKeyData.location?.lat),
         zoom: 16,
       });
     } else if (currentUserLocation?.latitude) {
@@ -180,6 +183,12 @@ const AroundMain = () => {
       dispatch(setAroundKeyData(undefined));
     };
   }, []);
+  const isFocused = useIsFocused();
+  useEffect(() => {
+    if (!isFocused) {
+      bottomSheetAddr.current?.dismiss();
+    }
+  }, [isFocused]);
 
   useEffect(() => {
     dispatch(setBottomIdx(1));
@@ -189,6 +198,9 @@ const AroundMain = () => {
   }, []);
 
   const _getMarkerImg = (item: any) => {
+    if (item === aroundKeyData) {
+      return require('@assets/Marker_add.png');
+    }
     let isAc = false;
     let isDc = false;
     let close = modules._isClosed(item);
@@ -354,7 +366,10 @@ const AroundMain = () => {
           initRef.current += 1;
           setReloadCover(e.coveringRegion);
         }}
-        onMapClick={e => bottomSheetRef.current?.close()}>
+        onMapClick={e => {
+          bottomSheetRef.current?.close();
+          bottomSheetAddr.current?.close();
+        }}>
         <Marker
           pinColor="blue"
           zIndex={100}
@@ -397,31 +412,31 @@ const AroundMain = () => {
 
         {aroundKeyData?.location?.lat && (
           <Marker
-            width={32}
-            height={65}
+            width={35}
+            height={47}
             onClick={() => {
               setPick([aroundKeyData]);
               setClickedMarker({
-                latitude: Number(aroundKeyData.location?.lat),
-                longitude: Number(aroundKeyData.location?.lon),
+                latitude: Number(aroundKeyData.location?.lon),
+                longitude: Number(aroundKeyData.location?.lat),
                 zoom: 16,
               });
-              bottomSheetRef.current?.present();
+              bottomSheetAddr.current?.present();
             }}
-            caption={{
-              text:
-                aroundKeyData.chargers.length > 9
-                  ? '9+'
-                  : String(aroundKeyData.chargers.length),
-              align: Align.Center,
-              haloColor: 'A6A6A6',
-              textSize: 15,
-              color: 'ffffff',
-            }}
+            // caption={{
+            //   text:
+            //     aroundKeyData.chargers.length > 9
+            //       ? '9+'
+            //       : String(aroundKeyData.chargers.length),
+            //   align: Align.Center,
+            //   haloColor: 'A6A6A6',
+            //   textSize: 15,
+            //   color: 'ffffff',
+            // }}
             image={_getMarkerImg(aroundKeyData)}
             coordinate={{
-              latitude: Number(aroundKeyData.location.lat),
-              longitude: Number(aroundKeyData.location.lon),
+              latitude: Number(aroundKeyData.location.lon),
+              longitude: Number(aroundKeyData.location.lat),
             }}
           />
         )}
@@ -542,6 +557,87 @@ const AroundMain = () => {
           )}
           renderItem={item => renderItemStar(item)}
         />
+      </BottomSheetModal>
+
+      {/* 일반 주소지 바텀 시트 */}
+      <BottomSheetModal
+        style={sheetStyle}
+        ref={bottomSheetAddr}
+        index={0}
+        snapPoints={snapPointAddr}
+        onChange={handleSheetChanges}>
+        <View style={{flex: 1}}>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              marginHorizontal: 16,
+              justifyContent: 'space-between',
+            }}>
+            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+              <Image
+                source={require('@assets/icon_addr.png')}
+                style={{width: 16, height: 16, marginRight: 5}}
+                resizeMode="contain"
+              />
+              <Text
+                style={{
+                  fontFamily: FontList.PretendardMedium,
+                  fontSize: 16,
+                  color: '#333333',
+                }}>
+                {aroundKeyData?.name}
+              </Text>
+            </View>
+            <Pressable
+              onPress={() => {
+                bottomSheetAddr.current?.close();
+              }}>
+              <Image
+                source={require('@assets/close_star.png')}
+                style={{width: 17, height: 17}}
+                resizeMode="contain"
+              />
+            </Pressable>
+          </View>
+          <View style={{marginHorizontal: 16, marginTop: 12}}>
+            <Text
+              style={{
+                fontFamily: FontList.PretendardRegular,
+                color: '#959595',
+              }}>
+              {aroundKeyData?.address}
+            </Text>
+          </View>
+          <View
+            style={{
+              marginHorizontal: 16,
+              height: 54,
+              marginTop: 'auto',
+              marginBottom: 22,
+            }}>
+            <Pressable
+              onPress={() => {
+                setVisible(true);
+              }}
+              style={{
+                flex: 1,
+                borderRadius: 8,
+                backgroundColor: '#00239C',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+              <Text
+                style={{
+                  fontFamily: FontList.PretendardBold,
+                  fontSize: 16,
+                  color: 'white',
+                }}>
+                길안내 받기
+              </Text>
+            </Pressable>
+          </View>
+        </View>
       </BottomSheetModal>
 
       {/* 우측 즐겨찾기, 내위치 버튼 */}
