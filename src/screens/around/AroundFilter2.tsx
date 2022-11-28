@@ -40,6 +40,13 @@ const AroundFilter = () => {
   const layout = useWindowDimensions();
   const WIDTH = (layout.width - 32 - 48) / 4;
 
+  // const [speed, setSpeed] = useState<string[]>([]);
+  // const [fee, setFee] = useState<string[]>([]);
+  // const [parking, setParking] = useState<string[]>([]);
+  // const [area, setArea] = useState<string[]>([]);
+  // const [road, setRoad] = useState<string[]>([]);
+  // const [chargerType, setChargerType] = useState<string[]>([]);
+
   const dumSpeed = ['완속', '급속', '초고속'];
   const dumFee = ['유료 충전소', '무료 충전소'];
   const dumPark = ['무료주차', '입주민 전용'];
@@ -97,9 +104,31 @@ const AroundFilter = () => {
     }
   };
 
+  // const _setOption = (state: any, data: string, setState: any) => {
+  //   console.log(state, data);
+  //   let temp = [...state];
+  //   const res = temp.filter((item, index) => item === data);
+  //   if (res.length > 0) {
+  //     const res = temp.filter((item, index) => item !== data);
+  //     setState(res);
+  //   } else {
+  //     let temp2: string[] = [...state];
+  //     temp2.push(data);
+  //     setState(temp2);
+  //   }
+  // };
+  // 주자창 유 무료
+
   useEffect(() => {
     console.log('filter', filter);
   }, [filter]);
+
+  const _getColor = (state: string[], data: any) => {
+    const temp = state.filter((item, index) => item === data);
+    if (temp.length > 0) {
+      return '#07B3FD';
+    } else return '#333333';
+  };
 
   const _getOpasity = (state: string[], data: any) => {
     const temp = state.filter((item, index) => item === data);
@@ -200,13 +229,58 @@ const AroundFilter = () => {
                   borderRadius: 24,
                   marginRight: 6,
                   marginBottom: 10,
-                  // borderColor: _getColor(speed, item),
+                  borderColor: _getColor(speed, item),
                 }}>
                 <Text
                   style={{
                     fontFamily: FontList.PretendardRegular,
-                    // color: _getColor(speed, item),
+                    color: _getColor(speed, item),
                     fontSize: 16,
+                  }}>
+                  {item}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
+        {/* 충전소 유무료 */}
+        <View
+          style={{
+            justifyContent: 'center',
+            marginTop: 23,
+          }}>
+          <View style={{marginBottom: 14.5}}>
+            <Text
+              style={{
+                fontFamily: FontList.PretendardRegular,
+                fontSize: 16,
+                color: '#333333',
+              }}>
+              충전소 유무료
+            </Text>
+          </View>
+          <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
+            {dumFee.map((item, index) => (
+              <Pressable
+                onPress={() => {
+                  // _setOption(fee, item, setFee);
+                }}
+                style={{
+                  alignSelf: 'flex-start',
+                  paddingHorizontal: 13,
+                  paddingVertical: 6.5,
+                  borderWidth: 1,
+                  borderRadius: 24,
+                  marginRight: 6,
+                  marginBottom: 10,
+                  borderColor: _getColor(fee, item),
+                }}>
+                <Text
+                  style={{
+                    fontFamily: FontList.PretendardRegular,
+                    fontSize: 16,
+                    color: _getColor(fee, item),
                   }}>
                   {item}
                 </Text>
@@ -232,60 +306,275 @@ const AroundFilter = () => {
             </Text>
           </View>
           <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
-            <Pressable
-              onPress={() => {
-                // _setOption(parking, item, setParking);
-              }}
-              style={{
-                alignSelf: 'flex-start',
-                paddingHorizontal: 13,
-                paddingVertical: 6.5,
-                borderWidth: 1,
-                borderRadius: 24,
-                marginRight: 6,
-                marginBottom: 10,
-                // borderColor: _getColor(filter.freePark, item),
-              }}>
-              <Text
+            {dumPark.map((item, index) => (
+              <Pressable
+                onPress={() => {
+                  // _setOption(parking, item, setParking);
+                }}
                 style={{
-                  fontFamily: FontList.PretendardRegular,
-                  fontSize: 16,
-                  // color: _getColor(parking, item),
+                  alignSelf: 'flex-start',
+                  paddingHorizontal: 13,
+                  paddingVertical: 6.5,
+                  borderWidth: 1,
+                  borderRadius: 24,
+                  marginRight: 6,
+                  marginBottom: 10,
+                  borderColor: _getColor(parking, item),
                 }}>
-                무료주차
-              </Text>
-            </Pressable>
-            <Pressable
-              onPress={() => {
-                // _setOption(parking, item, setParking);
-              }}
-              style={{
-                alignSelf: 'flex-start',
-                paddingHorizontal: 13,
-                paddingVertical: 6.5,
-                borderWidth: 1,
-                borderRadius: 24,
-                marginRight: 6,
-                marginBottom: 10,
-                // borderColor: _getColor(filter.freePark, item),
-              }}>
-              <Text
-                style={{
-                  fontFamily: FontList.PretendardRegular,
-                  fontSize: 16,
-                  // color: _getColor(parking, item),
-                }}>
-                입주민 전용
-              </Text>
-            </Pressable>
+                <Text
+                  style={{
+                    fontFamily: FontList.PretendardRegular,
+                    fontSize: 16,
+                    color: _getColor(parking, item),
+                  }}>
+                  {item}
+                </Text>
+              </Pressable>
+            ))}
           </View>
         </View>
 
         {/* 충전기 설치장소 */}
+        <View
+          style={{
+            justifyContent: 'center',
+            marginTop: 23,
+          }}>
+          <View style={{marginBottom: 14.5}}>
+            <Text
+              style={{
+                fontFamily: FontList.PretendardRegular,
+                fontSize: 16,
+                color: '#333333',
+              }}>
+              충전기 설치장소
+            </Text>
+          </View>
+          <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
+            {dumArea.map((item, index) => (
+              <Pressable
+                onPress={() => {
+                  // _setOption(area, item, setArea);
+                }}
+                style={{
+                  alignSelf: 'flex-start',
+                  paddingHorizontal: 13,
+                  paddingVertical: 6.5,
+                  borderWidth: 1,
+                  borderRadius: 24,
+                  marginRight: 6,
+                  marginBottom: 10,
+                  borderColor: _getColor(area, item),
+                }}>
+                <Text
+                  style={{
+                    fontFamily: FontList.PretendardRegular,
+                    fontSize: 16,
+                    color: _getColor(area, item),
+                  }}>
+                  {item}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
 
         {/* 도로 */}
+        <View
+          style={{
+            justifyContent: 'center',
+            marginTop: 23,
+          }}>
+          <View style={{marginBottom: 14.5}}>
+            <Text
+              style={{
+                fontFamily: FontList.PretendardRegular,
+                fontSize: 16,
+                color: '#333333',
+              }}>
+              도로
+            </Text>
+          </View>
+          <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
+            {dumRoad.map((item, index) => (
+              <Pressable
+                onPress={() => {
+                  // _setOption(road, item, setRoad);
+                }}
+                style={{
+                  alignSelf: 'flex-start',
+                  paddingHorizontal: 13,
+                  paddingVertical: 6.5,
+                  borderWidth: 1,
+                  borderRadius: 24,
+                  marginRight: 6,
+                  marginBottom: 10,
+                  borderColor: _getColor(road, item),
+                }}>
+                <Text
+                  style={{
+                    fontFamily: FontList.PretendardRegular,
+                    fontSize: 16,
+                    color: _getColor(road, item),
+                  }}>
+                  {item}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
 
         {/* 충전기 타입 */}
+        <View
+          style={{
+            justifyContent: 'center',
+            marginTop: 23,
+          }}>
+          <View style={{marginBottom: 14.5}}>
+            <Text
+              style={{
+                fontFamily: FontList.PretendardRegular,
+                fontSize: 16,
+                color: '#333333',
+              }}>
+              충전기 타입
+            </Text>
+          </View>
+          <View
+            style={{
+              marginTop: 2,
+              alignItems: 'center',
+              flexDirection: 'row',
+              flexWrap: 'wrap',
+            }}>
+            <View style={{flex: 1}}>
+              <View
+                style={{
+                  height: WIDTH,
+                  ...styles.warpper,
+                }}>
+                {ChargerType.chargerLogo.map(
+                  (item, index) =>
+                    index < 4 && (
+                      <Pressable
+                        onPress={() => {
+                          // _setOption(
+                          //   chargerType,
+                          //   ChargerType.chargerType[index],
+                          //   setChargerType,
+                          // );
+                        }}
+                        style={{
+                          ...styles.innerView,
+                          borderWidth: 1,
+                          opacity: _getOpasity(
+                            chargerType,
+                            ChargerType.chargerType[index],
+                          ),
+                          borderColor: _getColor(
+                            chargerType,
+                            ChargerType.chargerType[index],
+                          ),
+                          borderRadius: 4,
+                          marginRight: index < 3 ? 16 : 0,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}>
+                        <Image
+                          source={item}
+                          resizeMode={'contain'}
+                          style={{width: '80%', height: '80%'}}
+                        />
+                      </Pressable>
+                    ),
+                )}
+              </View>
+
+              <View
+                style={{
+                  ...styles.warpper,
+                }}>
+                {ChargerType.chargerType.map(
+                  (item, index) =>
+                    index < 4 && (
+                      <View
+                        style={{
+                          ...styles.innerView,
+                          marginRight: index < 3 ? 16 : 0,
+                        }}>
+                        <Text
+                          style={{
+                            fontFamily: FontList.PretendardRegular,
+                            fontSize: 12,
+                            color: '#333333',
+                          }}>
+                          {item}
+                        </Text>
+                      </View>
+                    ),
+                )}
+              </View>
+              {/* 두 번째 라인 */}
+              <View
+                style={{
+                  height: WIDTH,
+                  ...styles.warpper,
+                  marginTop: 15,
+                }}>
+                {ChargerType.chargerLogo.map(
+                  (item, index) =>
+                    index > 3 && (
+                      <Pressable
+                        onPress={() => {
+                          // _setOption(chargerType, item, setChargerType);
+                        }}
+                        style={{
+                          ...styles.innerView,
+                          borderWidth: 1,
+                          opacity: _getOpasity(chargerType, item),
+                          borderColor: _getColor(chargerType, item),
+                          borderRadius: 4,
+                          marginRight: index > 3 ? (index > 4 ? 32 : 16) : 0,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}>
+                        <Image
+                          source={item}
+                          resizeMode={'contain'}
+                          style={{width: '80%', height: '80%'}}
+                        />
+                      </Pressable>
+                    ),
+                )}
+              </View>
+
+              <View
+                style={{
+                  ...styles.warpper,
+                }}>
+                {ChargerType.chargerType.map(
+                  (item, index) =>
+                    index > 3 && (
+                      <View
+                        style={{
+                          ...styles.innerView,
+                          marginRight: index > 3 ? (index > 4 ? 32 : 16) : 0,
+                        }}>
+                        <Text
+                          style={{
+                            fontFamily: FontList.PretendardRegular,
+                            fontSize: 12,
+                            color: '#333333',
+                          }}>
+                          {item}
+                        </Text>
+                      </View>
+                    ),
+                )}
+              </View>
+            </View>
+          </View>
+        </View>
 
         {/* <View key={idx}>
                 <View

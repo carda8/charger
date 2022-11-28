@@ -15,6 +15,8 @@ import FontList from 'constants/FontList';
 import {_getHeight} from 'constants/utils';
 import {API} from 'api/API';
 import ChargerType from 'constants/ChargerType';
+import {useDispatch} from 'react-redux';
+import {setFilter} from 'redux/reducers/aroundReducer';
 
 interface busiType {
   key: string;
@@ -27,6 +29,7 @@ interface optionView {
 }
 
 const AroundFilter = () => {
+  const dispatch = useDispatch();
   const [showAvailable, setShowAvailable] = useState(false);
   const [pickAll, setPickAll] = useState(false);
   const [pickedBusi, setPickedBusi] = useState<string[]>([]);
@@ -106,6 +109,8 @@ const AroundFilter = () => {
     const res = temp.filter((item, index) => item === data);
     if (res.length > 0) {
       const res = temp.filter((item, index) => item !== data);
+      if (state === parking) {
+      }
       setState(res);
     } else {
       let temp2: string[] = [...state];
