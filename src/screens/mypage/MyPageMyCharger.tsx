@@ -33,22 +33,32 @@ interface props {
 
 const MyPageMyCharger = () => {
   const {userInfo} = useSelector((state: RootState) => state.authReducer);
+
   const _convert = (userInfoCar: string) => {
+    console.log('Convert user car info', userInfoCar);
     switch (userInfoCar) {
       case '현대자동차':
+      case '현재':
         return '현대';
       case '기아자동차':
+      case '기아':
         return '기아';
       case 'BENZ':
+      case '벤츠':
         return '벤츠';
       case 'AUDI':
+      case '아우디':
         return '아우디';
       case 'Genesis':
+      case '제네시스':
         return '제네시스';
       case 'TESLA':
+      case '테슬라':
         return '테슬라';
       case 'GM':
+      case '쉐보레':
         return '쉐보레';
+      case 'BMW':
       case 'BMW':
         return 'BMW';
       default:

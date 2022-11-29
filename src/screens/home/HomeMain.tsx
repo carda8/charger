@@ -65,6 +65,7 @@ const HomeMain = () => {
         title="마이홈 충전소"
         leftBack
         rightBack
+        isMyHome={true}
         backTitle="닫기"
         backTitleStyle={{fontSize: 16, fontFamily: FontList.PretendardRegular}}
       />

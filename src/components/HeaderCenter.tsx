@@ -12,6 +12,7 @@ interface props {
   // navi?: commonTypes.navi;
   leftBack?: boolean;
   rightBack?: boolean;
+  isMyHome?: boolean;
 }
 
 const HeaderCenter = ({
@@ -20,6 +21,7 @@ const HeaderCenter = ({
   backTitleStyle,
   leftBack,
   rightBack,
+  isMyHome,
 }: props) => {
   const navi = useNavigation<commonTypes.navi>();
   return (
@@ -34,7 +36,15 @@ const HeaderCenter = ({
         {/* Main Title */}
         <View style={{flex: 1}}>
           {leftBack && (
-            <Pressable onPress={() => navi?.goBack()} hitSlop={10}>
+            <Pressable
+              onPress={() => {
+                if (isMyHome) {
+                  navi.navigate('HomeMain');
+                } else {
+                  navi?.goBack();
+                }
+              }}
+              hitSlop={10}>
               <Image
                 source={require('@assets/button_back.png')}
                 style={{width: _getWidth(6), height: _getHeight(13)}}
@@ -57,7 +67,11 @@ const HeaderCenter = ({
         {/* Sub Title */}
         <Pressable
           disabled={!rightBack}
-          onPress={() => navi?.goBack()}
+          onPress={() => {
+            if (isMyHome) {
+              navi.navigate('Home');
+            } else navi?.goBack();
+          }}
           hitSlop={10}
           style={{
             flex: 1,
