@@ -12,7 +12,6 @@ const pathSlice = createSlice({
     isSwitch: false,
     recomendStationData: '',
     recoIndex: '',
-    isHome: false,
   },
   reducers: {
     setKeywordList: (state, actions) => {
@@ -48,9 +47,6 @@ const pathSlice = createSlice({
     setRecoIndex: (state, action) => {
       state.recoIndex = action.payload;
     },
-    setIsHoem: (state, action) => {
-      state.isHome = action.payload;
-    },
     resetPath: (state, action) => {
       state.goalData = '';
       state.startData = '';
@@ -74,7 +70,6 @@ export const {
   setStartData,
   switchPosition,
   setRecomendStationData,
-  setIsHoem,
   resetPath,
   setRecoIndex,
 } = actions;

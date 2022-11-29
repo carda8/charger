@@ -168,7 +168,9 @@ const AccountCarInfo = () => {
       _postUserDB();
     }
   };
-
+  useEffect(() => {
+    console.log('USERINFOOFOO', userInfo);
+  }, [userInfo]);
   const _postUserDB = () => {
     const res = etcOrigin?.find(item => item.car_model === selectedModel);
 
@@ -180,17 +182,19 @@ const AccountCarInfo = () => {
       user_id: userInfo?.id,
     };
     console.log('data', data);
+    // return;
     if (data.user_id) {
       commonAPI
         ._postSaveUserInfo(data)
         .then(res => {
           console.log('_postSaveUserInfo :: res', res);
-          modules
-            ._updateUserInfo(dispatch, userInfo)
-            .then(() => {
-              nav.navigate('AccountCarInfoFinish');
-            })
-            .catch(err => console.log('carinfo err', err));
+          nav.navigate('AccountCarInfoFinish');
+          // modules
+          //   ._updateUserInfo(dispatch, userInfo)
+          //   .then(() => {
+          //     nav.navigate('AccountCarInfoFinish');
+          //   })
+          //   .catch(err => console.log('carinfo err', err));
         })
         .catch(err => console.log('err', err));
     } else {

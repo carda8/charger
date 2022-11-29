@@ -49,6 +49,7 @@ const AroundMain = () => {
     (state: RootState) => state.locationReducer,
   );
   const {userInfo} = useSelector((state: RootState) => state.authReducer);
+  const {filter} = useSelector((state: RootState) => state.aroundReducer);
   const AroudRouteProps =
     useRoute<RouteProp<commonTypes.RootStackParamList, 'AroundMain'>>().params;
 
@@ -59,6 +60,7 @@ const AroundMain = () => {
   const [reloadCover, setReloadCover] = useState<any>();
 
   const [repair, setRepair] = useState(false);
+  const [filterBtn, setFilterBtn] = useState('');
   const [needLogin, setNeedLogin] = useState(false);
 
   const [stationList, setStationList] = useState([]);
@@ -95,12 +97,15 @@ const AroundMain = () => {
     [],
   );
 
+  const [starFilter, setStarFilter] = useState('1');
+  const [showStarFilter, setShowStarFilter] = useState(false);
   const _getUserStar = async () => {
     if (userInfo?.id) {
       const data = {
         user_id: userInfo.id,
         currentXY: `${currentUserLocation.latitude},${currentUserLocation.longitude}`,
-        order_by: '',
+        order_by:
+          starFilter === '1' ? '' : starFilter === '2' ? 'distance' : 'name',
       };
       console.log('userId', data);
 
@@ -116,9 +121,36 @@ const AroundMain = () => {
 
   useEffect(() => {
     _getUserStar();
-  }, [userInfo]);
+  }, [userInfo, starFilter]);
+
+  const _convert = () => {
+    // "key": "AC완속",
+    // "key": "DC차데모+AC3상+DC콤보",
+    // "key": "DC콤보",
+    // "key": "DC차데모+DC콤보",
+    // "key": "DC차데모+AC3상",
+    // "key": "AC3상",
+    // "key": "DC차데모",
+    //['DC콤보', 'DC차데모', 'AC3상', 'AC완속', '데스티네이션', '수퍼차저']
+    if (filter.chgerType) {
+      const res = filter.chgerType.filter(
+        item => item !== '수퍼차저' && item !== '데스티네이션',
+      );
+      console.log('res chgerTypechgerTypechgerType', res);
+      if (filter.speed?.includes('완속')) {
+        if (!res.includes('AC완손')) res.push('AC완속');
+      }
+      if (filter.speed?.includes('급속') || filter.speed?.includes('초고속')) {
+        if (!res.includes('DC콤보')) res.push('DC콤보');
+        if (!res.includes('DC차데모')) res.push('DC차데모');
+        if (!res.includes('AC3상')) res.push('AC3상');
+      }
+      return res;
+    }
+  };
 
   const _getAroundStation = async () => {
+    const parkingFilter = filter?.freePark;
     setLoading(true);
     const data = {
       minx: covering[0].latitude,
@@ -127,13 +159,21 @@ const AroundMain = () => {
       maxy: covering[2].longitude,
       currentXY: [currentUserLocation.latitude, currentUserLocation.longitude],
       // zcode: ['11', '50'],
-      // parkingFree: 'Y',
+      parkingFree:
+        parkingFilter?.length === 0 || parkingFilter?.length === 2
+          ? ''
+          : parkingFilter[0] === '무료주차'
+          ? 'Y'
+          : 'N',
+      statInfo: filter.canUse ? ['충전대기'] : [],
       // busiId: ['ME'],
-      // chgerTypeInfo: ['AC완속'],
+      chgerTypeInfo: filter.chgerType?.length === 0 ? [] : _convert(),
       offset: 0,
       limit: 100,
     };
     console.log('#### current xy', data);
+
+    // return;
     await commonAPI
       ._postSearchStationCoor(data)
       .then(res => {
@@ -159,7 +199,7 @@ const AroundMain = () => {
   useEffect(() => {
     if (initRef.current > 1) _init();
   }, [covering]);
-  console.log('aroundKeyDataaroundKeyData', aroundKeyData);
+  // console.log('aroundKeyDataaroundKeyData', aroundKeyData);
   useEffect(() => {
     // console.log(33);
     if (aroundKeyData?.location) {
@@ -176,7 +216,7 @@ const AroundMain = () => {
         zoom: 16,
       });
     }
-  }, [aroundKeyData]);
+  }, [aroundKeyData, filter]);
 
   useEffect(() => {
     return () => {
@@ -274,6 +314,10 @@ const AroundMain = () => {
     }
   }, [starMarker]);
 
+  useEffect(() => {
+    setReload(true);
+  }, [filter]);
+
   return (
     <SafeAreaView style={{...GlobalStyles.safeAreaStyle}}>
       <View
@@ -319,6 +363,8 @@ const AroundMain = () => {
                   }}>
                   <Pressable
                     onPress={() => {
+                      // setFilterBtn(item);
+                      // console.log('item', item);
                       setRepair(!repair);
                     }}
                     key={idx}
@@ -334,6 +380,16 @@ const AroundMain = () => {
                   </Pressable>
                 </Shadow>
               ))}
+              {/* <View
+                style={{
+                  position: 'absolute',
+                  width: 100,
+                  height: 100,
+                  backgroundColor: 'teal',
+                  zIndex: 100,
+                }}>
+                <Text>123</Text>
+              </View> */}
             </View>
           </ScrollView>
         </View>
@@ -500,9 +556,9 @@ const AroundMain = () => {
 
       {/* 즐겨찾기 바텀 시트 */}
       <BottomSheetModal
+        index={0}
         style={sheetStyle}
         ref={bottomSheetStarRef}
-        index={0}
         snapPoints={snapPointsStar}
         onChange={handleSheetChanges}>
         <BottomSheetFlatList
@@ -529,32 +585,128 @@ const AroundMain = () => {
             marginHorizontal: 6,
             marginBottom: 12,
           }}
+          ListHeaderComponentStyle={{zIndex: 200}}
           ListHeaderComponent={() => (
             <>
-              {userStar.length > 0 && (
-                <Pressable
-                  style={{
-                    alignSelf: 'flex-end',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    marginBottom: 12,
-                  }}>
-                  <Text
+              {userStar?.length > 0 && (
+                <>
+                  <Pressable
+                    onPress={() => {
+                      setShowStarFilter(!showStarFilter);
+                    }}
                     style={{
-                      fontFamily: FontList.PretendardRegular,
-                      color: 'black',
+                      alignSelf: 'flex-end',
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      marginBottom: 12,
                     }}>
-                    즐겨찾기 한 순
-                  </Text>
-                  <Image
-                    source={require('@assets/arrow_bottom.png')}
-                    style={{width: 9, height: 5, marginRight: 8, marginLeft: 6}}
-                    resizeMode="contain"
-                  />
-                </Pressable>
+                    <Text
+                      style={{
+                        fontFamily: FontList.PretendardRegular,
+                        color: 'black',
+                      }}>
+                      {starFilter === '1'
+                        ? '즐겨찾기 한 순'
+                        : starFilter === '2'
+                        ? '거리순'
+                        : '이름순'}
+                    </Text>
+                    <Image
+                      source={require('@assets/arrow_bottom.png')}
+                      style={{
+                        width: 9,
+                        height: 5,
+                        marginRight: 9,
+                        marginLeft: 6,
+                      }}
+                      resizeMode="contain"
+                    />
+                  </Pressable>
+                  {showStarFilter && (
+                    <View
+                      style={{
+                        position: 'absolute',
+                        backgroundColor: 'white',
+                        right: 8,
+                        width: 110,
+                        borderWidth: 1,
+                        borderRadius: 8,
+                        borderColor: '#E6E6E6',
+                      }}>
+                      <Pressable
+                        onPress={() => {
+                          setStarFilter('1');
+                          setShowStarFilter(false);
+                        }}
+                        style={{
+                          backgroundColor:
+                            starFilter === '1' ? '#F6F6F6' : 'white',
+                          height: 40,
+                          justifyContent: 'center',
+                          paddingLeft: 3,
+                        }}>
+                        <Text>즐겨찾기 한 순</Text>
+                      </Pressable>
+                      <Pressable
+                        onPress={() => {
+                          setStarFilter('2');
+                          setShowStarFilter(false);
+                        }}
+                        style={{
+                          justifyContent: 'center',
+                          paddingLeft: 3,
+                          backgroundColor:
+                            starFilter === '2' ? '#F6F6F6' : 'white',
+                          height: 40,
+                        }}>
+                        <Text>거리순</Text>
+                      </Pressable>
+                      <Pressable
+                        onPress={() => {
+                          setStarFilter('3');
+                          setShowStarFilter(false);
+                        }}
+                        style={{
+                          justifyContent: 'center',
+                          paddingLeft: 3,
+                          backgroundColor:
+                            starFilter === '3' ? '#F6F6F6' : 'white',
+                          height: 40,
+                        }}>
+                        <Text>이름순</Text>
+                      </Pressable>
+                    </View>
+                  )}
+                </>
               )}
             </>
           )}
+          // ListHeaderComponent={() => (
+          //   <>
+          //     {userStar.length > 0 && (
+          //       <Pressable
+          //         style={{
+          //           alignSelf: 'flex-end',
+          //           flexDirection: 'row',
+          //           alignItems: 'center',
+          //           marginBottom: 12,
+          //         }}>
+          //         <Text
+          //           style={{
+          //             fontFamily: FontList.PretendardRegular,
+          //             color: 'black',
+          //           }}>
+          //           즐겨찾기 한 순
+          //         </Text>
+          //         <Image
+          //           source={require('@assets/arrow_bottom.png')}
+          //           style={{width: 9, height: 5, marginRight: 8, marginLeft: 6}}
+          //           resizeMode="contain"
+          //         />
+          //       </Pressable>
+          //     )}
+          //   </>
+          // )}
           renderItem={item => renderItemStar(item)}
         />
       </BottomSheetModal>
@@ -781,7 +933,7 @@ const AroundMain = () => {
         visible={visible}
         setVisible={setVisible}
         title="길안내 연결"
-        coor={clickedMarker}
+        goalCoor={clickedMarker}
       />
 
       {/* 빠른 필터 모달 */}

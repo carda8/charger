@@ -30,6 +30,52 @@ const PathBottomSheetItem = ({style, bottomSheetRef, item}: props) => {
   const nav = useNavigation<commonTypes.navi>();
   const {userInfo} = useSelector((state: RootState) => state.authReducer);
   const pathState = useSelector((state: RootState) => state.pathReducer);
+
+  //   addr: "제주특별자치도 제주시 구좌읍 동김길 81"
+
+  // bnm: "파킹클라우드"
+
+  // busiCall: "1533-5783"
+
+  // busiId: "PC"
+
+  // busiNm: "파킹클라우드"
+
+  // chargers: [Object, Object] (2)
+
+  // delDetail: null
+
+  // delYn: "N"
+
+  // detailLocation: "야외주차장"
+
+  // kind: "G0"
+
+  // kindDetail: "G004"
+
+  // limitDetail: "시설 상황에 따라 이용이 제한될 수 있음"
+
+  // limitYn: "Y"
+
+  // location: {lat: 33.5493999, lon: 126.7256273}
+
+  // method: "단독"
+
+  // note: null
+
+  // output: "7"
+
+  // parkingFree: "Y"
+
+  // statId: "PC000035"
+
+  // statNm: "제주 오렌지"
+
+  // useTime: "09:00~18:00"
+
+  // zcode: "50"
+
+  // zscode: "50110"
   console.log('itemitem', item);
 
   const _sortChgerBySpeed = (item: any) => {

@@ -41,7 +41,7 @@ const StationReportPage = () => {
               marginTop: 15.4,
             }}>
             <Image
-              source={require('@assets/main_bt_union2.png')}
+              source={require('@assets/icon_addr.png')}
               style={{width: 20, height: 20}}
               resizeMode="contain"
             />

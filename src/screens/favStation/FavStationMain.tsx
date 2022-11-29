@@ -172,7 +172,7 @@ const FavStationMain = () => {
           }}
         />
 
-        {userStar.length > 0 &&
+        {userStar?.length > 0 &&
           userStar?.map((item, index) => (
             <Marker
               key={index}

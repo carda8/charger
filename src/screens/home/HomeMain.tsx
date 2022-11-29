@@ -159,7 +159,7 @@ const HomeMain = () => {
         visible={visible}
         setVisible={setVisible}
         title="길안내 연결"
-        coor={coor}
+        goalCoor={coor}
         startCoor={{
           latitude: userInfo?.addressInfo?.location.lat,
           longitude: userInfo?.addressInfo?.location.lon,

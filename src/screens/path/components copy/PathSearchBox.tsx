@@ -18,7 +18,6 @@ import {
   resetPath,
   setGoalData,
   setIsGoalFinish,
-  setIsHoem,
   setKeywordList,
   setLastRef,
   setStartData,
@@ -32,8 +31,6 @@ interface props {
   sheetRef?: React.RefObject<BottomSheetModalMethods>;
   setRec?: Dispatch<SetStateAction<boolean>>;
   setRecomandList?: Dispatch<SetStateAction<any>>;
-  sheetStarRef?: React.RefObject<BottomSheetModalMethods>;
-  setModalLogin?: Dispatch<SetStateAction<boolean>>;
 }
 
 const PathSearchBox = ({
@@ -43,8 +40,6 @@ const PathSearchBox = ({
   sheetRef,
   setRec,
   setRecomandList,
-  setModalLogin,
-  sheetStarRef,
 }: props) => {
   const nav = useNavigation<commonTypes.navi>();
   const dispatch = useDispatch();
@@ -53,7 +48,6 @@ const PathSearchBox = ({
   );
   const [home, setHome] = useState(false);
   const [inputStart, setInputStart] = useState('');
-  const {userInfo} = useSelector((state: RootState) => state.authReducer);
   const [inputGoal, setInputGoal] = useState('');
   const {currentUserLocation} = useSelector(
     (state: RootState) => state.locationReducer,
@@ -63,22 +57,9 @@ const PathSearchBox = ({
   const goalRef = useRef<TextInput>(null);
 
   const _putHome = () => {
-    console.log('## HOME ##', userInfo);
     if (!home) {
-      if (userInfo?.addressInfo?.address) {
-        // let temp = JSON.parse(JSON.stringify(userInfo.addressInfo));
-        // console.log('## temp', temp);
-        dispatch(setGoalData(userInfo.addressInfo));
-        dispatch(setIsGoalFinish(true));
-        dispatch(setIsHoem(true));
-        nav.navigate('PathMain');
-        lastFocus.current = 'goal';
-        setHome(true);
-      }
+      setHome(true);
     } else {
-      sheetRef?.current?.close();
-      dispatch(setIsHoem(false));
-      lastFocus.current = '';
       setHome(false);
     }
   };
@@ -113,6 +94,7 @@ const PathSearchBox = ({
         if (res.data.data) dispatch(setKeywordList(temp));
       })
       .catch(err => console.log('err', err));
+
     // await commonAPI
     //   ._getSearchAddr(data)
     //   .then(res => {
@@ -170,12 +152,11 @@ const PathSearchBox = ({
 
   // 현위치
   useEffect(() => {
-    setInputStart(startData?.address ? startData?.address : startData?.name);
-    // setInputStart(startData?.name);
+    setInputStart(startData?.name);
   }, [startData]);
   //도착지
   useEffect(() => {
-    setInputGoal(goalData?.address ? goalData?.address : goalData?.name);
+    setInputGoal(goalData?.name);
   }, [goalData]);
 
   return (
@@ -295,13 +276,8 @@ const PathSearchBox = ({
           marginHorizontal: 36,
         }}>
         <Pressable
-          hitSlop={7}
           onPress={() => {
-            if (!userInfo?.id) {
-              if (setModalLogin) setModalLogin(true);
-            } else {
-              _putHome();
-            }
+            _putHome();
           }}
           style={{
             marginRight: 12,
@@ -340,11 +316,9 @@ const PathSearchBox = ({
           </Text>
         </Pressable>
 
-        <Pressable
+        {/* <Pressable
           onPress={() => {
-            console.log('userinfo', userInfo);
-            nav.navigate('PathMain');
-            sheetStarRef?.current?.present();
+            nav.navigate('FavStationMain');
           }}
           style={{
             flexDirection: 'row',
@@ -376,7 +350,7 @@ const PathSearchBox = ({
             }}>
             즐겨찾기
           </Text>
-        </Pressable>
+        </Pressable> */}
       </View>
     </View>
   );

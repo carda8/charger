@@ -22,10 +22,9 @@ interface coor {
 interface props {
   recomandList: any;
   setCenter?: Dispatch<SetStateAction<coor | undefined>>;
-  setModalNav: Dispatch<SetStateAction<any>>;
 }
 
-const PathRecommendList = ({recomandList, setCenter, setModalNav}: props) => {
+const PathRecommendList = ({recomandList, setCenter}: props) => {
   const {keywordList, recoIndex, goalData} = useSelector(
     (state: RootState) => state.pathReducer,
   );
@@ -186,35 +185,10 @@ const PathRecommendList = ({recomandList, setCenter, setModalNav}: props) => {
           style={{
             backgroundColor: 'white',
           }}>
-          <Pressable
-            onPress={() => {
-              setModalNav(true);
-            }}
-            style={[
-              {
-                height: 54,
-                backgroundColor: '#00239C',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: 8,
-                marginTop: 8,
-                marginBottom: 22,
-                marginHorizontal: 16,
-              },
-            ]}>
-            <Text
-              style={{
-                fontFamily: FontList.PretendardBold,
-                fontSize: 16,
-                color: 'white',
-              }}>
-              길안내 받기
-            </Text>
-          </Pressable>
-          {/* <BottomButton
+          <BottomButton
             text="길안내 받기"
             style={{marginHorizontal: 16, marginTop: 8}}
-          /> */}
+          />
         </View>
       </View>
     </View>

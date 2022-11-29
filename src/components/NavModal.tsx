@@ -16,7 +16,7 @@ interface props {
   visible: boolean;
   text?: string;
   title: string;
-  coor?: any;
+  goalCoor?: any;
   item?: any;
   isPath?: any;
   //버튼이 하나인 경우 positive 사용
@@ -30,7 +30,7 @@ const NavModal = ({
   text,
   title,
   setVisible,
-  coor,
+  goalCoor,
   item,
   isPath,
   startCoor,
@@ -55,17 +55,17 @@ const NavModal = ({
     : 126.8881368;
 
   const _getCoor = (target: any) => {
-    console.log('coooooooooooooooor', coor);
+    console.log('coooooooooooooooor', goalCoor);
     let res;
     if (target === 'kakao') {
-      res = coor?.latitude
-        ? `kakaomap://route?sp=${USER_Lat},${USER_Lon}&ep=${coor.latitude},${coor.longitude}&by=CAR`
+      res = goalCoor?.latitude
+        ? `kakaomap://route?sp=${USER_Lat},${USER_Lon}&ep=${goalCoor.latitude},${goalCoor.longitude}&by=CAR`
         : 'kakaomap://route?sp=37.537229,127.005515&ep=37.4979502,127.0276368&by=CAR';
       return res;
     }
     if (target === 'tmap') {
-      res = coor?.latitude
-        ? `tmap://route?startx=${USER_Lon}&starty=${USER_Lat}&goalx=${coor.longitude}&goaly=${coor.latitude}`
+      res = goalCoor?.latitude
+        ? `tmap://route?startx=${USER_Lon}&starty=${USER_Lat}&goalx=${goalCoor.longitude}&goaly=${goalCoor.latitude}`
         : 'tmap://route?startx=129.0756416&starty=35.1795543&goalx=127.005515&goaly=37.537229';
       return res;
     }

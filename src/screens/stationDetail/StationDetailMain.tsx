@@ -278,7 +278,7 @@ const StationDetailMain = () => {
             marginRight: 4,
           }}></View> */}
         <Image
-          source={require('@assets/main_bt_union2.png')}
+          source={require('@assets/icon_addr.png')}
           style={{width: 20, height: 20}}
           resizeMode="contain"
         />
@@ -477,7 +477,7 @@ const StationDetailMain = () => {
             title="길안내 연결"
             visible={modal}
             setVisible={setModal}
-            coor={coor}
+            goalCoor={coor}
           />
         </SafeAreaView>
       </BottomSheetModalProvider>

@@ -146,7 +146,7 @@ const HomeSearchItem = ({
             {renderData?.statNm}
           </Text>
         </View>
-        <Text>1.5km</Text>
+        <Text>{''}</Text>
         <Pressable
           style={{
             marginLeft: 'auto',

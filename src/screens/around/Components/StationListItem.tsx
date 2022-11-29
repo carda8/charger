@@ -55,7 +55,7 @@ const StationListItem = ({
   const _sortChgerBySpeed = (item: any) => {
     let normal = 0;
     let fast = 0;
-    console.log('sort', item);
+    // console.log('sort', item);
     if (item) {
       item?.chargers.map((item, index) => {
         if (item.chgerTypeInfo === 'AC완속' || item.chgerTypeInfo === 'AC3상')
@@ -197,7 +197,7 @@ const StationListItem = ({
           alignItems: 'center',
         }}>
         <Image
-          source={require('@assets/main_bt_union2.png')}
+          source={require('@assets/icon_addr.png')}
           style={{width: 20, height: 20}}
           resizeMode="contain"
         />
@@ -223,7 +223,7 @@ const StationListItem = ({
                   fontSize: 14,
                   color: '#333333',
                 }}>
-                1.5km
+                {/* 1.5km */}
               </Text>
             </Text>
           </View>

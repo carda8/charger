@@ -165,7 +165,7 @@ const PathSearchMain = () => {
       <FlatList
         renderItem={item => renderItem(item)}
         style={{paddingBottom: 60, marginBottom: 60}}
-        onEndReached={() => {}}
+        // onEndReached={() => {}}
         ListEmptyComponent={
           <>
             <View style={{margin: 16}}>

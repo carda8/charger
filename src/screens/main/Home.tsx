@@ -101,7 +101,7 @@ const Home = () => {
         );
         console.log(position);
         setModal(false);
-        if (!userInfo?.car_brand) setModalCar(true);
+        if (!userInfo?.car_brand && userInfo?.id) setModalCar(true);
       },
       error => {
         setModal(false);

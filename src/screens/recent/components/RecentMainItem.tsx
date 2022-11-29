@@ -109,7 +109,7 @@ const RecentMainItem = ({
             {item?.statNm}
           </Text>
         </View>
-        <Text>1.5km</Text>
+        <Text>{/* 1.5km */}</Text>
         <View style={{marginLeft: 'auto', marginRight: 8}}>
           <Text
             style={{fontFamily: FontList.PretendardRegular, color: '#C6C6C6'}}>

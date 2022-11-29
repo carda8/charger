@@ -280,6 +280,7 @@ const AroundFilter = () => {
           <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
             {dumFee.map((item, index) => (
               <Pressable
+                key={index}
                 onPress={() => {
                   dispatch(setChgerFree(item));
                   // _setOption(fee, item, setFee);
@@ -404,6 +405,7 @@ const AroundFilter = () => {
           <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
             {dumArea.map((item, index) => (
               <Pressable
+                key={index}
                 onPress={() => {
                   dispatch(setArea(item));
                   // _setOption(area, item, setArea);
@@ -452,6 +454,7 @@ const AroundFilter = () => {
           <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
             {dumRoad.map((item, index) => (
               <Pressable
+                key={index}
                 onPress={() => {
                   dispatch(setRoad(item));
                   // _setOption(road, item, setRoad);
@@ -514,6 +517,7 @@ const AroundFilter = () => {
                   (item, index) =>
                     index < 4 && (
                       <Pressable
+                        key={index}
                         onPress={() => {
                           console.log('item,', ChargerType.chargerType[index]);
                           dispatch(
@@ -558,6 +562,7 @@ const AroundFilter = () => {
                   (item, index) =>
                     index < 4 && (
                       <View
+                        key={index}
                         style={{
                           ...styles.innerView,
                           marginRight: index < 3 ? 16 : 0,
@@ -585,6 +590,7 @@ const AroundFilter = () => {
                   (item, index) =>
                     index > 3 && (
                       <Pressable
+                        key={index}
                         onPress={() => {
                           console.log('item,', ChargerType.chargerType[index]);
                           dispatch(
@@ -628,6 +634,7 @@ const AroundFilter = () => {
                   (item, index) =>
                     index > 3 && (
                       <View
+                        key={index}
                         style={{
                           ...styles.innerView,
                           marginRight: index > 3 ? (index > 4 ? 32 : 16) : 0,
