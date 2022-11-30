@@ -31,38 +31,37 @@ import bottomSheet from '@gorhom/bottom-sheet/lib/typescript/components/bottomSh
 
 const PathSearchMain = () => {
   const nav = useNavigation<commonTypes.navi>();
-  const {userInfo} = useSelector((state: RootState) => state.authReducer);
   const {keywordList, lastRef, goalData, startData} = useSelector(
     (state: RootState) => state.pathReducer,
   );
   const dispatch = useDispatch();
-  console.log('keywordk', keywordList);
+  // console.log('keywordk', keywordList);
 
-  const _onPress = (item: any) => {
-    console.log('item1', item);
-    console.log('last index', lastRef);
-    // return;
-    if (!lastRef || lastRef === 'goal') {
-      dispatch(setGoalData(item));
-      dispatch(setKeywordList([]));
-      dispatch(setIsGoalFinish(false));
-    }
-    if (lastRef === 'start') {
-      dispatch(setStartData(item));
-      dispatch(setKeywordList([]));
-      dispatch(setIsStartFinish(false));
-    }
+  // const _onPress = (item: any) => {
+  //   // console.log('item1', item);
+  //   console.log('## last index', lastRef);
+  //   // return;
+  //   if (!lastRef || lastRef === 'goal') {
+  //     dispatch(setGoalData(item));
+  //     dispatch(setKeywordList([]));
+  //     dispatch(setIsGoalFinish(false));
+  //   }
+  //   if (lastRef === 'start') {
+  //     dispatch(setStartData(item));
+  //     dispatch(setKeywordList([]));
+  //     dispatch(setIsStartFinish(false));
+  //   }
 
-    nav.navigate('PathMain');
-    // nav.navigate('PathMain');
-  };
+  //   nav.navigate('PathMain');
+  //   // nav.navigate('PathMain');
+  // };
 
-  const _delelteItem = (target: any[], setTarget: any, index: any) => {
-    let temp = [...target];
-    console.log('index', index);
-    temp = target.filter((item, idx) => idx !== index);
-    setTarget(temp);
-  };
+  // const _delelteItem = (target: any[], setTarget: any, index: any) => {
+  //   let temp = [...target];
+  //   console.log('index', index);
+  //   temp = target.filter((item, idx) => idx !== index);
+  //   setTarget(temp);
+  // };
 
   const renderItem: ListRenderItem<any> = item => {
     return (
@@ -85,7 +84,7 @@ const PathSearchMain = () => {
           </View>
         )}
         <Pressable
-          onPress={() => _onPress(item.item)}
+          onPress={() => {}}
           style={{
             width: '100%',
             height: _getHeight(78),
@@ -144,7 +143,7 @@ const PathSearchMain = () => {
                 fontFamily: FontList.PretendardRegular,
                 color: '#959595',
               }}>
-              {item.item.addr}
+              {/* {item.item.addr} */}
             </Text>
           </View>
         </Pressable>
@@ -165,7 +164,6 @@ const PathSearchMain = () => {
       <FlatList
         renderItem={item => renderItem(item)}
         style={{paddingBottom: 60, marginBottom: 60}}
-        // onEndReached={() => {}}
         ListEmptyComponent={
           <>
             <View style={{margin: 16}}>
@@ -174,7 +172,6 @@ const PathSearchMain = () => {
                   lineHeight: 24,
                   color: '#7A7A7A',
                   marginHorizontal: 16,
-                  // marginTop: 17.6,
                   fontSize: 13,
                 }}>
                 최근 검색지가 없습니다
@@ -186,13 +183,11 @@ const PathSearchMain = () => {
         keyExtractor={(item, idx) => String(idx) + String(item)}
         ListHeaderComponent={
           <>
-            {keywordList.map(
+            {/* {keywordList.map(
               (item, idx) =>
                 idx < 3 && (
                   <Pressable
-                    onPress={() => {
-                      _onPress(item);
-                    }}
+                    onPress={() => {}}
                     key={idx}
                     style={{
                       width: '100%',
@@ -221,14 +216,13 @@ const PathSearchMain = () => {
                             fontSize: 16,
                             color: '#333333',
                           }}>
-                          {/* {console.log('item', item)} */}
                           {item.name}
                         </Text>
                       </View>
                     </View>
                   </Pressable>
                 ),
-            )}
+            )} */}
           </>
         }
       />

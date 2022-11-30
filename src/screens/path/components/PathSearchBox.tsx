@@ -27,167 +27,48 @@ import {
 
 interface props {
   editable?: boolean;
-  showOnlyMap?: boolean;
-  setShowOnlyMap?: Dispatch<SetStateAction<boolean>>;
-  sheetRef?: React.RefObject<BottomSheetModalMethods>;
-  setRec?: Dispatch<SetStateAction<boolean>>;
-  setRecomandList?: Dispatch<SetStateAction<any>>;
-  sheetStarRef?: React.RefObject<BottomSheetModalMethods>;
-  setModalLogin?: Dispatch<SetStateAction<boolean>>;
+  // showOnlyMap?: boolean;
+  // setShowOnlyMap?: Dispatch<SetStateAction<boolean>>;
+  // sheetRef?: React.RefObject<BottomSheetModalMethods>;
+  // setRec?: Dispatch<SetStateAction<boolean>>;
+  // setRecomandList?: Dispatch<SetStateAction<any>>;
+  // sheetStarRef?: React.RefObject<BottomSheetModalMethods>;
+  // setModalLogin?: Dispatch<SetStateAction<boolean>>;
 }
 
-const PathSearchBox = ({
-  editable,
-  showOnlyMap,
-  setShowOnlyMap,
-  sheetRef,
-  setRec,
-  setRecomandList,
-  setModalLogin,
-  sheetStarRef,
-}: props) => {
-  const nav = useNavigation<commonTypes.navi>();
-  const dispatch = useDispatch();
-  const {goalData, startData} = useSelector(
-    (state: RootState) => state.pathReducer,
-  );
-  const [home, setHome] = useState(false);
+const PathSearchBox = ({editable}: props) => {
+  // _postSearchBase 키워드에 대한 검색 api
+
+  // const _onPressClose = () => {
+  //   setInputStart('');
+  //   setInputGoal('');
+  //   if (setRecomandList) setRecomandList([]);
+  //   sheetRef?.current?.close();
+  //   if (setRec) setRec(false);
+  //   // dispatch(setGoalData(null));
+  //   // dispatch(setStartData(null));
+  //   // dispatch(setKeywordList([]));
+  //   dispatch(resetPath({}));
+  // };
+
+  // const _onPressSwitch = () => {
+  //   sheetRef?.current?.close();
+  //   const copyStart = inputStart;
+  //   const copyGoal = inputGoal;
+  //   dispatch(switchPosition({}));
+  //   setInputStart(copyGoal);
+  //   setInputGoal(copyStart);
+  // };
   const [inputStart, setInputStart] = useState('');
-  const {userInfo} = useSelector((state: RootState) => state.authReducer);
   const [inputGoal, setInputGoal] = useState('');
-  const {currentUserLocation} = useSelector(
-    (state: RootState) => state.locationReducer,
-  );
-
-  const startRef = useRef<TextInput>(null);
-  const goalRef = useRef<TextInput>(null);
-
-  const _putHome = () => {
-    console.log('## HOME ##', userInfo);
-    if (!home) {
-      if (userInfo?.addressInfo?.address) {
-        // let temp = JSON.parse(JSON.stringify(userInfo.addressInfo));
-        // console.log('## temp', temp);
-        dispatch(setGoalData(userInfo.addressInfo));
-        dispatch(setIsGoalFinish(true));
-        dispatch(setIsHoem(true));
-        nav.navigate('PathMain');
-        lastFocus.current = 'goal';
-        setHome(true);
-      }
-    } else {
-      sheetRef?.current?.close();
-      dispatch(setIsHoem(false));
-      lastFocus.current = '';
-      setHome(false);
-    }
-  };
-
-  const _getResult = async () => {
-    // const data = {
-    //   keywords: startRef.current?.isFocused() ? inputStart : inputGoal,
-    //   offset: 0,
-    //   limit: 3,
-    // };
-
-    const data = {
-      searchKeyword: startRef.current?.isFocused() ? inputStart : inputGoal,
-      currentXY: [
-        currentUserLocation?.latitude,
-        currentUserLocation?.longitude,
-      ],
-    };
-    console.log('result data', data);
-
-    await commonAPI
-      ._postSearchBase(data)
-      .then(res => {
-        console.log('origin', res.data.data);
-        let temp = JSON.parse(JSON.stringify(res.data.data));
-        // console.log('temp1', temp);
-        temp.map((item, index) => {
-          item.location.lat = Number(res.data.data[index].location.lon);
-          item.location.lon = Number(res.data.data[index].location.lat);
-        });
-        console.log('temp', temp);
-        if (res.data.data) dispatch(setKeywordList(temp));
-      })
-      .catch(err => console.log('err', err));
-    // await commonAPI
-    //   ._getSearchAddr(data)
-    //   .then(res => {
-    //     console.log('SEARCH RES', res);
-    //     if (res.data.documents) dispatch(setKeywordList(res.data.documents));
-    //   })
-    //   .catch(err => console.log('err', err));
-
-    // await commonAPI
-    //   ._postAruondStation(data)
-    //   .then(res => {
-    //     if (res.data.data) dispatch(setKeywordList(res.data.data));
-    //   })
-    //   .catch(err => console.log('err', err));
-  };
-
-  const lastFocus = useRef('');
-  useEffect(() => {
-    if (startRef.current?.isFocused() && inputStart?.length > 1) {
-      if (lastFocus.current === 'goal') {
-        lastFocus.current = 'start';
-        dispatch(setLastRef(lastFocus.current));
-      }
-      _getResult();
-    }
-    if (!startRef.current?.isFocused() && inputGoal?.length > 1) {
-      if (lastFocus.current === 'start') {
-        lastFocus.current = 'goal';
-        dispatch(setLastRef(lastFocus.current));
-      }
-      _getResult();
-    }
-  }, [inputGoal, inputStart]);
-
-  const _onPressClose = () => {
-    setInputStart('');
-    setInputGoal('');
-    if (setRecomandList) setRecomandList([]);
-    sheetRef?.current?.close();
-    if (setRec) setRec(false);
-    // dispatch(setGoalData(null));
-    // dispatch(setStartData(null));
-    // dispatch(setKeywordList([]));
-    dispatch(resetPath({}));
-  };
-
-  const _onPressSwitch = () => {
-    sheetRef?.current?.close();
-    const copyStart = inputStart;
-    const copyGoal = inputGoal;
-    dispatch(switchPosition({}));
-    setInputStart(copyGoal);
-    setInputGoal(copyStart);
-  };
-
-  // 현위치
-  useEffect(() => {
-    setInputStart(startData?.address ? startData?.address : startData?.name);
-    // setInputStart(startData?.name);
-  }, [startData]);
-  //도착지
-  useEffect(() => {
-    setInputGoal(goalData?.address ? goalData?.address : goalData?.name);
-  }, [goalData]);
+  const [isHome, setIsHome] = useState(false);
 
   return (
     <View style={{width: '100%', backgroundColor: 'white'}}>
       {/* 검색창 및 좌, 우 버튼 */}
       <View style={{flexDirection: 'row', marginHorizontal: 16, marginTop: 16}}>
         <View style={{flexDirection: 'row', alignItems: 'center', flex: 1}}>
-          <Pressable
-            hitSlop={10}
-            onPress={() => {
-              _onPressSwitch();
-            }}>
+          <Pressable hitSlop={10} onPress={() => {}}>
             <Image
               source={require('@assets/switch_position.png')}
               style={{width: 16, height: 17}}
@@ -202,10 +83,7 @@ const PathSearchBox = ({
             }}>
             <View style={{backgroundColor: '#F4F2F2', borderRadius: 3}}>
               <Pressable
-                onPress={() => {
-                  editable ? undefined : nav.navigate('PathSearchMain');
-                  dispatch(setLastRef('start'));
-                }}
+                onPress={() => {}}
                 style={{
                   flexDirection: 'row',
                   alignItems: 'center',
@@ -219,11 +97,10 @@ const PathSearchBox = ({
                   현위치
                 </Text>
                 <TextInput
-                  ref={startRef}
                   onSubmitEditing={() => {
                     Keyboard.dismiss();
                   }}
-                  onFocus={() => dispatch(setLastRef('start'))}
+                  onFocus={() => {}}
                   value={inputStart}
                   onChangeText={setInputStart}
                   editable={editable ? true : false}
@@ -239,9 +116,7 @@ const PathSearchBox = ({
               </Pressable>
 
               <Pressable
-                onPress={() => {
-                  editable ? undefined : nav.navigate('PathSearchMain');
-                }}
+                onPress={() => {}}
                 style={{
                   flexDirection: 'row',
                   alignItems: 'center',
@@ -255,8 +130,7 @@ const PathSearchBox = ({
                   도착지
                 </Text>
                 <TextInput
-                  onFocus={() => dispatch(setLastRef('goal'))}
-                  ref={goalRef}
+                  onFocus={() => {}}
                   editable={editable ? true : false}
                   autoCapitalize="none"
                   value={inputGoal}
@@ -275,10 +149,7 @@ const PathSearchBox = ({
             </View>
           </Pressable>
         </View>
-        <Pressable
-          hitSlop={5}
-          onPress={() => _onPressClose()}
-          style={{top: 15}}>
+        <Pressable hitSlop={5} onPress={() => {}} style={{top: 15}}>
           <Image
             source={require('@assets/close_star.png')}
             style={{width: 14, height: 14}}
@@ -296,13 +167,7 @@ const PathSearchBox = ({
         }}>
         <Pressable
           hitSlop={7}
-          onPress={() => {
-            if (!userInfo?.id) {
-              if (setModalLogin) setModalLogin(true);
-            } else {
-              _putHome();
-            }
-          }}
+          onPress={() => {}}
           style={{
             marginRight: 12,
             flexDirection: 'row',
@@ -312,7 +177,7 @@ const PathSearchBox = ({
             style={{
               width: 23,
               height: 23,
-              backgroundColor: home ? '#0788FF' : 'white',
+              backgroundColor: isHome ? '#0788FF' : 'white',
               borderWidth: 1,
               borderColor: '#EEEEEE',
               borderRadius: 23 / 2,
@@ -325,7 +190,7 @@ const PathSearchBox = ({
               style={{
                 width: 12,
                 height: 12,
-                tintColor: home ? 'white' : '#C6C6C6',
+                tintColor: isHome ? 'white' : '#C6C6C6',
               }}
               resizeMode="contain"
             />
@@ -341,11 +206,7 @@ const PathSearchBox = ({
         </Pressable>
 
         <Pressable
-          onPress={() => {
-            console.log('userinfo', userInfo);
-            nav.navigate('PathMain');
-            sheetStarRef?.current?.present();
-          }}
+          onPress={() => {}}
           style={{
             flexDirection: 'row',
             alignItems: 'center',
