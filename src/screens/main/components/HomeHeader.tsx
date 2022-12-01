@@ -30,7 +30,6 @@ const HomeHeader = ({
   const {userInfo} = useSelector((state: RootState) => state.authReducer);
   const layout = useWindowDimensions();
   const _convert = (userInfoCar: string) => {
-    console.log('userInfo car', userInfo);
     switch (userInfoCar) {
       case '현대자동차':
         return '현대';

@@ -21,6 +21,7 @@ const MyPageMain = () => {
   const dispatch = useDispatch();
   const isFocused = useIsFocused();
   const [modalLogin, setModalLogin] = useState(false);
+  const [modalReady, setModalReady] = useState(false);
   const myPageItems = [
     '앱 설정',
     '마이차저 설정',
@@ -38,7 +39,8 @@ const MyPageMain = () => {
       case 2:
         return nav.navigate('MyPagePolicy');
       case 3:
-        return nav.navigate('MyPageInfo');
+        return setModalReady(true);
+      // return nav.navigate('MyPageInfo');
       default:
         return;
     }
@@ -84,6 +86,13 @@ const MyPageMain = () => {
           ))}
         </View>
       </View>
+      <MyModal
+        visible={modalReady}
+        setVisible={setModalReady}
+        positive
+        positiveTitle="확인"
+        title="준비중인 기능입니다"
+      />
       <MyModal
         visible={modalLogin}
         setVisible={setModalLogin}

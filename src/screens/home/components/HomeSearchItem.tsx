@@ -93,16 +93,26 @@ const HomeSearchItem = ({
       user_id: userInfo?.id,
       stat_id: renderData.statId,
     };
-    await commonAPI
-      ._postUserStar(data)
-      .then(res => {
-        console.log('res ###', res);
-      })
-      .catch(err => console.log('err', err));
+    if (!favorite) {
+      await commonAPI
+        ._postUserStar(data)
+        .then(res => {
+          console.log('_postUserStar ###', res);
+        })
+        .catch(err => console.log('err', err));
+    }
+    if (favorite) {
+      await commonAPI
+        ._deleteUserStar(data)
+        .then(res => {
+          console.log('_deleteUserStar ###', res);
+        })
+        .catch(err => console.log('err', err));
+    }
   };
 
   useEffect(() => {
-    userInfo?.favorites.map(item => {
+    userInfo?.favorites?.map(item => {
       if (item.statId === renderData.statId) setFavorite(true);
     });
   }, []);

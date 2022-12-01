@@ -55,7 +55,7 @@ const NavModal = ({
     : 126.8881368;
 
   const _getCoor = (target: any) => {
-    console.log('coooooooooooooooor', goalCoor);
+    // console.log('coooooooooooooooor', goalCoor);
     let res;
     if (target === 'kakao') {
       res = goalCoor?.latitude

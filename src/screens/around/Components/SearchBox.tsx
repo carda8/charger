@@ -20,8 +20,10 @@ interface props {
 }
 
 const SearchBox = ({bottomSheetRef}: props) => {
-  const {aroundKeyData} = useSelector((state: RootState) => state.aroundReducer);
-  console.log('key', aroundKeyData)
+  const {aroundKeyData} = useSelector(
+    (state: RootState) => state.aroundReducer,
+  );
+  console.log('SearchBox aroundKeyData', aroundKeyData);
   const nav = useNavigation<commonTypes.navi>();
   return (
     <Pressable
@@ -65,4 +67,4 @@ const SearchBox = ({bottomSheetRef}: props) => {
   );
 };
 
-export default SearchBox;
+export default React.memo(SearchBox);

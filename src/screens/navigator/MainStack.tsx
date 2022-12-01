@@ -50,7 +50,6 @@ const MainStack = () => {
 
   const _getInfo = async (savedId: string) => {
     const data = {user_id: savedId};
-    console.log('data', data);
     const res: any = await commonAPI
       ._getUserInfo(data)
       .then(res => {
@@ -62,7 +61,6 @@ const MainStack = () => {
         console.log('err autologin', err);
         return err;
       });
-    console.log('ressss', res);
     if (res) {
       setInitRoute('Home');
       setLoading(true);

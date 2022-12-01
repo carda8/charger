@@ -39,6 +39,7 @@ import Loading from '@components/Loading';
 import modules from 'constants/utils/modules';
 import {setAroundKeyData} from 'redux/reducers/aroundReducer';
 import RenderItem from '@screens/favStation/components/RenderItem';
+import {setUserInfo} from 'redux/reducers/authReducer';
 
 const AroundMain = () => {
   const dispatch = useDispatch();
@@ -86,7 +87,7 @@ const AroundMain = () => {
 
   // callbacks
   const handleSheetChanges = useCallback((index: number) => {
-    console.log('handleSheetChanges', index);
+    // console.log('handleSheetChanges', index);
   }, []);
 
   const sheetStyle = useMemo(
@@ -99,7 +100,8 @@ const AroundMain = () => {
 
   const [starFilter, setStarFilter] = useState('1');
   const [showStarFilter, setShowStarFilter] = useState(false);
-  const _getUserStar = async () => {
+
+  const _getUserStars = async () => {
     if (userInfo?.id) {
       const data = {
         user_id: userInfo.id,
@@ -107,8 +109,6 @@ const AroundMain = () => {
         order_by:
           starFilter === '1' ? '' : starFilter === '2' ? 'distance' : 'name',
       };
-      console.log('userId', data);
-
       await commonAPI
         ._getUserStar(data)
         .then(res => {
@@ -120,8 +120,8 @@ const AroundMain = () => {
   };
 
   useEffect(() => {
-    _getUserStar();
-  }, [userInfo, starFilter]);
+    _getUserStars();
+  }, [starFilter]);
 
   const _convert = () => {
     // "key": "AC완속",
@@ -199,7 +199,7 @@ const AroundMain = () => {
   useEffect(() => {
     if (initRef.current > 1) _init();
   }, [covering]);
-  // console.log('aroundKeyDataaroundKeyData', aroundKeyData);
+
   useEffect(() => {
     // console.log(33);
     if (aroundKeyData?.location) {
@@ -246,7 +246,7 @@ const AroundMain = () => {
     let close = modules._isClosed(item);
 
     // console.log('is CLOSED? ::', close);
-    item.chargers.map((item, index) => {
+    item.chargers.map((item: any, index: number) => {
       if (
         item.chgerTypeInfo === 'DC차데모+AC3상+DC콤보' ||
         item.chgerTypeInfo === 'DC차데모+AC3상'
@@ -272,7 +272,6 @@ const AroundMain = () => {
   const arrFliter = ['충전속도', '충전소 유무료', '주차요금', '현재이용가능'];
 
   const renderItem: ListRenderItem<any> = item => {
-    // console.log('## item', item);
     return (
       <StationListItem
         setClickedMarker={setClickedMarker}
@@ -285,25 +284,7 @@ const AroundMain = () => {
       />
     );
   };
-  // const [center, setCenter] = useState({
-  //   latitude: 37.564362,
-  //   longitude: 126.977011,
-  //   zoom: 13,
-  // });
   const [starMarker, setStarMarker] = useState<any>();
-
-  const renderItemStar: ListRenderItem<any> = item => {
-    return (
-      <RenderItem
-        item={item}
-        list={userStar}
-        bottomSheetRef={bottomSheetStarRef}
-        setCenter={setClickedMarker}
-        setUserStar={setUserStar}
-        setStarMarker={setStarMarker}
-      />
-    );
-  };
 
   useEffect(() => {
     if (starMarker) {
@@ -317,6 +298,35 @@ const AroundMain = () => {
   useEffect(() => {
     setReload(true);
   }, [filter]);
+
+  const _fetchUserInfo = async () => {
+    const id = {user_id: userInfo?.id};
+    const res = await commonAPI
+      ._getUserInfo(id)
+      .then(res => {
+        if (res.data) {
+          dispatch(setUserInfo(res.data));
+        }
+        return res.data;
+      })
+      .catch(err => {
+        console.log('err', err);
+      });
+    if (res) return res;
+  };
+
+  const renderItemStar: ListRenderItem<any> = item => {
+    return (
+      <RenderItem
+        item={item}
+        list={userStar}
+        bottomSheetRef={bottomSheetStarRef}
+        setCenter={setClickedMarker}
+        setUserStar={setUserStar}
+        setStarMarker={setStarMarker}
+      />
+    );
+  };
 
   return (
     <SafeAreaView style={{...GlobalStyles.safeAreaStyle}}>
@@ -407,7 +417,7 @@ const AroundMain = () => {
         }}
         center={clickedMarker ? clickedMarker : undefined}
         onCameraChange={e => {
-          console.log('########## CAMERA MOVED', e);
+          // console.log('########## CAMERA MOVED', e);
           if (initRef.current === 1) {
             setCovering(e.coveringRegion);
           }
@@ -496,7 +506,7 @@ const AroundMain = () => {
             }}
           />
         )}
-        {stationList?.map((item, index) => (
+        {stationList?.map((item: any, index) => (
           <Marker
             key={index}
             width={32}
@@ -681,32 +691,6 @@ const AroundMain = () => {
               )}
             </>
           )}
-          // ListHeaderComponent={() => (
-          //   <>
-          //     {userStar.length > 0 && (
-          //       <Pressable
-          //         style={{
-          //           alignSelf: 'flex-end',
-          //           flexDirection: 'row',
-          //           alignItems: 'center',
-          //           marginBottom: 12,
-          //         }}>
-          //         <Text
-          //           style={{
-          //             fontFamily: FontList.PretendardRegular,
-          //             color: 'black',
-          //           }}>
-          //           즐겨찾기 한 순
-          //         </Text>
-          //         <Image
-          //           source={require('@assets/arrow_bottom.png')}
-          //           style={{width: 9, height: 5, marginRight: 8, marginLeft: 6}}
-          //           resizeMode="contain"
-          //         />
-          //       </Pressable>
-          //     )}
-          //   </>
-          // )}
           renderItem={item => renderItemStar(item)}
         />
       </BottomSheetModal>
@@ -812,7 +796,8 @@ const AroundMain = () => {
         <Pressable
           hitSlop={10}
           style={{alignItems: 'center', justifyContent: 'center'}}
-          onPress={() => {
+          onPress={async () => {
+            await _getUserStars();
             bottomSheetStarRef.current?.present();
             // nav.navigate('FavStationMain');
           }}>

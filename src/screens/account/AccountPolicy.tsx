@@ -3,7 +3,7 @@ import React, {useEffect, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import GlobalStyles from 'styles/GlobalStyles';
 import Header from '@components/Header';
-import {useNavigation} from '@react-navigation/native';
+import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
 import {commonTypes} from '@types';
 import ServiceString from '@components/ServiceString';
 import FontList from 'constants/FontList';
@@ -14,6 +14,8 @@ import commonAPI from 'api/modules/commonAPI';
 import {useSelector} from 'react-redux';
 import {RootState} from 'redux/store';
 import Loading from '@components/Loading';
+import StorageKeys from 'constants/StorageKeys';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface check {
   [key: string]: boolean;
@@ -29,6 +31,9 @@ interface props {
 
 const AccountPolicy = () => {
   const navi = useNavigation<commonTypes.navi>();
+  const snsType =
+    useRoute<RouteProp<commonTypes.RootStackParamList, 'AccountPolicy'>>()
+      .params?.snsType;
   const {userInfo} = useSelector((state: RootState) => state.authReducer);
   const [loading, setLoading] = useState(false);
   // const [modal, setModal] = useState(false);
@@ -120,8 +125,10 @@ const AccountPolicy = () => {
 
     await commonAPI
       ._postSaveUserInfo(data)
-      .then(res => {
+      .then(async res => {
         console.log('then res', res);
+        await AsyncStorage.setItem(StorageKeys.KEY.AUTO_LOGIN, data.user_id);
+        await AsyncStorage.setItem(StorageKeys.KEY.SNS_TYPE, snsType);
         navi.navigate('AccountFinish');
       })
       .catch(err => {

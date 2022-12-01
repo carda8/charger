@@ -7,11 +7,10 @@ import {
   StyleProp,
   ViewStyle,
 } from 'react-native';
-import React, {useState, Dispatch, SetStateAction} from 'react';
+import React, {useState, Dispatch, SetStateAction, useEffect} from 'react';
 import {_getHeight, _getWidth} from 'constants/utils';
 import FontList from 'constants/FontList';
 import {useDispatch, useSelector} from 'react-redux';
-import {setGoal} from 'redux/reducers/pathReducer';
 import ChargerType from 'constants/ChargerType';
 import {BottomSheetModalMethods} from '@gorhom/bottom-sheet/lib/typescript/types';
 import modules from 'constants/utils/modules';
@@ -19,6 +18,7 @@ import {useNavigation} from '@react-navigation/native';
 import {commonTypes} from '@types';
 import {RootState} from 'redux/store';
 import commonAPI from 'api/modules/commonAPI';
+import {setUserInfo} from 'redux/reducers/authReducer';
 interface props {
   item?: any;
   pick?: boolean;
@@ -41,23 +41,20 @@ const StationListItem = ({
   goal,
   bottomSheetRef,
   setClickedMarker,
-  isPath,
   setNeedLogin,
 }: props) => {
-  const [favorite, setFavorite] = useState(false);
   const dispatch = useDispatch();
   const isClosed = modules._isClosed(item);
   const nav = useNavigation<commonTypes.navi>();
   const {userInfo} = useSelector((state: RootState) => state.authReducer);
-  const pathState = useSelector((state: RootState) => state.pathReducer);
-  console.log('item,', item);
-
+  const [favorite, setFavorite] = useState(false);
+  console.log('item', item);
   const _sortChgerBySpeed = (item: any) => {
     let normal = 0;
     let fast = 0;
     // console.log('sort', item);
     if (item) {
-      item?.chargers.map((item, index) => {
+      item?.chargers.map((item: any, index: number) => {
         if (item.chgerTypeInfo === 'AC완속' || item.chgerTypeInfo === 'AC3상')
           normal++;
         else fast++;
@@ -68,6 +65,87 @@ const StationListItem = ({
       fast,
     };
     return res;
+  };
+
+  const _fetchUserInfo = async () => {
+    const id = {user_id: userInfo?.id};
+    const res = await commonAPI
+      ._getUserInfo(id)
+      .then(res => {
+        if (res.data) {
+          dispatch(setUserInfo(res.data));
+        }
+        return res.data;
+      })
+      .catch(err => {
+        console.log('err', err);
+      });
+    if (res) return res;
+  };
+
+  const _filterStar = async (userFav: any, stationInfo: any) => {
+    const userFavList = userFav.favorites;
+    const stationId = stationInfo.statId;
+    // console.log('user', userFavList, stationId);
+    let temp = [];
+    if (userFavList.length > 0) {
+      temp = userFavList.filter((item: any) => item.statId === stationId);
+    }
+    if (temp.length > 0) {
+      setFavorite(true);
+    } else setFavorite(false);
+  };
+
+  useEffect(() => {
+    _fetchUserInfo().then(res => {
+      _filterStar(res, item);
+    });
+  }, [item]);
+
+  const _delUserStar = async () => {
+    const data = {
+      user_id: userInfo?.id,
+      stat_id: item.statId,
+    };
+
+    setFavorite(false);
+    await commonAPI
+      ._deleteUserStar(data)
+      .then(async res => {
+        await _fetchUserInfo();
+        console.log('## _delUserStar', res);
+      })
+      .catch(res => {
+        console.log('_delUserStar err', res);
+      });
+  };
+
+  const _setUserStar = async () => {
+    const data = {
+      user_id: userInfo?.id,
+      stat_id: item.statId,
+    };
+
+    setFavorite(true);
+    await commonAPI
+      ._postUserStar(data)
+      .then(async res => {
+        await _fetchUserInfo();
+        console.log('## _setUserStar', res);
+      })
+      .catch(err => {
+        console.log('## _setUserStar err', err);
+      });
+  };
+
+  const _onPressed = async () => {
+    if (!userInfo?.id && setNeedLogin) return setNeedLogin(true);
+
+    if (favorite) {
+      await _delUserStar();
+    } else {
+      await _setUserStar();
+    }
   };
 
   const _getChgerImg = (item: any) => {
@@ -85,7 +163,7 @@ const StationListItem = ({
       ac5: false,
     };
     if (item) {
-      item.chargers.map((item, index) => {
+      item.chargers.map((item: any, index: number) => {
         if (item.chgerTypeInfo === 'DC차데모+AC3상+DC콤보') {
           chgerImg.ac3 = true;
           chgerImg.dcCombo = true;
@@ -116,51 +194,6 @@ const StationListItem = ({
     return chgerImg;
   };
 
-  const _setUserStar = async () => {
-    if (userInfo?.id) {
-      const data = {
-        user_id: userInfo.id,
-        stat_id: item.statId,
-      };
-      await commonAPI
-        ._postUserStar(data)
-        .then(res => {
-          modules._updateUserInfo(dispatch, userInfo);
-          console.log('User Star RES', res.data);
-        })
-        .catch(err => console.log('err', err));
-
-      console.log('data', data);
-    }
-  };
-
-  const _delUserStar = async () => {
-    if (userInfo?.id) {
-      const data = {
-        user_id: userInfo.id,
-        stat_id: item.statId,
-      };
-      await commonAPI
-        ._deleteUserStar(data)
-        .then(res => console.log('User Star RES', res.data))
-        .catch(err => console.log('err', err));
-
-      console.log('data', data);
-    }
-  };
-
-  const _onPressed = () => {
-    if (userInfo?.id) {
-      setFavorite(!favorite);
-      if (!favorite) {
-        _setUserStar();
-      } else {
-        _delUserStar();
-      }
-    } else {
-      if (setNeedLogin) setNeedLogin(true);
-    }
-  };
   return (
     <Pressable
       onPress={() => {

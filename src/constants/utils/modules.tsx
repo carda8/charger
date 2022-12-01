@@ -51,14 +51,19 @@ export default {
     // const dispatch = useDispatch();
     if (userInfo?.id) {
       const id = {user_id: userInfo?.id};
-      await commonAPI
+      const res = await commonAPI
         ._getUserInfo(id)
         .then(res => {
-          if (res.data) dispatch(setUserInfo(res.data));
+          console.log('updateUserInfo RES', res.data);
+          if (res.data) {
+            dispatch(setUserInfo(res.data));
+            return res.data;
+          }
         })
         .catch(err => {
           console.log('err', err);
         });
+      if (res) return res;
     }
   },
 };

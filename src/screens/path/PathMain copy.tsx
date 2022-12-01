@@ -88,7 +88,7 @@ const PathMain = () => {
   const snapPointsReco = useMemo(() => [290], []);
 
   const handleSheetChanges = useCallback((index: number) => {
-    console.log('handleSheetChanges', index);
+    // console.log('handleSheetChanges', index);
   }, []);
   const sheetStyle = useMemo(
     () => ({

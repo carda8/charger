@@ -18,7 +18,7 @@ declare module commonTypes {
   type RootStackParamList = {
     Login: undefined;
     Account: undefined;
-    AccountPolicy: undefined;
+    AccountPolicy: {snsType: string};
     AccountPolicyDetail: {target?: string} | undefined;
     AccountFinish: undefined;
     AccountCarInfo: undefined;

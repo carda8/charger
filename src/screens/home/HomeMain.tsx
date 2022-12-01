@@ -22,6 +22,7 @@ const HomeMain = () => {
   const {userInfo} = useSelector((state: RootState) => state.authReducer);
   const [coor, setCoor] = useState({});
   const [startCorr, setStartCoor] = useState({});
+  const dispatch = useDispatch();
   const [myHomeList, setMyHomeList] = useState([]);
 
   const renderItem: ListRenderItem<any> = item => {
@@ -48,16 +49,33 @@ const HomeMain = () => {
         if (res.data.data.length > 0) {
           console.log('getMyHome res', res.data.data);
           setMyHomeList(res.data.data);
-        }
+        } else setMyHomeList([]);
       })
       .catch(err => console.log('getMyHome err', err));
   };
+  const _fetchUserInfo = async () => {
+    const id = {user_id: userInfo?.id};
+    const res = await commonAPI
+      ._getUserInfo(id)
+      .then(res => {
+        if (res.data) {
+          dispatch(setUserInfo(res.data));
+        }
+        return res.data;
+      })
+      .catch(err => {
+        console.log('err', err);
+      });
+    if (res) return res;
+  };
+  const isFocused = useIsFocused();
 
   useEffect(() => {
+    console.log('userinf', userInfo);
     if (userInfo?.addressInfo?.location) {
-      _getMyStation();
+      _fetchUserInfo().then(() => _getMyStation());
     }
-  }, []);
+  }, [isFocused]);
 
   return (
     <SafeAreaView style={{...GlobalStyles.safeAreaStyle}}>

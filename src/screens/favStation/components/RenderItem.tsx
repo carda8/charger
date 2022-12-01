@@ -2,9 +2,10 @@ import {View, Text, Pressable, Image} from 'react-native';
 import React, {Dispatch, SetStateAction, useState} from 'react';
 import FontList from 'constants/FontList';
 import {BottomSheetModalMethods} from '@gorhom/bottom-sheet/lib/typescript/types';
-import {useSelector} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import {RootState} from 'redux/store';
 import commonAPI from 'api/modules/commonAPI';
+import {setUserInfo} from 'redux/reducers/authReducer';
 interface props {
   list: any[];
   item: any;
@@ -23,8 +24,24 @@ const RenderItem = ({
   setStarMarker,
 }: props) => {
   const {userInfo} = useSelector((state: RootState) => state.authReducer);
-  const [star, setStart] = useState(true);
   const data = item.item;
+  const dispatch = useDispatch();
+
+  const _fetchUserInfo = async () => {
+    const id = {user_id: userInfo?.id};
+    const res = await commonAPI
+      ._getUserInfo(id)
+      .then(res => {
+        if (res.data) {
+          dispatch(setUserInfo(res.data));
+        }
+        return res.data;
+      })
+      .catch(err => {
+        console.log('err', err);
+      });
+    if (res) return res;
+  };
 
   const _delUserStar = async (item: any) => {
     if (userInfo?.id) {
@@ -34,7 +51,10 @@ const RenderItem = ({
       };
       await commonAPI
         ._deleteUserStar(params)
-        .then(res => console.log('User Star RES', res.data))
+        .then(async res => {
+          await _fetchUserInfo();
+          console.log('## _delUserStar bottom Sheet', res.data);
+        })
         .catch(err => console.log('err', err));
 
       console.log('data', params);
@@ -84,11 +104,7 @@ const RenderItem = ({
           hitSlop={10}
           style={{alignSelf: 'flex-start'}}>
           <Image
-            source={
-              star
-                ? require('@assets/star_on.png')
-                : require('@assets/star_off.png')
-            }
+            source={require('@assets/star_on.png')}
             style={{width: 14.6, height: 14, marginBottom: 10}}
             resizeMode="contain"
           />

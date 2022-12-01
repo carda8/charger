@@ -71,8 +71,12 @@ const PathMain = () => {
 
   const [modalLogin, setModalLogin] = useState(false);
 
+  // 로딩 모달
   const [modal, setModal] = useState(false);
+
+  // 지도 포커스
   const [center, setCenter] = useState<coor>();
+
   // 추천 표시 여부
   const [showRec, setShowRec] = useState(false);
   // 선택된 추전 아이템 바텀 시트 표시
@@ -184,17 +188,11 @@ const PathMain = () => {
     if (!isAc && !isDc) return require('@assets/marker_normal.png');
   };
 
-  // 자기 위치 표시
-  // const _onPressMyLocation = () => {
-  //   if (currentUserLocation) {
-  //     setCenter({
-  //       latitude: currentUserLocation.latitude,
-  //       longitude: currentUserLocation.longitude,
-  //       zoom: 16,
-  //     });
-  //   } else {
-  //   }
-  // };
+  // 본인의 실제 현위치로 포커스
+  const _onPressMyLocation = () => {
+    const temp = JSON.parse(JSON.stringify(currentUserLocation));
+    setCenter(temp);
+  };
 
   // 카메라 설정
   // useEffect(() => {
@@ -263,7 +261,16 @@ const PathMain = () => {
   // }, []);
 
   // 초기 유저 현위치로 세팅
-  useEffect(() => {}, []);
+  useEffect(() => {
+    console.log('currentUserLocation', currentUserLocation);
+    if (currentUserLocation) {
+      setCenter({
+        latitude: currentUserLocation.latitude,
+        longitude: currentUserLocation.longitude,
+        zoom: 16,
+      });
+    }
+  }, []);
 
   useEffect(() => {
     dispatch(setBottomIdx(2));
@@ -296,7 +303,7 @@ const PathMain = () => {
               height: layout.height - 60,
             }}
             onCameraChange={e => {
-              if (center) setCenter(undefined);
+              // if (center) setCenter(undefined);
             }}
             scaleBar={false}
             showsMyLocationButton={false}
@@ -595,7 +602,7 @@ const PathMain = () => {
             <Pressable
               hitSlop={5}
               onPress={() => {
-                // _onPressMyLocation();
+                if (currentUserLocation) _onPressMyLocation();
               }}
               style={{
                 alignItems: 'center',

@@ -61,6 +61,9 @@ const AccountCarInfo = () => {
 
   const [loading, setLoading] = useState(false);
   const [etcOrigin, setEtcOrigin] = useState<any[]>([]);
+
+  const [trim, setTrim] = useState('');
+
   const Title = ({text, lineHeight}: props) => {
     return (
       <Text
@@ -76,11 +79,22 @@ const AccountCarInfo = () => {
     );
   };
 
+  // const _filterList = (brand: string) => {
+  //   let temp = [...carList];
+  //   let modelList: any[] = [];
+  //   temp = temp.filter((item, index) => item.car_brand === brand);
+  //   temp.map((item, index) => modelList.push(item.car_model));
+  //   if (modelList.length > 0) return modelList;
+  //   else return [];
+  // };
   const _filterList = (brand: string) => {
     let temp = [...carList];
     let modelList: any[] = [];
-    temp = temp.filter((item, index) => item.car_brand === brand);
-    temp.map((item, index) => modelList.push(item.car_model));
+    temp = temp.filter((item: any, index: number) => item.car_brand === brand);
+    temp.map((item: any, index) => {
+      if (item.car_model + item.car_detail !== selectedModel + trim)
+        modelList.push({model: item.car_model, trim: item.car_detail});
+    });
     if (modelList.length > 0) return modelList;
     else return [];
   };
@@ -97,18 +111,31 @@ const AccountCarInfo = () => {
       'BMW',
     ];
 
-    const res = carList.filter(item => !mainCarList.includes(item.car_brand));
+    // const res = carList.filter(item => !mainCarList.includes(item.car_brand));
+    // let temp: any[] = [];
+    // res.map((item, index) => {
+    //   temp.push(item.car_brand);
+    //   temp.push(item.car_model);
+    // });
+    // const set = new Set(temp);
+    // const uniqueArr = [...set];
+    // setCarListEtc(uniqueArr);
+    // setEtcOrigin(res);
+    // console.log('set', set);
+    // console.log('filter res', res);
+    const res = carList.filter(
+      (item: any) => !mainCarList.includes(item.car_brand),
+    );
     let temp: any[] = [];
-    res.map((item, index) => {
+    res.map((item: any, index) => {
       temp.push(item.car_brand);
-      temp.push(item.car_model);
+      temp.push({model: item.car_model, trim: item.car_detail});
     });
     const set = new Set(temp);
     const uniqueArr = [...set];
+    console.log('uniqueArr', uniqueArr);
     setCarListEtc(uniqueArr);
     setEtcOrigin(res);
-    console.log('set', set);
-    console.log('filter res', res);
   };
 
   const _onPressEtcModel = (item: string) => {
@@ -185,7 +212,7 @@ const AccountCarInfo = () => {
     // return;
     if (data.user_id) {
       commonAPI
-        ._postSaveUserInfo(data)
+        ._putEditUserInfo(data)
         .then(res => {
           console.log('_postSaveUserInfo :: res', res);
           nav.navigate('AccountCarInfoFinish');
@@ -266,8 +293,8 @@ const AccountCarInfo = () => {
   }, [carList]);
 
   useEffect(() => {
-    setSelectedModel('');
-    setType([]);
+    // setSelectedModel('');
+    // setType([]);
   }, [selectedBrand]);
 
   useEffect(() => {
@@ -316,6 +343,8 @@ const AccountCarInfo = () => {
                   <Pressable
                     onPress={() => {
                       setSelectedBrand(ModelList.modelName[idx]);
+                      setSelectedModel('');
+                      setType([]);
                     }}
                     style={{
                       width: 56,
@@ -378,8 +407,13 @@ const AccountCarInfo = () => {
                   fontSize: 16,
                   color: '#838383',
                 }}>
-                {selectedModel
+                {/* {selectedModel
                   ? selectedModel
+                  : _getCarModel().length === 0
+                  ? '차량모델 정보가 없습니다'
+                  : '차량모델명을 선택하세요'} */}
+                {selectedModel
+                  ? selectedModel + ' ' + trim
                   : _getCarModel().length === 0
                   ? '차량모델 정보가 없습니다'
                   : '차량모델명을 선택하세요'}
@@ -414,7 +448,9 @@ const AccountCarInfo = () => {
                     key={idx}
                     onPress={() => {
                       setShowModel(false);
-                      setSelectedModel(item);
+                      // setSelectedModel(item);
+                      setSelectedModel(item.model);
+                      setTrim(item.trim);
                       console.log('item', item);
                     }}
                     style={{
@@ -425,13 +461,20 @@ const AccountCarInfo = () => {
                     }}>
                     <Text
                       style={{
-                        fontFamily: _onPressEtcModel(item)
+                        // fontFamily: _onPressEtcModel(item)
+                        //   ? FontList.PretendardBold
+                        //   : FontList.PretendardMedium,
+                        // color: _onPressEtcModel(item) ? '#333333' : '#959595',
+                        // fontSize: 13,
+                        fontFamily: _onPressEtcModel(item.model)
                           ? FontList.PretendardBold
                           : FontList.PretendardMedium,
-                        color: _onPressEtcModel(item) ? '#333333' : '#959595',
+                        color: _onPressEtcModel(item.model)
+                          ? '#333333'
+                          : '#959595',
                         fontSize: 13,
                       }}>
-                      {item}
+                      {item.model ? item.model + ' ' + item.trim : item}
                     </Text>
                   </Pressable>
                 ))}
