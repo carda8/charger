@@ -47,7 +47,14 @@ const RecentMain = () => {
       />
     );
   };
+  //서울역
+  // location
+  // {lat: '127.0276188', lon: '37.4979517'}
 
+  // "location": {"lat": 37.4979517, "lon": 127.0276188}, "name": "강남역 2호선"}
+
+  // location
+  // {lat: '129.0422136', lon: '35.1152199'}
   return (
     <SafeAreaView style={{...GlobalStyles.safeAreaStyle}}>
       <HeaderCenter title="마이홈" />

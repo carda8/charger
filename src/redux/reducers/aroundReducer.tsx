@@ -59,6 +59,7 @@ interface aroundInit {
   aroundKey: string;
   aroundKeyData: aroundKeyData | undefined;
   filter: filter;
+  isFilterSaved: boolean;
 }
 
 const initialState: aroundInit = {
@@ -99,12 +100,11 @@ const initialState: aroundInit = {
     road: [],
     pickAll: false,
   },
+  isFilterSaved: false,
 };
 
 const aroundSlice = createSlice({
   name: 'around',
-  // path : 경로 입력된 값 출발 / 도착지 저장됨
-  // goal 선택시 골 저장됨
   initialState,
   reducers: {
     setAroundKey: (state, action: PayloadAction<aroundInit>) => {
@@ -192,6 +192,22 @@ const aroundSlice = createSlice({
       state.filter.company = [];
       state.filter.pickAll = !state.filter.pickAll;
     },
+    setIsSaved: state => {
+      state.isFilterSaved = true;
+    },
+    setReset: state => {
+      state.filter = {
+        canUse: false,
+        speed: [],
+        freePark: [],
+        company: [],
+        chgerType: [],
+        chgerFree: [],
+        area: [],
+        road: [],
+        pickAll: false,
+      };
+    },
   },
 });
 
@@ -210,5 +226,7 @@ export const {
   setCanUse,
   setCompany,
   setPickall,
+  setReset,
+  setIsSaved,
 } = actions;
 export const aroundReducer = reducer;

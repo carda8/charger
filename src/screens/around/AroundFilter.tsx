@@ -24,11 +24,14 @@ import {
   setCompany,
   setFilter,
   setFreePark,
+  setIsSaved,
   setPickall,
+  setReset,
   setRoad,
   setSpeed,
 } from 'redux/reducers/aroundReducer';
 import {RootState} from 'redux/store';
+import MyModal from '@components/MyModal';
 
 interface busiType {
   key: string;
@@ -43,6 +46,7 @@ interface optionView {
 const AroundFilter = () => {
   const dispatch = useDispatch();
   const {filter} = useSelector((state: RootState) => state.aroundReducer);
+  const [modalSave, setModalSave] = useState(false);
   const [showAvailable, setShowAvailable] = useState(false);
   const [pickAll, setPickAll] = useState(false);
   const [pickedBusi, setPickedBusi] = useState<string[]>([]);
@@ -102,6 +106,11 @@ const AroundFilter = () => {
     else _pickBusi(key);
   };
 
+  const _onPressSave = () => {
+    setModalSave(!modalSave);
+    dispatch(setIsSaved());
+  };
+
   const _pickAll = () => {
     let temp: string[] = [];
     if (pickAll) {
@@ -116,21 +125,27 @@ const AroundFilter = () => {
     }
   };
 
-  const _setOption = (state: any, data: string, setState: any) => {
-    console.log(state, data);
-    let temp = [...state];
-    const res = temp.filter((item, index) => item === data);
-    if (res.length > 0) {
-      const res = temp.filter((item, index) => item !== data);
-      if (state === parking) {
-      }
-      setState(res);
-    } else {
-      let temp2: string[] = [...state];
-      temp2.push(data);
-      setState(temp2);
+  useEffect(() => {
+    if (!filter.pickAll) {
+      setPickAll(false);
     }
-  };
+  }, [filter.pickAll]);
+
+  // const _setOption = (state: any, data: string, setState: any) => {
+  //   console.log(state, data);
+  //   let temp = [...state];
+  //   const res = temp.filter((item, index) => item === data);
+  //   if (res.length > 0) {
+  //     const res = temp.filter((item, index) => item !== data);
+  //     if (state === parking) {
+  //     }
+  //     setState(res);
+  //   } else {
+  //     let temp2: string[] = [...state];
+  //     temp2.push(data);
+  //     setState(temp2);
+  //   }
+  // };
 
   // const _getColor = (state: string[], data: any) => {
   //   const temp = state.filter((item, index) => item === data);
@@ -170,6 +185,7 @@ const AroundFilter = () => {
         contentContainerStyle={{
           paddingHorizontal: 16,
           paddingTop: 25,
+          paddingBottom: 60,
         }}>
         <Pressable
           onPress={() => {
@@ -655,45 +671,8 @@ const AroundFilter = () => {
           </View>
         </View>
 
-        {/* <View key={idx}>
-                <View
-                  style={{
-                    marginBottom: 15,
-                    marginRight:
-                      idx % 3 !== 0 || idx == 0
-                        ? (layout.width - (32 + 72 * 4)) / 3
-                        : undefined,
-                  }}
-                  key={idx}>
-                  <Pressable
-                    onPress={() => {
-                      _setOption(chargerType, item, setChargerType);
-                    }}
-                    style={{
-                      width: 72,
-                      height: 72,
-                      borderWidth: 1,
-                      borderRadius: 4,
-                      borderColor: _getColor(chargerType, item),
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      // opacity: _getOpasity(chargerType, item),
-                    // }}>
-                    <Image
-                      source={item}
-                      style={{width: '85%', height: '85%'}}
-                      resizeMode={'contain'}
-                    />
-                  </Pressable>
-                  <View style={{alignSelf: 'center'}}>
-                    <Text>{ChargerType.chargerType[idx]}</Text>
-                  </View>
-                </View>
-              </View> */}
-
         <View
           style={{
-            // height: _getHeight(106),
             justifyContent: 'center',
             marginVertical: 23,
           }}>
@@ -744,10 +723,7 @@ const AroundFilter = () => {
                 <Pressable
                   key={idx}
                   onPress={() => {
-                    // console.warn(idx);
                     dispatch(setCompany(item.key));
-                    // _onPressBusi(item.key);
-                    // _pickBusi(idx);
                   }}
                   style={{
                     alignItems: 'center',
@@ -787,7 +763,79 @@ const AroundFilter = () => {
           </View>
         </View>
       </ScrollView>
-      <View style={{paddingHorizontal: 16}}></View>
+      <View
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          flexDirection: 'row',
+          paddingBottom: 15,
+          paddingTop: 15,
+          elevation: 8,
+          borderTopWidth: 1,
+          borderColor: '#F8F4F4',
+          backgroundColor: 'white',
+        }}>
+        <Pressable
+          onPress={() => {
+            dispatch(setReset());
+          }}
+          style={{
+            marginLeft: 20,
+            marginRight: 6,
+            borderRadius: 8,
+            width: 48,
+            height: 48,
+            backgroundColor: 'white',
+            borderWidth: 1,
+            borderColor: '#DBDBDB',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+          <Image
+            source={require('@assets/coolicon.png')}
+            style={{width: 17.4, height: 16}}
+            resizeMode="contain"
+          />
+          <Text
+            style={{
+              fontFamily: FontList.PretendardRegular,
+              fontSize: 12,
+              color: '#333333',
+            }}>
+            초기화
+          </Text>
+        </Pressable>
+        <Pressable
+          onPress={() => {
+            _onPressSave();
+          }}
+          style={{
+            flex: 1,
+            height: 48,
+            marginRight: 20,
+            borderRadius: 8,
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: '#00239C',
+          }}>
+          <Text
+            style={{
+              fontFamily: FontList.PretendardBold,
+              fontSize: 16,
+              color: 'white',
+            }}>
+            설정 저장
+          </Text>
+        </Pressable>
+      </View>
+
+      <MyModal
+        title="저장되었습니다"
+        positive
+        positiveTitle="확인"
+        visible={modalSave}
+        setVisible={setModalSave}
+      />
     </SafeAreaView>
   );
 };

@@ -22,6 +22,8 @@ import Loading from '@components/Loading';
 import {RootState} from 'redux/store';
 import {
   setGoalData,
+  setInputGoal,
+  setInputStart,
   setIsGoalFinish,
   setIsStartFinish,
   setKeywordList,
@@ -34,6 +36,11 @@ const PathSearchMain = () => {
   const {keywordList, lastRef, goalData, startData} = useSelector(
     (state: RootState) => state.pathReducer,
   );
+
+  useEffect(() => {
+    console.log('LIST', keywordList);
+  }, [keywordList]);
+
   const dispatch = useDispatch();
   // console.log('keywordk', keywordList);
 
@@ -62,6 +69,25 @@ const PathSearchMain = () => {
   //   temp = target.filter((item, idx) => idx !== index);
   //   setTarget(temp);
   // };
+
+  const _onPressItem = (item: any) => {
+    console.log('item', item);
+    if (keywordList.focus) {
+      dispatch(setStartData(item));
+      dispatch(setInputStart(item.address));
+    } else if (!keywordList.focus) {
+      dispatch(setGoalData(item));
+      dispatch(setInputGoal(item.address));
+    }
+    Keyboard.dismiss();
+    nav.navigate('PathMain');
+  };
+
+  useEffect(() => {
+    console.log('##############################');
+    console.log('start data :: ', startData);
+    console.log('goal data :: ', goalData);
+  }, [startData, goalData]);
 
   const renderItem: ListRenderItem<any> = item => {
     return (
@@ -162,6 +188,7 @@ const PathSearchMain = () => {
         <PathSearchBox editable={true} />
       </View>
       <FlatList
+        keyboardShouldPersistTaps="always"
         renderItem={item => renderItem(item)}
         style={{paddingBottom: 60, marginBottom: 60}}
         ListEmptyComponent={
@@ -183,11 +210,13 @@ const PathSearchMain = () => {
         keyExtractor={(item, idx) => String(idx) + String(item)}
         ListHeaderComponent={
           <>
-            {/* {keywordList.map(
+            {keywordList?.data?.map(
               (item, idx) =>
                 idx < 3 && (
                   <Pressable
-                    onPress={() => {}}
+                    onPress={() => {
+                      _onPressItem(item);
+                    }}
                     key={idx}
                     style={{
                       width: '100%',
@@ -222,7 +251,7 @@ const PathSearchMain = () => {
                     </View>
                   </Pressable>
                 ),
-            )} */}
+            )}
           </>
         }
       />

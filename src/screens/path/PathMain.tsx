@@ -191,7 +191,7 @@ const PathMain = () => {
   // 본인의 실제 현위치로 포커스
   const _onPressMyLocation = () => {
     const temp = JSON.parse(JSON.stringify(currentUserLocation));
-    setCenter(temp);
+    setCenter({...temp});
   };
 
   // 카메라 설정
@@ -303,7 +303,7 @@ const PathMain = () => {
               height: layout.height - 60,
             }}
             onCameraChange={e => {
-              // if (center) setCenter(undefined);
+              if (center) setCenter(undefined);
             }}
             scaleBar={false}
             showsMyLocationButton={false}

@@ -17,6 +17,8 @@ import commonAPI from 'api/modules/commonAPI';
 import {
   resetPath,
   setGoalData,
+  setInputGoal,
+  setInputStart,
   setIsGoalFinish,
   setIsHoem,
   setKeywordList,
@@ -37,38 +39,96 @@ interface props {
 }
 
 const PathSearchBox = ({editable}: props) => {
-  // _postSearchBase 키워드에 대한 검색 api
+  const dispatch = useDispatch();
+  const nav = useNavigation<commonTypes.navi>();
+  const {currentUserLocation} = useSelector(
+    (state: RootState) => state.locationReducer,
+  );
+  const {userInfo} = useSelector((state: RootState) => state.authReducer);
+  const {isHome, inputStart, inputGoal} = useSelector(
+    (state: RootState) => state.pathReducer,
+  );
 
-  // const _onPressClose = () => {
-  //   setInputStart('');
-  //   setInputGoal('');
-  //   if (setRecomandList) setRecomandList([]);
-  //   sheetRef?.current?.close();
-  //   if (setRec) setRec(false);
-  //   // dispatch(setGoalData(null));
-  //   // dispatch(setStartData(null));
-  //   // dispatch(setKeywordList([]));
-  //   dispatch(resetPath({}));
-  // };
+  // const [inputStart, setInputStart] = useState('');
+  // const [inputGoal, setInputGoal] = useState('');
 
-  // const _onPressSwitch = () => {
-  //   sheetRef?.current?.close();
-  //   const copyStart = inputStart;
-  //   const copyGoal = inputGoal;
-  //   dispatch(switchPosition({}));
-  //   setInputStart(copyGoal);
-  //   setInputGoal(copyStart);
-  // };
-  const [inputStart, setInputStart] = useState('');
-  const [inputGoal, setInputGoal] = useState('');
-  const [isHome, setIsHome] = useState(false);
+  const startRef = useRef<TextInput>(null);
+
+  const _onPressBox = () => {
+    if (!editable) {
+      nav.navigate('PathSearchMain');
+    }
+  };
+
+  const _getKeywordRes = async () => {
+    const data = {
+      searchKeyword: startRef.current?.isFocused() ? inputStart : inputGoal,
+      currentXY: [
+        currentUserLocation?.latitude,
+        currentUserLocation?.longitude,
+      ],
+    };
+    await commonAPI
+      ._postSearchBase(data)
+      .then(res => {
+        let temp = JSON.parse(JSON.stringify(res.data.data));
+        temp.map((item: any, index: number) => {
+          item.location.lat = Number(res.data.data[index].location.lon);
+          item.location.lon = Number(res.data.data[index].location.lat);
+        });
+        console.log('temp', temp);
+        dispatch(
+          setKeywordList({data: temp, focus: startRef.current?.isFocused()}),
+        );
+      })
+      .catch(err => {});
+  };
+
+  const _onPressClose = () => {
+    dispatch(resetPath());
+  };
+
+  const _onPressHome = () => {
+    if (userInfo?.addressInfo) {
+      dispatch(setGoalData(userInfo?.addressInfo));
+      dispatch(setInputGoal(userInfo.addressInfo.address));
+    }
+  };
+
+  const _onPressSwitch = () => {
+    startRef.current?.blur();
+    dispatch(switchPosition());
+  };
+
+  // 목적지가 집일시
+  useEffect(() => {
+    if (inputGoal === userInfo?.addressInfo?.address) {
+      dispatch(setIsHoem(true));
+    } else dispatch(setIsHoem(false));
+  }, [inputGoal]);
+
+  // 도착, 목적지 입력시 결과 호출
+  useEffect(() => {
+    if (editable) {
+      if (startRef.current?.isFocused() && inputStart?.length > 1) {
+        _getKeywordRes();
+      }
+      if (!startRef.current?.isFocused() && inputGoal?.length > 1) {
+        _getKeywordRes();
+      }
+    }
+  }, [inputStart, inputGoal]);
 
   return (
     <View style={{width: '100%', backgroundColor: 'white'}}>
       {/* 검색창 및 좌, 우 버튼 */}
       <View style={{flexDirection: 'row', marginHorizontal: 16, marginTop: 16}}>
         <View style={{flexDirection: 'row', alignItems: 'center', flex: 1}}>
-          <Pressable hitSlop={10} onPress={() => {}}>
+          <Pressable
+            hitSlop={10}
+            onPress={() => {
+              _onPressSwitch();
+            }}>
             <Image
               source={require('@assets/switch_position.png')}
               style={{width: 16, height: 17}}
@@ -83,7 +143,9 @@ const PathSearchBox = ({editable}: props) => {
             }}>
             <View style={{backgroundColor: '#F4F2F2', borderRadius: 3}}>
               <Pressable
-                onPress={() => {}}
+                onPress={() => {
+                  _onPressBox();
+                }}
                 style={{
                   flexDirection: 'row',
                   alignItems: 'center',
@@ -97,12 +159,13 @@ const PathSearchBox = ({editable}: props) => {
                   현위치
                 </Text>
                 <TextInput
+                  ref={startRef}
                   onSubmitEditing={() => {
                     Keyboard.dismiss();
                   }}
                   onFocus={() => {}}
                   value={inputStart}
-                  onChangeText={setInputStart}
+                  onChangeText={e => dispatch(setInputStart(e))}
                   editable={editable ? true : false}
                   style={{
                     flex: 1,
@@ -111,12 +174,14 @@ const PathSearchBox = ({editable}: props) => {
                     marginHorizontal: 10,
                     borderColor: '#C6C6C6',
                   }}
-                  placeholder="목적지를 검색하세요"
+                  placeholder={'목적지를 검색하세요'}
                 />
               </Pressable>
 
               <Pressable
-                onPress={() => {}}
+                onPress={() => {
+                  _onPressBox();
+                }}
                 style={{
                   flexDirection: 'row',
                   alignItems: 'center',
@@ -134,7 +199,7 @@ const PathSearchBox = ({editable}: props) => {
                   editable={editable ? true : false}
                   autoCapitalize="none"
                   value={inputGoal}
-                  onChangeText={setInputGoal}
+                  onChangeText={e => dispatch(setInputGoal(e))}
                   onSubmitEditing={() => {
                     Keyboard.dismiss();
                   }}
@@ -143,13 +208,18 @@ const PathSearchBox = ({editable}: props) => {
                     height: 39,
                     marginHorizontal: 10,
                   }}
-                  placeholder="목적지를 검색하세요"
+                  placeholder={'목적지를 검색하세요'}
                 />
               </Pressable>
             </View>
           </Pressable>
         </View>
-        <Pressable hitSlop={5} onPress={() => {}} style={{top: 15}}>
+        <Pressable
+          hitSlop={5}
+          onPress={() => {
+            _onPressClose();
+          }}
+          style={{top: 15}}>
           <Image
             source={require('@assets/close_star.png')}
             style={{width: 14, height: 14}}
@@ -167,7 +237,9 @@ const PathSearchBox = ({editable}: props) => {
         }}>
         <Pressable
           hitSlop={7}
-          onPress={() => {}}
+          onPress={() => {
+            _onPressHome();
+          }}
           style={{
             marginRight: 12,
             flexDirection: 'row',
