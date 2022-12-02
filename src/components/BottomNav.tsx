@@ -151,7 +151,8 @@ const BottomNav = ({style, shadowStyle, sheetRef}: props) => {
             resizeMode="contain"
           />
           <Text style={{fontFamily: FontList.PretendardMedium, fontSize: 12}}>
-            즐겨찾기
+            {/* 즐겨찾기 */}
+            마이홈
           </Text>
         </Pressable>
         <Pressable

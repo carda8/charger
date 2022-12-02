@@ -50,13 +50,13 @@ const RecentMain = () => {
 
   return (
     <SafeAreaView style={{...GlobalStyles.safeAreaStyle}}>
-      <HeaderCenter title="즐겨찾기" />
+      <HeaderCenter title="마이홈" />
       <FlatList
         data={recent}
         ListEmptyComponent={
           <View style={{margin: 16, alignItems: 'center'}}>
             <Text style={{fontSize: 16, color: '#959595'}}>
-              즐결찾기가 없습니다
+              마이홈이 없습니다
             </Text>
           </View>
         }
