@@ -1,4 +1,4 @@
-import {View, Text, Image, Pressable} from 'react-native';
+import {View, Text, Image, Pressable, Linking} from 'react-native';
 import React from 'react';
 import {_getHeight, _getWidth} from 'constants/utils';
 import FontList from 'constants/FontList';
@@ -6,9 +6,10 @@ import {BottomSheetModalMethods} from '@gorhom/bottom-sheet/lib/typescript/types
 
 interface props {
   bottomSheetRef: React.RefObject<BottomSheetModalMethods>;
+  item?: any;
 }
 
-const DashBoard = ({bottomSheetRef}: props) => {
+const DashBoard = ({bottomSheetRef, item}: props) => {
   return (
     <View>
       <View
@@ -117,7 +118,7 @@ const DashBoard = ({bottomSheetRef}: props) => {
                   fontSize: 16,
                   color: 'black',
                 }}>
-                주차무료
+                {item?.parkingFree === 'Y' ? '주차무료' : '주차유료'}
               </Text>
             </View>
             <View
@@ -170,7 +171,7 @@ const DashBoard = ({bottomSheetRef}: props) => {
                     fontSize: 16,
                     color: 'black',
                   }}>
-                  24시간
+                  {item?.useTime ? item?.useTime : '정보없음'}
                 </Text>
               </View>
               <View
@@ -191,29 +192,32 @@ const DashBoard = ({bottomSheetRef}: props) => {
               }}>
               운영기관
             </Text>
-
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                marginTop: _getHeight(11),
-              }}>
-              <Text
+            <Pressable
+              hitSlop={10}
+              onPress={() => Linking.openURL(`tel:${item?.busiCall}`)}>
+              <View
                 style={{
-                  fontFamily: FontList.PretendardMedium,
-                  includeFontPadding: false,
-
-                  fontSize: 16,
-                  color: 'black',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  marginTop: _getHeight(11),
                 }}>
-                환경부
-              </Text>
-              <Image
-                source={require('@assets/icon_phone.png')}
-                style={{width: 15, height: 15, marginLeft: 1}}
-                resizeMode="contain"
-              />
-            </View>
+                <Text
+                  style={{
+                    fontFamily: FontList.PretendardMedium,
+                    includeFontPadding: false,
+
+                    fontSize: 16,
+                    color: 'black',
+                  }}>
+                  {item?.busiNm}
+                </Text>
+                <Image
+                  source={require('@assets/icon_phone.png')}
+                  style={{width: 15, height: 15, marginLeft: 1}}
+                  resizeMode="contain"
+                />
+              </View>
+            </Pressable>
           </View>
         </View>
       </View>

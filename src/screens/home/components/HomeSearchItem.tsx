@@ -1,30 +1,139 @@
 import {View, Text, Pressable, StyleProp, ViewStyle, Image} from 'react-native';
-import React, {Dispatch, SetStateAction, useState} from 'react';
+import React, {Dispatch, SetStateAction, useState, useEffect} from 'react';
 import {_getHeight, _getWidth} from 'constants/utils';
 import FontList from 'constants/FontList';
+import ChargerType from 'constants/ChargerType';
+import commonAPI from 'api/modules/commonAPI';
+import modules from 'constants/utils/modules';
+import {useDispatch, useSelector} from 'react-redux';
+import {RootState} from 'redux/store';
+import {setUserInfo} from 'redux/reducers/authReducer';
 
 interface props {
   style?: StyleProp<ViewStyle>;
   visible?: boolean;
+  renderData?: any;
+  userInfo?: any;
   setVisible?: Dispatch<SetStateAction<boolean>>;
+  dispatch?: any;
+  setCoor: Dispatch<SetStateAction<any>>;
+  setStartCoor: Dispatch<SetStateAction<any>>;
 }
 
-const HomeSearchItem = ({setVisible, visible}: props) => {
+const HomeSearchItem = ({
+  setVisible,
+  visible,
+  renderData,
+  setCoor,
+  setStartCoor,
+}: props) => {
   const [favorite, setFavorite] = useState(false);
+  const {userInfo} = useSelector((state: RootState) => state.authReducer);
+
+  const _sortChgerBySpeed = (item: any) => {
+    let normal = 0;
+    let fast = 0;
+    if (item) {
+      item?.chargers.map((item: any, index: any) => {
+        if (item.chgerTypeInfo === 'AC완속' || item.chgerTypeInfo === 'AC3상')
+          normal++;
+        else fast++;
+      });
+    }
+    const res = {
+      normal,
+      fast,
+    };
+    return res;
+  };
+
+  const _getChgerImg = (item: any) => {
+    let chgerImg = {
+      dcCombo: false,
+      dcDemo: false,
+      ac3: false,
+      ac5: false,
+    };
+    if (item) {
+      item.chargers.map((item: any, index: any) => {
+        if (item.chgerTypeInfo === 'DC차데모+AC3상+DC콤보') {
+          chgerImg.ac3 = true;
+          chgerImg.dcCombo = true;
+          chgerImg.dcDemo = true;
+        }
+        if (item.chgerTypeInfo === 'AC완속') {
+          chgerImg.ac5 = true;
+        }
+        if (item.chgerTypeInfo === 'DC콤보') {
+          chgerImg.dcCombo = true;
+        }
+        if (item.chgerTypeInfo === 'DC차데모+DC콤보') {
+          chgerImg.dcCombo = true;
+          chgerImg.dcDemo = true;
+        }
+        if (item.chgerTypeInfo === 'DC차데모+AC3상') {
+          chgerImg.dcDemo = true;
+          chgerImg.ac3 = true;
+        }
+        if (item.chgerTypeInfo === 'AC3상') {
+          chgerImg.ac3 = true;
+        }
+        if (item.chgerTypeInfo === 'DC차데모') {
+          chgerImg.dcDemo = true;
+        }
+      });
+    }
+    return chgerImg;
+  };
+
+  const _onPressStar = async () => {
+    console.log('favorite', favorite);
+    console.log('userInfo', userInfo);
+    const data = {
+      user_id: userInfo?.id,
+      stat_id: renderData.statId,
+    };
+    if (!favorite) {
+      await commonAPI
+        ._postUserStar(data)
+        .then(res => {
+          console.log('_postUserStar ###', res);
+        })
+        .catch(err => console.log('err', err));
+    }
+    if (favorite) {
+      await commonAPI
+        ._deleteUserStar(data)
+        .then(res => {
+          console.log('_deleteUserStar ###', res);
+        })
+        .catch(err => console.log('err', err));
+    }
+  };
+
+  useEffect(() => {
+    userInfo?.favorites?.map(item => {
+      if (item.statId === renderData.statId) setFavorite(true);
+    });
+  }, []);
+
   return (
     <Pressable
       onPress={() => {
         if (setVisible) setVisible(!visible);
+        setCoor({
+          latitude: renderData.location.lat,
+          longitude: renderData.location.lon,
+        });
       }}
       style={({pressed}) => [
         {
-          paddingHorizontal: 16,
           width: '100%',
-          // opacity: pressed ? 0.5 : 1,
-          backgroundColor: 'white',
-          borderBottomWidth: 1,
-          borderBottomColor: '#F5F5F5',
           paddingVertical: 18,
+          borderBottomWidth: 1,
+          paddingHorizontal: 16,
+          backgroundColor: 'white',
+          borderBottomColor: '#F5F5F5',
         },
       ]}>
       <View
@@ -32,12 +141,10 @@ const HomeSearchItem = ({setVisible, visible}: props) => {
           flexDirection: 'row',
           alignItems: 'center',
         }}>
-        <View
-          style={{
-            width: _getWidth(20),
-            height: _getHeight(20),
-            backgroundColor: '#D9D9D9',
-          }}
+        <Image
+          source={require('@assets/main_bt_union2.png')}
+          style={{width: 20, height: 20}}
+          resizeMode="contain"
         />
         <View style={{marginLeft: 4, marginRight: 6}}>
           <Text
@@ -46,17 +153,20 @@ const HomeSearchItem = ({setVisible, visible}: props) => {
               fontSize: 16,
               color: '#333333',
             }}>
-            강남역 12번 출구
+            {renderData?.statNm}
           </Text>
         </View>
-        <Text>1.5km</Text>
+        <Text>{''}</Text>
         <Pressable
           style={{
             marginLeft: 'auto',
             alignItems: 'center',
           }}
           hitSlop={10}
-          onPress={() => setFavorite(!favorite)}>
+          onPress={() => {
+            setFavorite(!favorite);
+            _onPressStar();
+          }}>
           <Image
             source={
               favorite
@@ -79,7 +189,7 @@ const HomeSearchItem = ({setVisible, visible}: props) => {
             fontFamily: FontList.PretendardRegular,
             color: '#959595',
           }}>
-          {'경기도 성남시 분당구 판교로227번길 6'}
+          {renderData?.addr}
         </Text>
       </View>
 
@@ -114,7 +224,7 @@ const HomeSearchItem = ({setVisible, visible}: props) => {
                 fontFamily: FontList.PretendardRegular,
                 color: '#333333',
               }}>
-              급속 1
+              급속 {_sortChgerBySpeed(renderData).fast}
             </Text>
             <Text
               style={{
@@ -128,7 +238,7 @@ const HomeSearchItem = ({setVisible, visible}: props) => {
                 fontFamily: FontList.PretendardRegular,
                 color: '#333333',
               }}>
-              완속 3
+              완속 {_sortChgerBySpeed(renderData).normal}
             </Text>
           </View>
         </View>
@@ -138,23 +248,78 @@ const HomeSearchItem = ({setVisible, visible}: props) => {
             justifyContent: 'space-between',
             flex: 1,
           }}>
-          <Image
-            source={require('@assets/station_type_1.png')}
-            style={{width: _getWidth(40), height: _getHeight(40)}}
-          />
-          <Image
-            source={require('@assets/station_type_2.png')}
-            style={{width: _getWidth(40), height: _getHeight(40)}}
-          />
-          <Image
-            source={require('@assets/station_type_3.png')}
-            style={{width: _getWidth(40), height: _getHeight(40)}}
-          />
-
-          <Image
-            source={require('@assets/station_type_4.png')}
-            style={{width: _getWidth(40), height: _getHeight(40)}}
-          />
+          <View
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: _getWidth(40) / 2,
+              borderWidth: 1,
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderColor: _getChgerImg(renderData).dcCombo
+                ? '#6FCF24'
+                : '#C6C6C6',
+              opacity: _getChgerImg(renderData).dcCombo ? 1 : 0.3,
+            }}>
+            <Image
+              source={ChargerType.chargerLogo[0]}
+              style={{width: 35, height: 35}}
+              resizeMode="contain"
+            />
+          </View>
+          <View
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: _getWidth(40) / 2,
+              borderWidth: 1,
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderColor: _getChgerImg(renderData).dcDemo
+                ? '#6FCF24'
+                : '#C6C6C6',
+              opacity: _getChgerImg(renderData).dcDemo ? 1 : 0.3,
+            }}>
+            <Image
+              source={ChargerType.chargerLogo[1]}
+              style={{width: 30, height: 30}}
+              resizeMode="contain"
+            />
+          </View>
+          <View
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: _getWidth(40) / 2,
+              borderWidth: 1,
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderColor: _getChgerImg(renderData).ac3 ? '#6FCF24' : '#C6C6C6',
+              opacity: _getChgerImg(renderData).ac3 ? 1 : 0.3,
+            }}>
+            <Image
+              source={ChargerType.chargerLogo[2]}
+              style={{width: 30, height: 30}}
+              resizeMode="contain"
+            />
+          </View>
+          <View
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: _getWidth(40) / 2,
+              borderWidth: 1,
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderColor: _getChgerImg(renderData).ac5 ? '#6FCF24' : '#C6C6C6',
+              opacity: _getChgerImg(renderData).ac5 ? 1 : 0.3,
+            }}>
+            <Image
+              source={ChargerType.chargerLogo[3]}
+              style={{width: 33, height: 33}}
+              resizeMode="contain"
+            />
+          </View>
         </View>
       </View>
     </Pressable>

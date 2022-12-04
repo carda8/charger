@@ -1,10 +1,44 @@
-import {createSlice} from '@reduxjs/toolkit';
+import {createSlice, PayloadAction} from '@reduxjs/toolkit';
+import {commonTypes} from '@types';
+
+interface userInfo {
+  id?: string;
+  name?: string;
+  favorites?: string[];
+  histories?: string[];
+  car_brand?: string;
+  car_model?: string;
+  chgerType?: string[];
+  addressInfo?: commonTypes.userAddr;
+}
+
+interface initialState {
+  userInfo?: userInfo | undefined;
+  autoLogin?: false;
+  fcmToken?: string;
+  isGuest?: false;
+}
+
+const initialState: initialState = {
+  userInfo: {
+    id: '',
+    name: '',
+    favorites: [],
+    histories: [],
+    car_brand: '',
+    car_model: '',
+    chgerType: [],
+  },
+  autoLogin: false,
+  fcmToken: '',
+  isGuest: false,
+};
 
 const authSlice = createSlice({
   name: 'auth',
-  initialState: {userInfo: '', autoLogin: false, fcmToken: '', isGuest: false},
+  initialState,
   reducers: {
-    setUserInfo: (state, action) => {
+    setUserInfo: (state, action: PayloadAction<userInfo>) => {
       state.userInfo = action.payload;
     },
     setFcmToken: (state, action) => {
@@ -16,9 +50,18 @@ const authSlice = createSlice({
     setIsGuest: (state, action) => {
       state.isGuest = action.payload;
     },
+    resetUserInfo: state => {
+      state.userInfo = undefined;
+    },
   },
 });
 
 const {actions, reducer} = authSlice;
-export const {setUserInfo, setFcmToken, setAutoLogin, setIsGuest} = actions;
+export const {
+  setUserInfo,
+  setFcmToken,
+  setAutoLogin,
+  setIsGuest,
+  resetUserInfo,
+} = actions;
 export const authReducer = reducer;

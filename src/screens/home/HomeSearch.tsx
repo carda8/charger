@@ -11,13 +11,13 @@ import {commonTypes} from '@types';
 import {_getHeight, _getWidth} from 'constants/utils';
 import HomeSearchItem from './components/HomeSearchItem';
 import MyModal from '@components/MyModal';
+import {useSelector} from 'react-redux';
+import {RootState} from 'redux/store';
 
 const HomeSearch = () => {
   const nav = useNavigation<commonTypes.navi>();
   const [visible, setVisible] = useState(false);
-  const addr =
-    useRoute<RouteProp<commonTypes.RootStackParamList, 'HomeSearch'>>().params
-      ?.addr;
+  const {userInfo} = useSelector((state: RootState) => state.authReducer);
   const data = [1, 1, 1, 1, 1];
 
   const renderItem: ListRenderItem<any> = item => {
@@ -43,7 +43,7 @@ const HomeSearch = () => {
       />
       <View
         style={
-          addr
+          userInfo?.addressInfo
             ? {
                 borderBottomWidth: 4,
                 borderColor: '#F8F4F4',
@@ -72,7 +72,7 @@ const HomeSearch = () => {
               }}>
               집
             </Text>
-            {addr ? (
+            {userInfo?.addressInfo ? (
               <View
                 style={{
                   flexDirection: 'row',
@@ -86,7 +86,7 @@ const HomeSearch = () => {
                       fontSize: 15,
                       color: '#333333',
                     }}>
-                    {addr}
+                    {userInfo?.addressInfo.address}
                   </Text>
                 </View>
                 <Pressable
@@ -145,7 +145,7 @@ const HomeSearch = () => {
           </View>
         </View>
       </View>
-      {addr ? (
+      {userInfo?.addressInfo ? (
         <FlatList
           data={data}
           keyExtractor={(item, index) => String(index)}
@@ -168,10 +168,12 @@ const HomeSearch = () => {
       )}
       <MyModal
         title="등록완료"
-        text={'집이 성공적으로 등록되었습니다.\n이어서 집으로 안내를 받을까요?'}
+        text={
+          '집이 성공적으로 등록되었습니다.\n이어서 마이홈 충전소 안내를 받을까요?'
+        }
         positive
         positiveTitle="네"
-        positivePress={() => nav.navigate('HomeMain', {addr: addr})}
+        positivePress={() => nav.navigate('HomeMain')}
         visible={visible}
         setVisible={setVisible}
         negative
@@ -180,7 +182,7 @@ const HomeSearch = () => {
       <BottomButton
         style={{marginHorizontal: 18}}
         text="완료"
-        disable={addr ? false : true}
+        disable={userInfo?.addressInfo ? false : true}
         setVisible={setVisible}
       />
     </SafeAreaView>

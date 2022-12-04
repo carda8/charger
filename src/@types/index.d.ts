@@ -1,11 +1,24 @@
 import {NativeStackNavigationProp} from '@react-navigation/native-stack';
 
 declare module commonTypes {
+  type item = {
+    addr?: string;
+    statNm?: string;
+    parkingFree?: boolean;
+  };
+  type userAddr = {
+    address: string;
+    name: string;
+    location: {
+      lon: number;
+      lat: number;
+    };
+  };
   //Stack Navigation Types
   type RootStackParamList = {
     Login: undefined;
     Account: undefined;
-    AccountPolicy: undefined;
+    AccountPolicy: {snsType: string};
     AccountPolicyDetail: {target?: string} | undefined;
     AccountFinish: undefined;
     AccountCarInfo: undefined;
@@ -13,22 +26,23 @@ declare module commonTypes {
 
     Home: undefined;
     Notification: undefined;
-    StationDetailMain: undefined;
+    NotificationDetail: undefined;
+    StationDetailMain: {item?: any} | undefined;
     StationReportPage: undefined;
 
     SearchMain: undefined;
     PathSearchMain: undefined;
 
-    HomeMain: {addr?: string} | undefined;
+    HomeMain: {addr?: userAddr} | undefined;
     HomeSearch: {addr?: string} | undefined;
     HomePostCode: undefined;
 
     FavStationMain: undefined;
 
-    AroundMain: undefined;
+    AroundMain: {res?: any[]; isFavorite?: boolean} | undefined;
     AroundFilter: undefined;
 
-    PathMain: {item?: boolean} | undefined;
+    PathMain: {item?: item; goal?: string; start?: string} | undefined;
     RecentMain: undefined;
 
     MyPageMain: undefined;
@@ -37,8 +51,24 @@ declare module commonTypes {
     MyPagePolicy: undefined;
     MyPageInfo: undefined;
     MyPageRetire: undefined;
+
+    PolicyPersonal: undefined;
+    PolicyLocation: undefined;
+    PolicyUse: undefined;
   };
   type navi = NativeStackNavigationProp<RootStackParamList>;
+
+  type RootApiType = {
+    postAruondStation: stirng;
+  };
+
+  type saveUserDB = {
+    user_id?: string;
+    name?: string;
+    car_brand?: string;
+    car_model?: string;
+    chgerType?: string[];
+  };
   // export namespace helloo {
   //   type hello = 'hi';
   // }

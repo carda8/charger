@@ -1,4 +1,11 @@
-import {View, Text, Pressable, Image} from 'react-native';
+import {
+  View,
+  Text,
+  Pressable,
+  Image,
+  useWindowDimensions,
+  StyleSheet,
+} from 'react-native';
 import React, {useEffect, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import GlobalStyles from 'styles/GlobalStyles';
@@ -7,32 +14,66 @@ import {ScrollView} from 'react-native-gesture-handler';
 import FontList from 'constants/FontList';
 import {_getHeight} from 'constants/utils';
 import {API} from 'api/API';
+import ChargerType from 'constants/ChargerType';
+import {useDispatch, useSelector} from 'react-redux';
+import {
+  setArea,
+  setCanUse,
+  setChgerFree,
+  setChgerType,
+  setCompany,
+  setFilter,
+  setFreePark,
+  setIsSaved,
+  setPickall,
+  setReset,
+  setRoad,
+  setSpeed,
+} from 'redux/reducers/aroundReducer';
+import {RootState} from 'redux/store';
+import MyModal from '@components/MyModal';
 
 interface busiType {
   key: string;
   value: number;
 }
 
+interface optionView {
+  title: any;
+  data: any;
+}
+
 const AroundFilter = () => {
+  const dispatch = useDispatch();
+  const {filter} = useSelector((state: RootState) => state.aroundReducer);
+  const [modalSave, setModalSave] = useState(false);
   const [showAvailable, setShowAvailable] = useState(false);
   const [pickAll, setPickAll] = useState(false);
   const [pickedBusi, setPickedBusi] = useState<string[]>([]);
   const [busiList, setBusiList] = useState<busiType[]>();
 
-  const dummy = [
-    {충전속도: ['완속', '급속', '초고속']},
-    {'충전소 유무료': ['유료 충전소, 무료 충전소']},
-    {주차여부: ['무료주차', '입주민 전용']},
-    {'충전기 설치 장소': ['실내충전소', '실외충전소', '캐노피']},
-    {도로: ['일반도로', '고속도로']},
-    {'충전기 타입': ['DC콤보', 'AC3상', '완속', 'DC콤보', 'AC3상', '완속']},
-  ];
+  const layout = useWindowDimensions();
+  const WIDTH = (layout.width - 32 - 48) / 4;
+
+  // const [speed, setSpeed] = useState<string[]>([]);
+  // const [fee, setFee] = useState<string[]>([]);
+  // const [parking, setParking] = useState<string[]>([]);
+  // const [area, setArea] = useState<string[]>([]);
+  // const [road, setRoad] = useState<string[]>([]);
+  // const [chargerType, setChargerType] = useState<string[]>([]);
+
+  const dumSpeed = ['완속', '급속', '초고속'];
+  const dumFee = ['유료 충전소', '무료 충전소'];
+  const dumPark = ['무료주차', '입주민 전용'];
+  const dumArea = ['실내충전소', '실외충전소', '캐노피'];
+  const dumRoad = ['일반도로', '고속도로'];
+  const dumType = ['DC콤보', 'AC3상', '완속', 'DC콤보', 'AC3상', '완속'];
 
   const _getInfo = async () => {
     await API.get('filters')
       .then(res => {
         if (res.data) {
-          console.log(res.data);
+          console.log('api res', res.data);
           setBusiList(res.data.busiNm);
         }
       })
@@ -65,6 +106,11 @@ const AroundFilter = () => {
     else _pickBusi(key);
   };
 
+  const _onPressSave = () => {
+    setModalSave(!modalSave);
+    dispatch(setIsSaved());
+  };
+
   const _pickAll = () => {
     let temp: string[] = [];
     if (pickAll) {
@@ -80,22 +126,71 @@ const AroundFilter = () => {
   };
 
   useEffect(() => {
+    if (!filter.pickAll) {
+      setPickAll(false);
+    }
+  }, [filter.pickAll]);
+
+  // const _setOption = (state: any, data: string, setState: any) => {
+  //   console.log(state, data);
+  //   let temp = [...state];
+  //   const res = temp.filter((item, index) => item === data);
+  //   if (res.length > 0) {
+  //     const res = temp.filter((item, index) => item !== data);
+  //     if (state === parking) {
+  //     }
+  //     setState(res);
+  //   } else {
+  //     let temp2: string[] = [...state];
+  //     temp2.push(data);
+  //     setState(temp2);
+  //   }
+  // };
+
+  // const _getColor = (state: string[], data: any) => {
+  //   const temp = state.filter((item, index) => item === data);
+  //   if (temp.length > 0) {
+  //     return '#07B3FD';
+  //   } else return '#333333';
+  // };
+
+  // const _getOpasity = (state: string[], data: any) => {
+  // const temp = state.filter((item, index) => item === data);
+  //   if (temp.length > 0) {
+  //     return 1;
+  //   } else return 0.3;
+  // };
+
+  useEffect(() => {
     if (!busiList) {
       _getInfo();
     }
   }, []);
 
+  useEffect(() => {
+    console.log('filter', filter);
+    // console.log('filter', filter.freePark?.includes('무료주차'));
+  }, [filter]);
+
   return (
     <SafeAreaView style={{...GlobalStyles.safeAreaStyle}}>
-      <HeaderCenter title="상세필터" leftBack rightBack backTitle="닫기" />
+      <HeaderCenter
+        title="상세필터"
+        leftBack
+        rightBack
+        backTitle="닫기"
+        backTitleStyle={{fontSize: 16, fontFamily: FontList.PretendardRegular}}
+      />
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: 16,
           paddingTop: 25,
+          paddingBottom: 60,
         }}>
         <Pressable
           onPress={() => {
-            setShowAvailable(!showAvailable);
+            dispatch(setCanUse());
+            // setShowAvailable(!showAvailable);
           }}
           hitSlop={10}
           style={{
@@ -115,15 +210,15 @@ const AroundFilter = () => {
             style={{
               width: 16,
               height: 16,
-              borderWidth: showAvailable ? undefined : 1,
+              borderWidth: filter.canUse ? undefined : 1,
               borderColor: '#C6C6C6',
-              backgroundColor: showAvailable ? '#07B3FD' : undefined,
+              backgroundColor: filter.canUse ? '#07B3FD' : undefined,
               borderRadius: 2,
               marginLeft: 6,
               alignItems: 'center',
               justifyContent: 'center',
             }}>
-            {showAvailable && (
+            {filter.canUse && (
               <Image
                 source={require('@assets/check_filter.png')}
                 style={{width: 8, height: 8}}
@@ -133,78 +228,451 @@ const AroundFilter = () => {
           </View>
         </Pressable>
 
-        {dummy.map((item: any, idx) => (
-          <View
-            key={idx}
-            style={{
-              // height: _getHeight(106),
-              justifyContent: 'center',
-              marginTop: 23,
-            }}>
-            <View style={{marginBottom: 14.5}}>
+        {/* 충전속도 */}
+        <View
+          style={{
+            justifyContent: 'center',
+            marginTop: 23,
+          }}>
+          <View style={{marginBottom: 14.5}}>
+            <Text
+              style={{
+                fontFamily: FontList.PretendardRegular,
+                fontSize: 16,
+                color: '#333333',
+              }}>
+              충전속도
+            </Text>
+          </View>
+          <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
+            {dumSpeed.map((item, index) => (
+              <Pressable
+                key={index}
+                onPress={() => {
+                  dispatch(setSpeed(item));
+                  // _setOption(speed, item, setSpeed);
+                }}
+                style={{
+                  alignSelf: 'flex-start',
+                  paddingHorizontal: 13,
+                  paddingVertical: 6.5,
+                  borderWidth: 1,
+                  borderRadius: 24,
+                  marginRight: 6,
+                  marginBottom: 10,
+                  borderColor: filter.speed?.includes(item)
+                    ? '#07B3FD'
+                    : '#333333',
+                }}>
+                <Text
+                  style={{
+                    fontFamily: FontList.PretendardRegular,
+                    color: filter.speed?.includes(item) ? '#07B3FD' : '#333333',
+                    fontSize: 16,
+                  }}>
+                  {item}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
+        {/* 충전소 유무료 */}
+        <View
+          style={{
+            justifyContent: 'center',
+            marginTop: 23,
+          }}>
+          <View style={{marginBottom: 14.5}}>
+            <Text
+              style={{
+                fontFamily: FontList.PretendardRegular,
+                fontSize: 16,
+                color: '#333333',
+              }}>
+              충전소 유무료
+            </Text>
+          </View>
+          <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
+            {dumFee.map((item, index) => (
+              <Pressable
+                key={index}
+                onPress={() => {
+                  dispatch(setChgerFree(item));
+                  // _setOption(fee, item, setFee);
+                }}
+                style={{
+                  alignSelf: 'flex-start',
+                  paddingHorizontal: 13,
+                  paddingVertical: 6.5,
+                  borderWidth: 1,
+                  borderRadius: 24,
+                  marginRight: 6,
+                  marginBottom: 10,
+                  borderColor: filter.chgerFree?.includes(item)
+                    ? '#07B3FD'
+                    : '#333333',
+                }}>
+                <Text
+                  style={{
+                    fontFamily: FontList.PretendardRegular,
+                    fontSize: 16,
+                    color: filter.chgerFree?.includes(item)
+                      ? '#07B3FD'
+                      : '#333333',
+                  }}>
+                  {item}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
+        {/* 주차여부 */}
+        <View
+          style={{
+            justifyContent: 'center',
+            marginTop: 23,
+          }}>
+          <View style={{marginBottom: 14.5}}>
+            <Text
+              style={{
+                fontFamily: FontList.PretendardRegular,
+                fontSize: 16,
+                color: '#333333',
+              }}>
+              주차여부
+            </Text>
+          </View>
+          <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
+            <Pressable
+              onPress={() => {
+                dispatch(setFreePark('무료주차'));
+              }}
+              style={{
+                alignSelf: 'flex-start',
+                paddingHorizontal: 13,
+                paddingVertical: 6.5,
+                borderWidth: 1,
+                borderRadius: 24,
+                marginRight: 6,
+                marginBottom: 10,
+                borderColor: filter.freePark?.includes('무료주차')
+                  ? '#07B3FD'
+                  : '#333333',
+              }}>
               <Text
                 style={{
                   fontFamily: FontList.PretendardRegular,
                   fontSize: 16,
-                  color: '#333333',
+                  color: filter.freePark?.includes('무료주차')
+                    ? '#07B3FD'
+                    : '#333333',
                 }}>
-                {Object.keys(item)[0]}
+                무료주차
               </Text>
-            </View>
+            </Pressable>
+            <Pressable
+              onPress={() => {
+                dispatch(setFreePark('입주민 전용'));
+              }}
+              style={{
+                alignSelf: 'flex-start',
+                paddingHorizontal: 13,
+                paddingVertical: 6.5,
+                borderWidth: 1,
+                borderRadius: 24,
+                marginRight: 6,
+                marginBottom: 10,
+                borderColor: filter.freePark?.includes('입주민 전용')
+                  ? '#07B3FD'
+                  : '#333333',
+              }}>
+              <Text
+                style={{
+                  fontFamily: FontList.PretendardRegular,
+                  fontSize: 16,
+                  color: filter.freePark?.includes('입주민 전용')
+                    ? '#07B3FD'
+                    : '#333333',
+                }}>
+                입주민 전용
+              </Text>
+            </Pressable>
+          </View>
+        </View>
 
-            <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
-              {item[Object.keys(item)[0]].length > 0 &&
-                item[Object.keys(item)[0]]?.map((item2: any, idx2: any) => (
-                  <View
-                    key={idx2}
-                    style={{
-                      alignSelf: 'flex-start',
-                      paddingHorizontal: 13,
-                      paddingVertical: 6.5,
-                      borderWidth: 1,
-                      borderRadius: 24,
-                      marginRight: 6,
-                      marginBottom: 10,
-                    }}>
-                    <Text
-                      style={{
-                        fontFamily: FontList.PretendardRegular,
-                        fontSize: 16,
-                        color: '#333333',
-                      }}>
-                      {item2?.key ? item2.key : item2}
-                    </Text>
-                  </View>
-                ))}
-              {/* {idx === dummy.length - 1 && (
-                <View
+        {/* 충전기 설치장소 */}
+        <View
+          style={{
+            justifyContent: 'center',
+            marginTop: 23,
+          }}>
+          <View style={{marginBottom: 14.5}}>
+            <Text
+              style={{
+                fontFamily: FontList.PretendardRegular,
+                fontSize: 16,
+                color: '#333333',
+              }}>
+              충전기 설치장소
+            </Text>
+          </View>
+          <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
+            {dumArea.map((item, index) => (
+              <Pressable
+                key={index}
+                onPress={() => {
+                  dispatch(setArea(item));
+                  // _setOption(area, item, setArea);
+                }}
+                style={{
+                  alignSelf: 'flex-start',
+                  paddingHorizontal: 13,
+                  paddingVertical: 6.5,
+                  borderWidth: 1,
+                  borderRadius: 24,
+                  marginRight: 6,
+                  marginBottom: 10,
+                  borderColor: filter.area?.includes(item)
+                    ? '#07B3FD'
+                    : '#333333',
+                }}>
+                <Text
                   style={{
-                    // height: 32,
-                    alignSelf: 'flex-start',
-                    paddingHorizontal: 13,
-                    paddingVertical: 6.5,
-                    borderWidth: 1,
-                    borderRadius: 24,
-                    marginRight: 6,
-                    marginBottom: 10,
+                    fontFamily: FontList.PretendardRegular,
+                    fontSize: 16,
+                    color: filter.area?.includes(item) ? '#07B3FD' : '#333333',
                   }}>
-                  <Text
-                    style={{
-                      fontFamily: FontList.PretendardRegular,
-                      fontSize: 16,
-                      color: '#333333',
-                    }}>
-                    일반
-                  </Text>
-                </View>
-              )} */}
+                  {item}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
+        {/* 도로 */}
+        <View
+          style={{
+            justifyContent: 'center',
+            marginTop: 23,
+          }}>
+          <View style={{marginBottom: 14.5}}>
+            <Text
+              style={{
+                fontFamily: FontList.PretendardRegular,
+                fontSize: 16,
+                color: '#333333',
+              }}>
+              도로
+            </Text>
+          </View>
+          <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
+            {dumRoad.map((item, index) => (
+              <Pressable
+                key={index}
+                onPress={() => {
+                  dispatch(setRoad(item));
+                  // _setOption(road, item, setRoad);
+                }}
+                style={{
+                  alignSelf: 'flex-start',
+                  paddingHorizontal: 13,
+                  paddingVertical: 6.5,
+                  borderWidth: 1,
+                  borderRadius: 24,
+                  marginRight: 6,
+                  marginBottom: 10,
+                  borderColor: filter.road?.includes(item)
+                    ? '#07B3FD'
+                    : '#333333',
+                }}>
+                <Text
+                  style={{
+                    fontFamily: FontList.PretendardRegular,
+                    fontSize: 16,
+                    color: filter.road?.includes(item) ? '#07B3FD' : '#333333',
+                  }}>
+                  {item}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
+        {/* 충전기 타입 */}
+        <View
+          style={{
+            justifyContent: 'center',
+            marginTop: 23,
+          }}>
+          <View style={{marginBottom: 14.5}}>
+            <Text
+              style={{
+                fontFamily: FontList.PretendardRegular,
+                fontSize: 16,
+                color: '#333333',
+              }}>
+              충전기 타입
+            </Text>
+          </View>
+          <View
+            style={{
+              marginTop: 2,
+              alignItems: 'center',
+              flexDirection: 'row',
+              flexWrap: 'wrap',
+            }}>
+            <View style={{flex: 1}}>
+              <View
+                style={{
+                  height: WIDTH,
+                  ...styles.warpper,
+                }}>
+                {ChargerType.chargerLogo.map(
+                  (item, index) =>
+                    index < 4 && (
+                      <Pressable
+                        key={index}
+                        onPress={() => {
+                          console.log('item,', ChargerType.chargerType[index]);
+                          dispatch(
+                            setChgerType(ChargerType.chargerType[index]),
+                          );
+                          // dispatch(setChgerType(item))
+                          // _setOption(chargerType, item, setChargerType);
+                        }}
+                        style={{
+                          ...styles.innerView,
+                          borderWidth: 1,
+                          opacity: filter.chgerType?.includes(
+                            ChargerType.chargerType[index],
+                          )
+                            ? 1
+                            : 0.3,
+                          borderColor: filter.chgerType?.includes(
+                            ChargerType.chargerType[index],
+                          )
+                            ? '#07B3FD'
+                            : '#333333',
+                          borderRadius: 4,
+                          marginRight: index < 3 ? 16 : 0,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}>
+                        <Image
+                          source={item}
+                          resizeMode={'contain'}
+                          style={{width: '80%', height: '80%'}}
+                        />
+                      </Pressable>
+                    ),
+                )}
+              </View>
+
+              <View
+                style={{
+                  ...styles.warpper,
+                }}>
+                {ChargerType.chargerType.map(
+                  (item, index) =>
+                    index < 4 && (
+                      <View
+                        key={index}
+                        style={{
+                          ...styles.innerView,
+                          marginRight: index < 3 ? 16 : 0,
+                        }}>
+                        <Text
+                          style={{
+                            fontFamily: FontList.PretendardRegular,
+                            fontSize: 12,
+                            color: '#333333',
+                          }}>
+                          {item}
+                        </Text>
+                      </View>
+                    ),
+                )}
+              </View>
+              {/* 두 번째 라인 */}
+              <View
+                style={{
+                  height: WIDTH,
+                  ...styles.warpper,
+                  marginTop: 15,
+                }}>
+                {ChargerType.chargerLogo.map(
+                  (item, index) =>
+                    index > 3 && (
+                      <Pressable
+                        key={index}
+                        onPress={() => {
+                          console.log('item,', ChargerType.chargerType[index]);
+                          dispatch(
+                            setChgerType(ChargerType.chargerType[index]),
+                          );
+                          // _setOption(chargerType, item, setChargerType);
+                        }}
+                        style={{
+                          ...styles.innerView,
+                          borderWidth: 1,
+                          opacity: filter.chgerType?.includes(
+                            ChargerType.chargerType[index],
+                          )
+                            ? 1
+                            : 0.3,
+                          borderColor: filter.chgerType?.includes(
+                            ChargerType.chargerType[index],
+                          )
+                            ? '#07B3FD'
+                            : '#333333',
+                          borderRadius: 4,
+                          marginRight: index > 3 ? (index > 4 ? 32 : 16) : 0,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}>
+                        <Image
+                          source={item}
+                          resizeMode={'contain'}
+                          style={{width: '80%', height: '80%'}}
+                        />
+                      </Pressable>
+                    ),
+                )}
+              </View>
+
+              <View
+                style={{
+                  ...styles.warpper,
+                }}>
+                {ChargerType.chargerType.map(
+                  (item, index) =>
+                    index > 3 && (
+                      <View
+                        key={index}
+                        style={{
+                          ...styles.innerView,
+                          marginRight: index > 3 ? (index > 4 ? 32 : 16) : 0,
+                        }}>
+                        <Text
+                          style={{
+                            fontFamily: FontList.PretendardRegular,
+                            fontSize: 12,
+                            color: '#333333',
+                          }}>
+                          {item}
+                        </Text>
+                      </View>
+                    ),
+                )}
+              </View>
             </View>
           </View>
-        ))}
+        </View>
 
         <View
           style={{
-            // height: _getHeight(106),
             justifyContent: 'center',
             marginVertical: 23,
           }}>
@@ -220,7 +688,10 @@ const AroundFilter = () => {
           </View>
           <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
             <Pressable
-              onPress={() => _pickAll()}
+              onPress={() => {
+                dispatch(setPickall());
+                _pickAll();
+              }}
               style={{
                 alignItems: 'center',
                 flexDirection: 'row',
@@ -252,9 +723,7 @@ const AroundFilter = () => {
                 <Pressable
                   key={idx}
                   onPress={() => {
-                    console.warn(idx);
-                    _onPressBusi(item.key);
-                    // _pickBusi(idx);
+                    dispatch(setCompany(item.key));
                   }}
                   style={{
                     alignItems: 'center',
@@ -266,15 +735,19 @@ const AroundFilter = () => {
                     style={{
                       width: 16,
                       height: 16,
-                      borderWidth: _isPicked(item.key) ? undefined : 1,
-                      backgroundColor: _isPicked(item.key)
-                        ? '#07B3FD'
-                        : undefined,
+                      borderWidth:
+                        filter.company?.includes(item.key) || pickAll
+                          ? undefined
+                          : 1,
+                      backgroundColor:
+                        filter.company?.includes(item.key) || pickAll
+                          ? '#07B3FD'
+                          : undefined,
                       alignItems: 'center',
                       justifyContent: 'center',
                       marginRight: 8,
                     }}>
-                    {_isPicked(item?.key) && (
+                    {(filter.company?.includes(item.key) || pickAll) && (
                       <Image
                         source={require('@assets/check_filter.png')}
                         style={{width: 8, height: 8}}
@@ -290,9 +763,93 @@ const AroundFilter = () => {
           </View>
         </View>
       </ScrollView>
-      <View style={{paddingHorizontal: 16}}></View>
+      <View
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          flexDirection: 'row',
+          paddingBottom: 15,
+          paddingTop: 15,
+          elevation: 8,
+          borderTopWidth: 1,
+          borderColor: '#F8F4F4',
+          backgroundColor: 'white',
+        }}>
+        <Pressable
+          onPress={() => {
+            dispatch(setReset());
+          }}
+          style={{
+            marginLeft: 20,
+            marginRight: 6,
+            borderRadius: 8,
+            width: 48,
+            height: 48,
+            backgroundColor: 'white',
+            borderWidth: 1,
+            borderColor: '#DBDBDB',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+          <Image
+            source={require('@assets/coolicon.png')}
+            style={{width: 17.4, height: 16}}
+            resizeMode="contain"
+          />
+          <Text
+            style={{
+              fontFamily: FontList.PretendardRegular,
+              fontSize: 12,
+              color: '#333333',
+            }}>
+            초기화
+          </Text>
+        </Pressable>
+        <Pressable
+          onPress={() => {
+            _onPressSave();
+          }}
+          style={{
+            flex: 1,
+            height: 48,
+            marginRight: 20,
+            borderRadius: 8,
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: '#00239C',
+          }}>
+          <Text
+            style={{
+              fontFamily: FontList.PretendardBold,
+              fontSize: 16,
+              color: 'white',
+            }}>
+            설정 저장
+          </Text>
+        </Pressable>
+      </View>
+
+      <MyModal
+        title="저장되었습니다"
+        positive
+        positiveTitle="확인"
+        visible={modalSave}
+        setVisible={setModalSave}
+      />
     </SafeAreaView>
   );
 };
 
 export default AroundFilter;
+
+const styles = StyleSheet.create({
+  warpper: {
+    flexDirection: 'row',
+    // marginHorizontal: 16,
+  },
+  innerView: {
+    flex: 1 / 4,
+    // backgroundColor: 'gray',
+    alignItems: 'center',
+  },
+});

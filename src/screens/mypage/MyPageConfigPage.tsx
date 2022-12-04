@@ -1,5 +1,5 @@
 import {View, Text, Pressable, Image} from 'react-native';
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import GlobalStyles from 'styles/GlobalStyles';
 import BottomNav from '@components/BottomNav';
@@ -11,13 +11,26 @@ import {Shadow} from 'react-native-shadow-2';
 import {useNavigation} from '@react-navigation/native';
 import {commonTypes} from '@types';
 import MyModal from '@components/MyModal';
+import {useDispatch, useSelector} from 'react-redux';
+import {RootState} from 'redux/store';
+import {resetUserInfo, setUserInfo} from 'redux/reducers/authReducer';
+import commonAPI from 'api/modules/commonAPI';
+import Loading from '@components/Loading';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import StorageKeys from 'constants/StorageKeys';
+import SnsList from 'constants/SnsList';
 
 const MyPageConfigPage = () => {
   const nav = useNavigation<commonTypes.navi>();
+  const {userInfo} = useSelector((state: RootState) => state.authReducer);
+  const dispatch = useDispatch();
   const [isEnabled, setIsEnabled] = useState(false);
   const [isEnabled2, setIsEnabled2] = useState(false);
   const [isEnabled3, setIsEnabled3] = useState(false);
   const [modal, setModal] = useState(false);
+  const [modalLogin, setModalLogin] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [img, setImg] = useState();
 
   const switchTitle = [
     '기본 알림',
@@ -30,6 +43,7 @@ const MyPageConfigPage = () => {
     '즐겨찾기한 충전소의 상태가 변경에 대한 알림 설정이에요',
     '이벤트, 포인트 등에 대한 알림 설정이에요!',
   ];
+
   const toggleSwitch = (idx: number) => {
     switch (idx) {
       case 0:
@@ -40,6 +54,7 @@ const MyPageConfigPage = () => {
         return setIsEnabled3(previousState => !previousState);
     }
   };
+
   const _getState = (idx: number) => {
     switch (idx) {
       case 0:
@@ -50,6 +65,56 @@ const MyPageConfigPage = () => {
         return isEnabled3;
     }
   };
+
+  const _onPressLogout = async () => {
+    nav.reset({routes: [{name: 'Login'}]});
+    try {
+      await AsyncStorage.removeItem(StorageKeys.KEY.AUTO_LOGIN);
+      await AsyncStorage.removeItem(StorageKeys.KEY.SNS_TYPE);
+      dispatch(resetUserInfo());
+    } catch {
+      console.log('### logout FAIL!!!');
+    }
+  };
+
+  const _onPressRetire = async () => {
+    setLoading(true);
+    const data = {
+      user_id: userInfo?.id,
+    };
+
+    await commonAPI
+      ._delUserRetire(data)
+      .then(async res => {
+        console.log('retire res', res);
+        dispatch(resetUserInfo());
+        try {
+          await AsyncStorage.removeItem(StorageKeys.KEY.AUTO_LOGIN);
+          dispatch(resetUserInfo());
+          nav.reset({routes: [{name: 'Login'}, {name: 'MyPageRetire'}]});
+        } catch {
+          console.log('### logout FAIL!!!');
+        }
+      })
+      .catch(err => {
+        console.log('retire err', err);
+      })
+      .finally(() => setLoading(false));
+  };
+
+  const _getSNS = async () => {
+    const res = await AsyncStorage.getItem(StorageKeys.KEY.SNS_TYPE);
+    console.log('res,', res);
+    if (res === SnsList.apple) setImg(require('@assets/My_apple.png'));
+    if (res === SnsList.google) setImg(require('@assets/My_google.png'));
+    if (res === SnsList.kakao) setImg(require('@assets/My_kakao.png'));
+    if (res === SnsList.naver) setImg(require('@assets/My_naver.png'));
+  };
+
+  useEffect(() => {
+    _getSNS();
+  }, []);
+
   return (
     <SafeAreaView style={{...GlobalStyles.safeAreaStyle}}>
       <HeaderCenter title="앱설정" leftBack />
@@ -62,35 +127,82 @@ const MyPageConfigPage = () => {
           }}>
           로그인 정보
         </Text>
-        <Pressable
-          onPress={() => {
-            nav.navigate('Login');
-          }}
-          style={{
-            width: '100%',
-            height: _getHeight(43),
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            flexDirection: 'row',
-          }}>
-          <Text
+        {userInfo?.id ? (
+          <View
             style={{
-              fontFamily: FontList.PretendardSemiBold,
-              fontSize: 17,
-              color: '#333333',
+              marginTop: 20,
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
             }}>
-            로그인 하세요
-          </Text>
-          <Image
-            source={require('@assets/mypage_arrow.png')}
-            style={{width: _getWidth(8), height: _getHeight(16)}}
-            resizeMode="contain"
-          />
-        </Pressable>
-        <Text
-          style={{fontFamily: FontList.PretendardRegular, color: '#333333'}}>
-          {'기록해놓은 내역들이 사라지지 않도록 5초만에\n내 계정에 저장하세요.'}
-        </Text>
+            <View style={{flexDirection: 'row', alignItems: 'center'}}>
+              <Image
+                source={img}
+                style={{
+                  width: 34,
+                  height: 34,
+                  resizeMode: 'contain',
+                  marginRight: 10,
+                }}
+              />
+              <Text
+                style={{
+                  fontFamily: FontList.PretendardSemiBold,
+                  fontSize: 16,
+                  color: '#333333',
+                }}>
+                {userInfo.id}
+              </Text>
+            </View>
+            <Pressable onPress={() => setModalLogin(true)}>
+              <Text
+                style={{
+                  fontFamily: FontList.PretendardMedium,
+                  color: '#959595',
+                  textDecorationLine: 'underline',
+                }}>
+                로그아웃
+              </Text>
+            </Pressable>
+          </View>
+        ) : (
+          <>
+            <Pressable
+              onPress={() => {
+                nav.navigate('Login');
+              }}
+              style={{
+                width: '100%',
+                height: _getHeight(43),
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexDirection: 'row',
+              }}>
+              <Text
+                style={{
+                  fontFamily: FontList.PretendardSemiBold,
+                  fontSize: 17,
+                  color: '#333333',
+                }}>
+                로그인 하세요
+              </Text>
+              <Image
+                source={require('@assets/mypage_arrow.png')}
+                style={{width: _getWidth(8), height: _getHeight(16)}}
+                resizeMode="contain"
+              />
+            </Pressable>
+            <Text
+              style={{
+                fontFamily: FontList.PretendardRegular,
+                color: '#333333',
+              }}>
+              {
+                '기록해놓은 내역들이 사라지지 않도록 5초만에\n내 계정에 저장하세요.'
+              }
+            </Text>
+          </>
+        )}
 
         <View style={{marginTop: _getHeight(45)}}>
           <Text
@@ -106,7 +218,7 @@ const MyPageConfigPage = () => {
 
       {switchTitle.map((item, idx) => (
         <View
-        key={idx}
+          key={idx}
           style={{
             height: _getHeight(93),
             justifyContent: 'center',
@@ -120,8 +232,6 @@ const MyPageConfigPage = () => {
               justifyContent: 'space-between',
               paddingHorizontal: 16,
             }}>
-
-              
             <Text
               style={{
                 fontFamily: FontList.PretendardMedium,
@@ -183,21 +293,34 @@ const MyPageConfigPage = () => {
           </View>
         </View>
       ))}
-      <Pressable
-        onPress={() => {
-          setModal(true);
-        }}
-        hitSlop={10}
-        style={{paddingHorizontal: 16, marginTop: _getHeight(40)}}>
-        <Text
-          style={{
-            fontFamily: FontList.PretendardRegular,
-            fontSize: 13,
-            color: '#959595',
-          }}>
-          회원탈퇴
-        </Text>
-      </Pressable>
+      {userInfo?.id && (
+        <Pressable
+          onPress={() => {
+            setModal(true);
+          }}
+          hitSlop={10}
+          style={{paddingHorizontal: 16, marginTop: _getHeight(40)}}>
+          <Text
+            style={{
+              fontFamily: FontList.PretendardRegular,
+              fontSize: 13,
+              color: '#959595',
+            }}>
+            회원탈퇴
+          </Text>
+        </Pressable>
+      )}
+
+      <MyModal
+        title="정말 로그아웃 하시겠어요?"
+        positive
+        positiveTitle="네"
+        negative
+        negativeTitle="아니요"
+        visible={modalLogin}
+        setVisible={setModalLogin}
+        positivePress={() => _onPressLogout()}
+      />
       <MyModal
         title="정말 탈퇴 하시겠어요?"
         positive
@@ -206,10 +329,10 @@ const MyPageConfigPage = () => {
         negativeTitle="아니요"
         visible={modal}
         setVisible={setModal}
-        positivePress={() =>
-          nav.reset({routes: [{name: 'Login'}, {name: 'MyPageRetire'}]})
-        }
+        positivePress={() => _onPressRetire()}
       />
+
+      <Loading visible={loading} />
       <BottomNav />
     </SafeAreaView>
   );

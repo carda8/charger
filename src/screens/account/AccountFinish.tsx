@@ -43,7 +43,7 @@ const AccountFinish = () => {
         />
       </View>
       <BottomButton
-        screen={routertype.AccountCarInfo}
+        screen={routertype.Home}
         text="확인"
         style={{marginHorizontal: 16}}
       />

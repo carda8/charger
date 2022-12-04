@@ -1,4 +1,4 @@
-import {View, Text, Pressable, Image} from 'react-native';
+import {View, Text, Pressable, Image, StyleProp, TextStyle} from 'react-native';
 import React from 'react';
 import FontList from 'constants/FontList';
 import {commonTypes} from '@types';
@@ -8,12 +8,21 @@ import {_getHeight, _getWidth} from 'constants/utils';
 interface props {
   title?: string;
   backTitle?: string;
+  backTitleStyle?: StyleProp<TextStyle>;
   // navi?: commonTypes.navi;
   leftBack?: boolean;
   rightBack?: boolean;
+  isMyHome?: boolean;
 }
 
-const HeaderCenter = ({title, backTitle, leftBack, rightBack}: props) => {
+const HeaderCenter = ({
+  title,
+  backTitle,
+  backTitleStyle,
+  leftBack,
+  rightBack,
+  isMyHome,
+}: props) => {
   const navi = useNavigation<commonTypes.navi>();
   return (
     <View style={{backgroundColor: 'white'}}>
@@ -27,7 +36,15 @@ const HeaderCenter = ({title, backTitle, leftBack, rightBack}: props) => {
         {/* Main Title */}
         <View style={{flex: 1}}>
           {leftBack && (
-            <Pressable onPress={() => navi?.goBack()} hitSlop={10}>
+            <Pressable
+              onPress={() => {
+                if (isMyHome) {
+                  navi.navigate('HomeMain');
+                } else {
+                  navi?.goBack();
+                }
+              }}
+              hitSlop={10}>
               <Image
                 source={require('@assets/button_back.png')}
                 style={{width: _getWidth(6), height: _getHeight(13)}}
@@ -36,7 +53,12 @@ const HeaderCenter = ({title, backTitle, leftBack, rightBack}: props) => {
             </Pressable>
           )}
         </View>
-        <View style={{flex: 12, alignItems: 'center', justifyContent: 'center'}}>
+        <View
+          style={{
+            flex: 4,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
           <Text style={{fontFamily: FontList.PretendardSemiBold, fontSize: 18}}>
             {title}
           </Text>
@@ -45,13 +67,24 @@ const HeaderCenter = ({title, backTitle, leftBack, rightBack}: props) => {
         {/* Sub Title */}
         <Pressable
           disabled={!rightBack}
-          onPress={() => navi?.goBack()}
+          onPress={() => {
+            if (isMyHome) {
+              navi.navigate('Home');
+            } else navi?.goBack();
+          }}
           hitSlop={10}
-          style={{flex: 1, alignItems: 'flex-end', justifyContent: 'center'}}>
+          style={{
+            flex: 1,
+            alignItems: 'flex-end',
+            justifyContent: 'center',
+          }}>
           <Text
-            style={{
-              fontFamily: FontList.PretendardSemiBold,
-            }}>
+            style={[
+              {
+                fontFamily: FontList.PretendardSemiBold,
+              },
+              backTitleStyle,
+            ]}>
             {backTitle}
           </Text>
         </Pressable>

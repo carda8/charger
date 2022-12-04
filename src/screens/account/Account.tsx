@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import GlobalStyles from 'styles/GlobalStyles';
 import Header from '@components/Header';
@@ -16,6 +16,8 @@ import ServiceString from '@components/ServiceString';
 import routertype from '@router/routertype';
 
 const Account = () => {
+  const [name, setName] = useState('');
+  const [code, setCode] = useState('');
   return (
     <SafeAreaView style={{...GlobalStyles.safeAreaStyle}}>
       <Header title="계정연동을 진행해주세요" goBack backTitle="취소" />

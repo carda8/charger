@@ -3,16 +3,23 @@ import React, {useEffect, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import GlobalStyles from 'styles/GlobalStyles';
 import Header from '@components/Header';
-import {useNavigation} from '@react-navigation/native';
+import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
 import {commonTypes} from '@types';
 import ServiceString from '@components/ServiceString';
 import FontList from 'constants/FontList';
 import BottomButton from '@components/BottomButton';
 import routertype from '@router/routertype';
 import MyModal from '@components/MyModal';
+import commonAPI from 'api/modules/commonAPI';
+import {useSelector} from 'react-redux';
+import {RootState} from 'redux/store';
+import Loading from '@components/Loading';
+import StorageKeys from 'constants/StorageKeys';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface check {
   [key: string]: boolean;
+  location: boolean;
   personal: boolean;
   service: boolean;
   all: boolean;
@@ -24,8 +31,14 @@ interface props {
 
 const AccountPolicy = () => {
   const navi = useNavigation<commonTypes.navi>();
+  const snsType =
+    useRoute<RouteProp<commonTypes.RootStackParamList, 'AccountPolicy'>>()
+      .params?.snsType;
+  const {userInfo} = useSelector((state: RootState) => state.authReducer);
+  const [loading, setLoading] = useState(false);
   // const [modal, setModal] = useState(false);
   const [check, setCheck] = useState<check>({
+    location: false,
     personal: false,
     service: false,
     all: false,
@@ -48,18 +61,28 @@ const AccountPolicy = () => {
     switch (target) {
       case Object.keys(check)[0]:
         return setCheck({
-          personal: !check.personal,
+          location: !check.location,
+          personal: check.personal,
           service: check.service,
           all: false,
         });
       case Object.keys(check)[1]:
         return setCheck({
-          personal: check.personal,
-          service: !check.service,
+          location: check.location,
+          personal: !check.personal,
+          service: check.service,
           all: false,
         });
       case Object.keys(check)[2]:
         return setCheck({
+          location: check.location,
+          personal: check.personal,
+          service: !check.service,
+          all: false,
+        });
+      case Object.keys(check)[3]:
+        return setCheck({
+          location: !check.all,
           personal: !check.all,
           service: !check.all,
           all: !check.all,
@@ -71,22 +94,49 @@ const AccountPolicy = () => {
 
   useEffect(() => {
     if (!check.all) {
-      if (check.personal && check.service)
-        setCheck({personal: true, service: true, all: true});
+      if (check.personal && check.service && check.location)
+        setCheck({location: true, personal: true, service: true, all: true});
     }
   }, [check]);
 
   const _getTitle = (target: string) => {
     switch (target) {
       case Object.keys(check)[0]:
-        return '(필수)개인정보 수집 및 이용 안내';
+        return '(필수)위치정보 수집 이용 동의';
       case Object.keys(check)[1]:
-        return '(필수)서비스 이용약관 동의';
+        return '(필수)개인정보 수집 이용 동의';
       case Object.keys(check)[2]:
+        return '(필수)서비스 이용 동의';
+      case Object.keys(check)[3]:
         return '(전체)이용약관 전체동의';
       default:
         return '';
     }
+  };
+  const _onPress = async () => {
+    setLoading(true);
+    const data = {
+      user_id: userInfo?.id,
+      name: userInfo?.name,
+      car_brand: '',
+      car_model: '',
+      chgerType: [''],
+    };
+
+    await commonAPI
+      ._postSaveUserInfo(data)
+      .then(async res => {
+        console.log('then res', res);
+        await AsyncStorage.setItem(StorageKeys.KEY.AUTO_LOGIN, data.user_id);
+        await AsyncStorage.setItem(StorageKeys.KEY.SNS_TYPE, snsType);
+        navi.navigate('AccountFinish');
+      })
+      .catch(err => {
+        console.log('err res', err);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   };
 
   const CheckPolicy = ({target}: props) => {
@@ -113,7 +163,7 @@ const AccountPolicy = () => {
             {_getTitle(target)}
           </Text>
         </View>
-        {target !== Object.keys(check)[2] && (
+        {target !== Object.keys(check)[3] && (
           <Pressable
             hitSlop={17}
             onPress={() => {
@@ -145,14 +195,39 @@ const AccountPolicy = () => {
           <CheckPolicy target={Object.keys(check)[1]} />
           <Divider />
           <CheckPolicy target={Object.keys(check)[2]} />
+          <Divider />
+          <CheckPolicy target={Object.keys(check)[3]} />
         </View>
-        <BottomButton
+        {/* <BottomButton
           style={{backgroundColor: check.all ? '#00239C' : '#C4C4C4'}}
           text={'동의하고 시작하기'}
           loading={check.all ? false : true}
           screen={routertype.AccountFinish}
-        />
+        /> */}
       </View>
+      <View style={{height: 54, marginHorizontal: 18, marginBottom: 22}}>
+        <Pressable
+          onPress={() => {
+            if (check.all) _onPress();
+          }}
+          style={{
+            flex: 1,
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: check.all ? '#00239C' : '#C4C4C4',
+            borderRadius: 8,
+          }}>
+          <Text
+            style={{
+              fontFamily: FontList.PretendardBold,
+              fontSize: 16,
+              color: 'white',
+            }}>
+            동의하고 시작하기
+          </Text>
+        </Pressable>
+      </View>
+      <Loading visible={loading} />
       {/* <MyModal
         visible={modal}
         setVisible={setModal}
