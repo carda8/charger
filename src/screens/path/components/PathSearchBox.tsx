@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  Dispatch,
-  SetStateAction,
-  useEffect,
-  useRef,
-} from 'react';
+import React, {useEffect, useRef} from 'react';
 import {_getHeight, _getWidth} from 'constants/utils';
 import {commonTypes} from '@types';
 import {useNavigation} from '@react-navigation/native';
@@ -19,16 +13,23 @@ import {
   setGoalData,
   setInputGoal,
   setInputStart,
-  setIsGoalFinish,
   setIsHoem,
   setKeywordList,
-  setLastRef,
-  setStartData,
   switchPosition,
 } from 'redux/reducers/pathReducer';
 
+interface coor {
+  latitude: number;
+  longitude: number;
+  zoom: number;
+}
+
 interface props {
   editable?: boolean;
+  setCenter: any;
+  startBottomRef: React.RefObject<BottomSheetModalMethods>;
+  goalBottomRef: React.RefObject<BottomSheetModalMethods>;
+  userStarRef: React.RefObject<BottomSheetModalMethods>;
   // showOnlyMap?: boolean;
   // setShowOnlyMap?: Dispatch<SetStateAction<boolean>>;
   // sheetRef?: React.RefObject<BottomSheetModalMethods>;
@@ -38,7 +39,13 @@ interface props {
   // setModalLogin?: Dispatch<SetStateAction<boolean>>;
 }
 
-const PathSearchBox = ({editable}: props) => {
+const PathSearchBox = ({
+  editable,
+  setCenter,
+  userStarRef,
+  goalBottomRef,
+  startBottomRef,
+}: props) => {
   const dispatch = useDispatch();
   const nav = useNavigation<commonTypes.navi>();
   const {currentUserLocation} = useSelector(
@@ -56,7 +63,12 @@ const PathSearchBox = ({editable}: props) => {
 
   const _onPressBox = () => {
     if (!editable) {
-      nav.navigate('PathSearchMain');
+      nav.navigate('PathSearchMain', {
+        setCenter: setCenter,
+        startBottomRef: startBottomRef,
+        goalBottomRef: goalBottomRef,
+        userStarRef: userStarRef,
+      });
     }
   };
 
@@ -85,18 +97,30 @@ const PathSearchBox = ({editable}: props) => {
   };
 
   const _onPressClose = () => {
+    goalBottomRef.current?.close();
+    startBottomRef.current?.close();
+    userStarRef.current?.close();
     dispatch(resetPath());
   };
 
   const _onPressHome = () => {
     if (userInfo?.addressInfo) {
+      setCenter({
+        latitude: Number(userInfo?.addressInfo?.location.lat),
+        longitude: Number(userInfo?.addressInfo?.location.lon),
+        zoom: 16,
+      });
       dispatch(setGoalData(userInfo?.addressInfo));
       dispatch(setInputGoal(userInfo.addressInfo.address));
+      goalBottomRef.current?.present();
+      nav.navigate('PathMain');
     }
   };
 
   const _onPressSwitch = () => {
     startRef.current?.blur();
+    goalBottomRef.current?.close();
+    startBottomRef.current?.close();
     dispatch(switchPosition());
   };
 
@@ -283,7 +307,9 @@ const PathSearchBox = ({editable}: props) => {
         </Pressable>
 
         <Pressable
-          onPress={() => {}}
+          onPress={() => {
+            userStarRef.current?.present();
+          }}
           style={{
             flexDirection: 'row',
             alignItems: 'center',

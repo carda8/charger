@@ -67,10 +67,17 @@ const PathMain = () => {
     (state: RootState) => state.locationReducer,
   );
 
+  const [finishStart, setFinishStart] = useState(false);
+  const [finishGoal, setFinishGoal] = useState(false);
+
   const [modalLogin, setModalLogin] = useState(false);
 
   // 로딩 모달
   const [modal, setModal] = useState(false);
+
+  // 도착지, 현위치 모달 start, goal
+  const [modalStart, setModalStart] = useState(false);
+  const [modalGoal, setModalGoal] = useState(false);
 
   // 지도 포커스
   const [center, setCenter] = useState<coor>();
@@ -100,11 +107,15 @@ const PathMain = () => {
   const bottomSheetUserStarRef = useRef<BottomSheetModal>(null);
 
   const snapPoints = useMemo(() => [250], []);
+  const snapPointsSG = useMemo(() => [210], []);
   const snapPointsReco = useMemo(() => [290], []);
   const snapPointsStar = useMemo(() => ['64%'], []);
 
   const handleSheetChanges = useCallback((index: number) => {
-    // console.log('handleSheetChanges', index);
+    console.log('handleSheetChanges', index);
+    if (index === -1) {
+      setShowStarFilter(false);
+    }
   }, []);
 
   const sheetStyle = useMemo(
@@ -215,42 +226,44 @@ const PathMain = () => {
   // }, [recomendStationData]);
 
   // 즐겨찾기 관련
-  // const [userStar, setUserStar] = useState([]);
-  // const [starFilter, setStarFilter] = useState('1');
-  // const [showStarFilter, setShowStarFilter] = useState(false);
-  // const _UserStar = async () => {
-  //   if (userInfo?.id) {
-  //     const data = {
-  //       user_id: userInfo.id,
-  //       currentXY: `${currentUserLocation.latitude},${currentUserLocation.longitude}`,
-  //       order_by:
-  //         starFilter === '1' ? '' : starFilter === '2' ? 'distance' : 'name',
-  //     };
-  //     console.log('userId', data);
+  const [userStar, setUserStar] = useState([]);
+  const [starFilter, setStarFilter] = useState('1');
+  const [showStarFilter, setShowStarFilter] = useState(false);
+  const _UserStar = async () => {
+    if (userInfo?.id) {
+      const data = {
+        user_id: userInfo.id,
+        currentXY: `${currentUserLocation.latitude},${currentUserLocation.longitude}`,
+        order_by:
+          starFilter === '1' ? '' : starFilter === '2' ? 'distance' : 'name',
+      };
+      console.log('userId', data);
 
-  //     await commonAPI
-  //       ._getUserStar(data)
-  //       .then(res => {
-  //         console.log('_getUserStar ## ', res);
-  //         setUserStar(res.data);
-  //       })
-  //       .catch(err => console.log('err', err));
-  //   }
-  // };
+      await commonAPI
+        ._getUserStar(data)
+        .then(res => {
+          console.log('_getUserStar ## ', res);
+          setUserStar(res.data);
+        })
+        .catch(err => console.log('err', err));
+    }
+  };
 
-  // const renderItemStar: ListRenderItem<any> = item => {
-  //   return (
-  //     <PathStarRenderItem
-  //       item={item}
-  //       list={userStar}
-  //       bottomSheetRef={bottomSheetUserStarRef}
-  //       setUserStar={setUserStar}
-  //     />
-  //   );
-  // };
-  // useEffect(() => {
-  //   _UserStar();
-  // }, [userInfo, starFilter]);
+  const renderItemStar: ListRenderItem<any> = item => {
+    return (
+      <PathStarRenderItem
+        item={item}
+        list={userStar}
+        bottomSheetRef={bottomSheetUserStarRef}
+        bottomGoalRef={bottomSheetGoalRef}
+        setUserStar={setUserStar}
+        setCenter={setCenter}
+      />
+    );
+  };
+  useEffect(() => {
+    _UserStar();
+  }, [userInfo, starFilter]);
 
   // useEffect(() => {
   //   return () => {
@@ -270,6 +283,9 @@ const PathMain = () => {
     }
   }, []);
 
+  // useEffect(() => {
+  // }, [bottomSheetUserStarRef.current]);
+
   useEffect(() => {
     dispatch(setBottomIdx(2));
   }, []);
@@ -284,7 +300,12 @@ const PathMain = () => {
               zIndex: 100,
               width: '100%',
             }}>
-            <PathSearchBox />
+            <PathSearchBox
+              setCenter={setCenter}
+              startBottomRef={bottomSheetStartRef}
+              goalBottomRef={bottomSheetGoalRef}
+              userStarRef={bottomSheetUserStarRef}
+            />
           </View>
 
           <NaverMapView
@@ -292,8 +313,11 @@ const PathMain = () => {
             compass={false}
             rotateGesturesEnabled={false}
             onMapClick={e => {
-              bottomSheetRecoRef.current?.close();
               bottomSheetRef.current?.close();
+              bottomSheetUserStarRef.current?.close();
+              bottomSheetRecoRef.current?.close();
+              bottomSheetGoalRef.current?.close();
+              bottomSheetStartRef.current?.close();
             }}
             zoomControl={false}
             useTextureView={true}
@@ -319,37 +343,61 @@ const PathMain = () => {
             )}
 
             {/* 출발지 마커 */}
-            {/* <Marker
-              width={32}
-              height={65}
-              caption={{
-                text: '출발',
-                align: Align.Center,
-                haloColor: '16B112',
-                textSize: 13,
-                color: 'ffffff',
-              }}
-              zIndex={100}
-              image={require('@assets/marker_normal.png')}
-              onClick={() => {}}
-              coordinate={}
-            /> */}
+            {startData?.location.lat && (
+              <Marker
+                width={32}
+                height={65}
+                caption={{
+                  text: '출발',
+                  align: Align.Center,
+                  haloColor: '16B112',
+                  textSize: 13,
+                  color: 'ffffff',
+                }}
+                zIndex={100}
+                image={require('@assets/marker_normal.png')}
+                onClick={() => {
+                  setCenter({
+                    latitude: Number(startData.location.lat),
+                    longitude: Number(startData.location.lon),
+                    zoom: 16,
+                  });
+                  bottomSheetStartRef.current?.present();
+                }}
+                coordinate={{
+                  latitude: Number(startData?.location.lat),
+                  longitude: Number(startData?.location.lon),
+                }}
+              />
+            )}
 
             {/* 도착지 마커 */}
-            {/* <Marker
-              width={32}
-              height={65}
-              onClick={() => {}}
-              caption={{
-                text: '도착',
-                align: Align.Center,
-                haloColor: '166DF0',
-                textSize: 13,
-                color: 'ffffff',
-              }}
-              image={require('@assets/marker_fast.png')}
-              coordinate={}
-            /> */}
+            {goalData?.location.lat && (
+              <Marker
+                width={32}
+                height={65}
+                onClick={() => {
+                  setCenter({
+                    latitude: Number(goalData.location.lat),
+                    longitude: Number(goalData.location.lon),
+                    zoom: 16,
+                  });
+                  bottomSheetGoalRef.current?.present();
+                }}
+                caption={{
+                  text: '도착',
+                  align: Align.Center,
+                  haloColor: '166DF0',
+                  textSize: 13,
+                  color: 'ffffff',
+                }}
+                image={require('@assets/marker_fast.png')}
+                coordinate={{
+                  latitude: Number(goalData?.location.lat),
+                  longitude: Number(goalData?.location.lon),
+                }}
+              />
+            )}
 
             {/* 도착지 목적지 라인 */}
             {/* <Path
@@ -394,6 +442,128 @@ const PathMain = () => {
           )}
 
           {/* 도착지 현위치 바텀시트 */}
+          {/* 출발지 바텀시트 */}
+          <BottomSheetModal
+            style={sheetStyle}
+            ref={bottomSheetStartRef}
+            footerComponent={() => (
+              <Pressable
+                onPress={() => {
+                  setFinishStart(true);
+                  setModalStart(!modalStart);
+                  bottomSheetStartRef.current?.close();
+                }}
+                style={[
+                  {
+                    height: 54,
+                    backgroundColor: '#00239C',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: 8,
+                    marginTop: 'auto',
+                    marginBottom: 22,
+                    marginHorizontal: 16,
+                  },
+                ]}>
+                <Text
+                  style={{
+                    fontFamily: FontList.PretendardBold,
+                    fontSize: 16,
+                    color: 'white',
+                  }}>
+                  현위치 설정
+                </Text>
+              </Pressable>
+            )}
+            index={0}
+            snapPoints={snapPointsSG}
+            onChange={handleSheetChanges}>
+            <View style={{marginHorizontal: 18, marginTop: 10}}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  marginBottom: 10,
+                }}>
+                <Image
+                  source={require('@assets/icon_addr.png')}
+                  style={{width: 16, height: 16, marginRight: 5}}
+                  resizeMode="contain"
+                />
+                <Text>{startData?.name}</Text>
+              </View>
+
+              <Text
+                style={{
+                  fontFamily: FontList.PretendardRegular,
+                  color: '#959595',
+                }}>
+                {startData?.address}
+              </Text>
+            </View>
+          </BottomSheetModal>
+
+          {/* 도착지 바텀시트 */}
+          <BottomSheetModal
+            style={sheetStyle}
+            ref={bottomSheetGoalRef}
+            footerComponent={() => (
+              <Pressable
+                onPress={() => {
+                  setFinishGoal(true);
+                  setModalGoal(!modalGoal);
+                  bottomSheetGoalRef.current?.close();
+                }}
+                style={[
+                  {
+                    height: 54,
+                    backgroundColor: '#00239C',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: 8,
+                    marginTop: 'auto',
+                    marginBottom: 22,
+                    marginHorizontal: 16,
+                  },
+                ]}>
+                <Text
+                  style={{
+                    fontFamily: FontList.PretendardBold,
+                    fontSize: 16,
+                    color: 'white',
+                  }}>
+                  도착지 설정
+                </Text>
+              </Pressable>
+            )}
+            index={0}
+            snapPoints={snapPointsSG}
+            onChange={handleSheetChanges}>
+            <View style={{marginHorizontal: 18, marginTop: 10}}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  marginBottom: 10,
+                }}>
+                <Image
+                  source={require('@assets/icon_addr.png')}
+                  style={{width: 16, height: 16, marginRight: 5}}
+                  resizeMode="contain"
+                />
+                <Text>{goalData?.name}</Text>
+              </View>
+
+              <Text
+                style={{
+                  fontFamily: FontList.PretendardRegular,
+                  color: '#959595',
+                }}>
+                {goalData?.address}
+              </Text>
+            </View>
+          </BottomSheetModal>
+
           {/* 분리 할 것 */}
           <BottomSheetModal
             style={sheetStyle}
@@ -449,13 +619,104 @@ const PathMain = () => {
           )} */}
 
           {/* 즐겨찾기 바텀 시트 */}
-          {/* 
+
           <BottomSheetModal
             index={0}
             style={sheetStyle}
             ref={bottomSheetUserStarRef}
             snapPoints={snapPointsStar}
             onChange={handleSheetChanges}>
+            {userStar?.length > 0 && (
+              <View style={{zIndex: 100}}>
+                <Pressable
+                  onPress={() => {
+                    setShowStarFilter(!showStarFilter);
+                  }}
+                  style={{
+                    alignSelf: 'flex-end',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    marginBottom: 12,
+                  }}>
+                  <Text
+                    style={{
+                      fontFamily: FontList.PretendardRegular,
+                      color: 'black',
+                    }}>
+                    {starFilter === '1'
+                      ? '즐겨찾기 한 순'
+                      : starFilter === '2'
+                      ? '거리순'
+                      : '이름순'}
+                  </Text>
+                  <Image
+                    source={require('@assets/arrow_bottom.png')}
+                    style={{
+                      width: 9,
+                      height: 5,
+                      marginRight: 9,
+                      marginLeft: 6,
+                    }}
+                    resizeMode="contain"
+                  />
+                </Pressable>
+                {showStarFilter && (
+                  <View
+                    style={{
+                      position: 'absolute',
+                      backgroundColor: 'white',
+                      right: 8,
+                      width: 110,
+                      borderWidth: 1,
+                      borderRadius: 8,
+                      borderColor: '#E6E6E6',
+                    }}>
+                    <Pressable
+                      onPress={() => {
+                        setStarFilter('1');
+                        setShowStarFilter(false);
+                      }}
+                      style={{
+                        backgroundColor:
+                          starFilter === '1' ? '#F6F6F6' : 'white',
+                        height: 40,
+                        justifyContent: 'center',
+                        paddingLeft: 3,
+                      }}>
+                      <Text>즐겨찾기 한 순</Text>
+                    </Pressable>
+                    <Pressable
+                      onPress={() => {
+                        setStarFilter('2');
+                        setShowStarFilter(false);
+                      }}
+                      style={{
+                        justifyContent: 'center',
+                        paddingLeft: 3,
+                        backgroundColor:
+                          starFilter === '2' ? '#F6F6F6' : 'white',
+                        height: 40,
+                      }}>
+                      <Text>거리순</Text>
+                    </Pressable>
+                    <Pressable
+                      onPress={() => {
+                        setStarFilter('3');
+                        setShowStarFilter(false);
+                      }}
+                      style={{
+                        justifyContent: 'center',
+                        paddingLeft: 3,
+                        backgroundColor:
+                          starFilter === '3' ? '#F6F6F6' : 'white',
+                        height: 40,
+                      }}>
+                      <Text>이름순</Text>
+                    </Pressable>
+                  </View>
+                )}
+              </View>
+            )}
             <BottomSheetFlatList
               data={userStar}
               ListEmptyComponent={
@@ -480,105 +741,47 @@ const PathMain = () => {
                 marginHorizontal: 6,
                 marginBottom: 12,
               }}
-              ListHeaderComponentStyle={{zIndex: 2000}}
-              ListHeaderComponent={() => (
-                <>
-                  {userStar?.length > 0 && (
-                    <>
-                      <Pressable
-                        onPress={() => {
-                          setShowStarFilter(!showStarFilter);
-                        }}
-                        style={{
-                          alignSelf: 'flex-end',
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          marginBottom: 12,
-                        }}>
-                        <Text
-                          style={{
-                            fontFamily: FontList.PretendardRegular,
-                            color: 'black',
-                          }}>
-                          {starFilter === '1'
-                            ? '즐겨찾기 한 순'
-                            : starFilter === '2'
-                            ? '거리순'
-                            : '이름순'}
-                        </Text>
-                        <Image
-                          source={require('@assets/arrow_bottom.png')}
-                          style={{
-                            width: 9,
-                            height: 5,
-                            marginRight: 9,
-                            marginLeft: 6,
-                          }}
-                          resizeMode="contain"
-                        />
-                      </Pressable>
-                      {showStarFilter && (
-                        <View
-                          style={{
-                            position: 'absolute',
-                            backgroundColor: 'white',
-                            right: 8,
-                            width: 110,
-                            borderWidth: 1,
-                            borderRadius: 8,
-                            borderColor: '#E6E6E6',
-                          }}>
-                          <Pressable
-                            onPress={() => {
-                              setStarFilter('1');
-                              setShowStarFilter(false);
-                            }}
-                            style={{
-                              backgroundColor:
-                                starFilter === '1' ? '#F6F6F6' : 'white',
-                              height: 40,
-                              justifyContent: 'center',
-                              paddingLeft: 3,
-                            }}>
-                            <Text>즐겨찾기 한 순</Text>
-                          </Pressable>
-                          <Pressable
-                            onPress={() => {
-                              setStarFilter('2');
-                              setShowStarFilter(false);
-                            }}
-                            style={{
-                              justifyContent: 'center',
-                              paddingLeft: 3,
-                              backgroundColor:
-                                starFilter === '2' ? '#F6F6F6' : 'white',
-                              height: 40,
-                            }}>
-                            <Text>거리순</Text>
-                          </Pressable>
-                          <Pressable
-                            onPress={() => {
-                              setStarFilter('3');
-                              setShowStarFilter(false);
-                            }}
-                            style={{
-                              justifyContent: 'center',
-                              paddingLeft: 3,
-                              backgroundColor:
-                                starFilter === '3' ? '#F6F6F6' : 'white',
-                              height: 40,
-                            }}>
-                            <Text>이름순</Text>
-                          </Pressable>
-                        </View>
-                      )}
-                    </>
-                  )}
-                </>
-              )}
+              // contentContainerStyle={{paddingTop: 0}}
+              // ListHeaderComponentStyle={{
+              //   position: 'absolute',
+              //   marginBottom: 10,
+              //   right: 0,
+              // }}
+              // ListHeaderComponent={() => <></>}
               renderItem={item => renderItemStar(item)}
             />
-          </BottomSheetModal> */}
+          </BottomSheetModal>
+
+          <Shadow
+            distance={3}
+            containerStyle={{
+              position: 'absolute',
+              zIndex: 500,
+              bottom: 173,
+              right: 16,
+            }}
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 36 / 2,
+              backgroundColor: 'white',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+            <Pressable
+              hitSlop={10}
+              style={{alignItems: 'center', justifyContent: 'center'}}
+              onPress={async () => {
+                // await _getUserStars();
+                bottomSheetUserStarRef.current?.present();
+              }}>
+              <Image
+                source={require('@assets/star_off.png')}
+                style={{width: 20, height: 20}}
+                resizeMode="contain"
+              />
+            </Pressable>
+          </Shadow>
 
           <Shadow
             distance={3}
@@ -613,18 +816,22 @@ const PathMain = () => {
               />
             </Pressable>
           </Shadow>
-          {/* 
+
           <MyModal
             positive
             positiveTitle="확인"
-            setVisible={setFinishPosition}
-            visible={finishPosition}
-            title={
-              pickMark === 'start' || lastRef === 'start'
-                ? '현위치 설정 완료'
-                : '도착지 설정 완료'
-            }
-          /> */}
+            setVisible={setModalStart}
+            visible={modalStart}
+            title={'현위치 설정 완료'}
+          />
+
+          <MyModal
+            positive
+            positiveTitle="확인"
+            setVisible={setModalGoal}
+            visible={modalGoal}
+            title={'도착지 설정 완료'}
+          />
 
           <BottomNav />
 

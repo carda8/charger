@@ -7,32 +7,40 @@ import {
   Image,
   ListRenderItem,
 } from 'react-native';
-import React, {useEffect, useState, useRef} from 'react';
+import React, {Dispatch, SetStateAction, useEffect} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import GlobalStyles from 'styles/GlobalStyles';
 import BottomNav from '@components/BottomNav';
-import {useNavigation} from '@react-navigation/native';
+import {RouteProp, useNavigation, useRoute} from '@react-navigation/native';
 import {commonTypes} from '@types';
 import {_getHeight} from 'constants/utils';
 import FontList from 'constants/FontList';
 import PathSearchBox from '@screens/path/components/PathSearchBox';
 import {FlatList} from 'react-native-gesture-handler';
 import {useDispatch, useSelector} from 'react-redux';
-import Loading from '@components/Loading';
 import {RootState} from 'redux/store';
 import {
   setGoalData,
   setInputGoal,
   setInputStart,
-  setIsGoalFinish,
-  setIsStartFinish,
-  setKeywordList,
   setStartData,
 } from 'redux/reducers/pathReducer';
-import bottomSheet from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheet';
+
+interface coor {
+  latitude: number;
+  longitude: number;
+  zoom: number;
+}
+
+interface props {
+  setCenter: any;
+}
 
 const PathSearchMain = () => {
   const nav = useNavigation<commonTypes.navi>();
+  const routeProps =
+    useRoute<RouteProp<commonTypes.RootStackParamList, 'PathSearchMain'>>()
+      .params;
   const {keywordList, lastRef, goalData, startData} = useSelector(
     (state: RootState) => state.pathReducer,
   );
@@ -75,10 +83,17 @@ const PathSearchMain = () => {
     if (keywordList.focus) {
       dispatch(setStartData(item));
       dispatch(setInputStart(item.address));
+      routeProps?.startBottomRef.current?.present();
     } else if (!keywordList.focus) {
       dispatch(setGoalData(item));
       dispatch(setInputGoal(item.address));
+      routeProps?.goalBottomRef.current?.present();
     }
+    routeProps?.setCenter({
+      latitude: item.location.lat,
+      longitude: item.location.lon,
+      zoom: 16,
+    });
     Keyboard.dismiss();
     nav.navigate('PathMain');
   };
@@ -185,7 +200,13 @@ const PathSearchMain = () => {
           borderBottomWidth: 4,
           borderColor: '#F6F6F6',
         }}>
-        <PathSearchBox editable={true} />
+        <PathSearchBox
+          editable={true}
+          setCenter={routeProps?.setCenter}
+          goalBottomRef={routeProps?.goalBottomRef}
+          startBottomRef={routeProps?.startBottomRef}
+          userStarRef={routeProps?.userStarRef}
+        />
       </View>
       <FlatList
         keyboardShouldPersistTaps="always"

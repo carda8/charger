@@ -31,7 +31,14 @@ declare module commonTypes {
     StationReportPage: undefined;
 
     SearchMain: undefined;
-    PathSearchMain: undefined;
+    PathSearchMain:
+      | undefined
+      | {
+          setCenter: any;
+          startBottomRef: React.RefObject<BottomSheetModalMethods>;
+          goalBottomRef: React.RefObject<BottomSheetModalMethods>;
+          userStarRef: React.RefObject<BottomSheetModalMethods>;
+        };
 
     HomeMain: {addr?: userAddr} | undefined;
     HomeSearch: {addr?: string} | undefined;

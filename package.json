@@ -24,7 +24,6 @@
     "dayjs": "^1.11.5",
     "formik": "^2.2.9",
     "global": "^4.4.0",
-    "ios-deploy": "^1.11.4",
     "react": "18.1.0",
     "react-native": "0.70.4",
     "react-native-device-info": "^10.3.0",

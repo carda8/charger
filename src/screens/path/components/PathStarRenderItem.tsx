@@ -5,15 +5,20 @@ import {BottomSheetModalMethods} from '@gorhom/bottom-sheet/lib/typescript/types
 import {useDispatch, useSelector} from 'react-redux';
 import {RootState} from 'redux/store';
 import commonAPI from 'api/modules/commonAPI';
-import {setGoalData, setLastRef} from 'redux/reducers/pathReducer';
+import {
+  setGoalData,
+  setInputGoal,
+  setLastRef,
+} from 'redux/reducers/pathReducer';
 import modules from 'constants/utils/modules';
 interface props {
   list: any[];
   item: any;
-  setCenter?: Dispatch<SetStateAction<any>>;
-  setUserStar?: Dispatch<SetStateAction<any>>;
+  setCenter: Dispatch<SetStateAction<any>>;
+  setUserStar: Dispatch<SetStateAction<any>>;
   setStarMarker?: Dispatch<SetStateAction<any>>;
   bottomSheetRef: React.RefObject<BottomSheetModalMethods>;
+  bottomGoalRef: React.RefObject<BottomSheetModalMethods>;
 }
 
 const PathStarRenderItem = ({
@@ -21,6 +26,8 @@ const PathStarRenderItem = ({
   item,
   bottomSheetRef,
   setUserStar,
+  setCenter,
+  bottomGoalRef,
 }: props) => {
   const {userInfo} = useSelector((state: RootState) => state.authReducer);
   const [star, setStart] = useState(true);
@@ -83,6 +90,7 @@ const PathStarRenderItem = ({
       <Pressable
         onPress={() => {
           console.log('data', data);
+          dispatch(setInputGoal(data.addr));
           const temp = {
             address: data.addr,
             location: {
@@ -92,15 +100,15 @@ const PathStarRenderItem = ({
             name: data.statNm,
           };
           console.log('## star temp', temp);
-          dispatch(setLastRef('goal'));
+          // dispatch(setLastRef('goal'));
           dispatch(setGoalData(temp));
+          setCenter({
+            latitude: data.location.lat,
+            longitude: data.location.lon,
+            zoom: 16,
+          });
           bottomSheetRef.current?.dismiss();
-          //   setCenter({
-          //     latitude: data.location.lat,
-          //     longitude: data.location.lon,
-          //     zoom: 17,
-          //   });
-          //   setStarMarker(data);
+          bottomGoalRef.current?.present();
         }}
         key={item.index}
         style={{
