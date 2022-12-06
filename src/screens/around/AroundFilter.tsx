@@ -50,8 +50,8 @@ const AroundFilter = () => {
   const [showAvailable, setShowAvailable] = useState(false);
   const [pickAll, setPickAll] = useState(false);
   const [pickedBusi, setPickedBusi] = useState<string[]>([]);
-  const [busiList, setBusiList] = useState<busiType[]>();
-
+  // const [busiList, setBusiList] = useState<busiType[]>();
+  const [busiList, setBusiList] = useState<any[]>();
   const layout = useWindowDimensions();
   const WIDTH = (layout.width - 32 - 48) / 4;
 
@@ -68,13 +68,36 @@ const AroundFilter = () => {
   const dumArea = ['실내충전소', '실외충전소', '캐노피'];
   const dumRoad = ['일반도로', '고속도로'];
   const dumType = ['DC콤보', 'AC3상', '완속', 'DC콤보', 'AC3상', '완속'];
-
+  const companyList = [
+    '테슬라',
+    '환경부',
+    '한국전력',
+    '기아자동차',
+    '한국GM',
+    '대영채비',
+    '지엔텔',
+    'BMW',
+    '에스트래픽',
+    '차지비',
+    '시그넷',
+    '현대자동차',
+    '한국전기차충전서비스',
+    '르노삼성자동차',
+    '에버온',
+    '파워큐브',
+    '기타',
+  ];
   const _getInfo = async () => {
     await API.get('filters')
       .then(res => {
         if (res.data) {
           console.log('api res', res.data);
-          setBusiList(res.data.busiNm);
+          let temp: any[] = [];
+          // temp = res.data.busiNm.filter((item: any) =>
+          //   companyList.includes(item.key),
+          // );
+          console.log('temp :: ', temp);
+          setBusiList(companyList);
         }
       })
       .catch(err => console.log(err));
@@ -723,7 +746,8 @@ const AroundFilter = () => {
                 <Pressable
                   key={idx}
                   onPress={() => {
-                    dispatch(setCompany(item.key));
+                    // dispatch(setCompany(item.key));
+                    dispatch(setCompany(item));
                   }}
                   style={{
                     alignItems: 'center',
@@ -736,18 +760,31 @@ const AroundFilter = () => {
                       width: 16,
                       height: 16,
                       borderWidth:
-                        filter.company?.includes(item.key) || pickAll
+                        filter.company?.includes(item) || pickAll
                           ? undefined
                           : 1,
+                      // filter.company?.includes(item.key) || pickAll
+                      //   ? undefined
+                      //   : 1,
                       backgroundColor:
-                        filter.company?.includes(item.key) || pickAll
+                        filter.company?.includes(item) || pickAll
                           ? '#07B3FD'
                           : undefined,
+                      // filter.company?.includes(item.key) || pickAll
+                      //   ? '#07B3FD'
+                      //   : undefined,
                       alignItems: 'center',
                       justifyContent: 'center',
                       marginRight: 8,
                     }}>
-                    {(filter.company?.includes(item.key) || pickAll) && (
+                    {/* {(filter.company?.includes(item.key) || pickAll) && (
+                      <Image
+                        source={require('@assets/check_filter.png')}
+                        style={{width: 8, height: 8}}
+                        resizeMode="contain"
+                      />
+                    )} */}
+                    {(filter.company?.includes(item) || pickAll) && (
                       <Image
                         source={require('@assets/check_filter.png')}
                         style={{width: 8, height: 8}}
@@ -756,7 +793,8 @@ const AroundFilter = () => {
                     )}
                   </View>
                   <View style={{flex: 1}}>
-                    <Text>{item?.key}</Text>
+                    {/* <Text>{item?.key}</Text> */}
+                    <Text>{item}</Text>
                   </View>
                 </Pressable>
               ))}

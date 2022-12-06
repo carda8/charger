@@ -59,7 +59,8 @@ const RecentMain = () => {
     <SafeAreaView style={{...GlobalStyles.safeAreaStyle}}>
       <HeaderCenter title="마이홈" />
       <FlatList
-        data={recent}
+        // data={recent}
+        data={[]}
         ListEmptyComponent={
           <View style={{margin: 16, alignItems: 'center'}}>
             <Text style={{fontSize: 16, color: '#959595'}}>
