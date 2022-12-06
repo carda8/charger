@@ -256,7 +256,7 @@ const StationListItem = ({
                   fontSize: 14,
                   color: '#333333',
                 }}>
-                {/* 1.5km */}
+                {item?.distance}km
               </Text>
             </Text>
           </View>

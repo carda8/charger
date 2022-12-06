@@ -23,6 +23,8 @@ import {
   setGoalData,
   setInputGoal,
   setInputStart,
+  setIsGoalFinish,
+  setIsStartFinish,
   setStartData,
 } from 'redux/reducers/pathReducer';
 
@@ -83,10 +85,12 @@ const PathSearchMain = () => {
     if (keywordList.focus) {
       dispatch(setStartData(item));
       dispatch(setInputStart(item.address));
+      dispatch(setIsStartFinish(false));
       routeProps?.startBottomRef.current?.present();
     } else if (!keywordList.focus) {
       dispatch(setGoalData(item));
       dispatch(setInputGoal(item.address));
+      dispatch(setIsGoalFinish(false));
       routeProps?.goalBottomRef.current?.present();
     }
     routeProps?.setCenter({

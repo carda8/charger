@@ -8,6 +8,7 @@ import commonAPI from 'api/modules/commonAPI';
 import {
   setGoalData,
   setInputGoal,
+  setIsGoalFinish,
   setLastRef,
 } from 'redux/reducers/pathReducer';
 import modules from 'constants/utils/modules';
@@ -91,6 +92,7 @@ const PathStarRenderItem = ({
         onPress={() => {
           console.log('data', data);
           dispatch(setInputGoal(data.addr));
+          dispatch(setIsGoalFinish(false));
           const temp = {
             address: data.addr,
             location: {

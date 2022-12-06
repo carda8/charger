@@ -114,7 +114,7 @@ const PathBottomSheetReco = ({pickReco, recoRef}: props) => {
                     fontSize: 14,
                     color: '#333333',
                   }}>
-                  {''}
+                  {pickReco?.distance}km
                 </Text>
               </Text>
             </View>

@@ -54,7 +54,7 @@ const PathMain = () => {
   const layout = useWindowDimensions();
   const nav = useNavigation<commonTypes.navi>();
   const {userInfo} = useSelector((state: RootState) => state.authReducer);
-  const {startData, goalData} = useSelector(
+  const {startData, goalData, isStartFinish, isGoalFinish} = useSelector(
     (state: RootState) => state.pathReducer,
   );
 
@@ -67,8 +67,14 @@ const PathMain = () => {
     (state: RootState) => state.locationReducer,
   );
 
-  const [finishStart, setFinishStart] = useState(false);
-  const [finishGoal, setFinishGoal] = useState(false);
+  useEffect(() => {
+    console.log(
+      '##RX finish state Start ::',
+      isStartFinish,
+      'Goal ::',
+      isGoalFinish,
+    );
+  }, [isGoalFinish, isStartFinish]);
 
   const [modalLogin, setModalLogin] = useState(false);
 
@@ -78,6 +84,7 @@ const PathMain = () => {
   // 도착지, 현위치 모달 start, goal
   const [modalStart, setModalStart] = useState(false);
   const [modalGoal, setModalGoal] = useState(false);
+  const [modalNoReco, setModalNoReco] = useState(false);
 
   // 지도 포커스
   const [center, setCenter] = useState<coor>();
@@ -86,9 +93,15 @@ const PathMain = () => {
   const [showRec, setShowRec] = useState(false);
   // 선택된 추전 아이템 바텀 시트 표시
 
-  // const [convertedCoor, setConvertedCoor] = useState([]);
-  const [recomandList, setRecomandList] = useState([]);
+  // 경로 path routes 값
+  const [lineData, setLineData] = useState([]);
+  const [recoLineData, setRecoLineData] = useState([]);
 
+  // const [convertedCoor, setConvertedCoor] = useState([]);
+  const [recomandList, setRecomandList] = useState<any>([]);
+
+  // 선택된 추천 충전기 정보
+  const [pickReco, setPickReco] = useState<any>();
   // 길안내모달
   const [modalNav, setModalNav] = useState(false);
 
@@ -112,7 +125,7 @@ const PathMain = () => {
   const snapPointsStar = useMemo(() => ['64%'], []);
 
   const handleSheetChanges = useCallback((index: number) => {
-    console.log('handleSheetChanges', index);
+    // console.log('handleSheetChanges', index);
     if (index === -1) {
       setShowStarFilter(false);
     }
@@ -127,14 +140,6 @@ const PathMain = () => {
   );
   // ########## END 바텀시트 ##########
 
-  // 경로간 추천 목록
-  // 추천 목록 가져오기
-  // _postPathRecommend
-  // data = {
-  //   route: routes,
-  //   distance: 1,
-  // };
-
   // 좌표를 주소로 변환 필요여부?
   // const _convertCoor = (routes: any) => {
   //   let temp: any[] = [];
@@ -146,14 +151,7 @@ const PathMain = () => {
   //   // console.log('converted temp', temp);
   // };
 
-  // 경로 표시
-  // _getPathLine 경로 표시
-  // data = {
-  //   start: `${startData.location.lon},${startData.location.lat}`,
-  //   end: `${goalData.location.lon},${goalData.location.lat}`,
-  // };
   // 경로 표시 이후
-
   // 좌표에서 주소 도출 기능?
   // const _getAddrByCoor = async () => {
   //   const param = {
@@ -170,6 +168,100 @@ const PathMain = () => {
   //     })
   //     .catch(err => console.log('add err', err));
   // };
+
+  // start, goal 간의 path 표시
+  const _showPathLine = async () => {
+    if (startData && goalData) {
+      setModal(true);
+      const data = {
+        start: `${startData.location.lon},${startData.location.lat}`,
+        end: `${goalData.location.lon},${goalData.location.lat}`,
+      };
+      await commonAPI
+        ._getPathLine(data)
+        .then(res => {
+          console.log('## res', res.data);
+          let temp: any = [];
+          let tempReco: any = [];
+          // Naver Map Path 표시용 데이터
+          res.data.route.map((item: any, index: any) => {
+            temp.push({latitude: item[1], longitude: item[0]});
+          });
+
+          // 백앤드 경로값 호출용 데이터
+          res.data.route.map((item: any, index: any) => {
+            tempReco.push([item[1], item[0]]);
+          });
+          setLineData(temp);
+          setRecoLineData(tempReco);
+          console.log('## temp', temp);
+        })
+        .catch(err => {
+          console.log('err', err);
+        })
+        .finally(() => {
+          setModal(false);
+        });
+    }
+  };
+
+  // 추천 충전기 목록 가져오기
+  const _showRecoStation = async () => {
+    if (recoLineData.length > 0) {
+      setModal(true);
+      const data = {
+        route: recoLineData,
+        distance: 1,
+      };
+      await commonAPI
+        ._postPathRecommend(data)
+        .then(res => {
+          console.log('## reco station res ::', res.data);
+          if (res.data.data.length > 0) {
+            setRecomandList(res.data.data);
+          } else {
+            setModalNoReco(true);
+          }
+        })
+        .catch(err => {
+          console.log('err', err);
+        })
+        .finally(() => {
+          setModal(false);
+        });
+    }
+  };
+
+  const _trigger = () => {
+    if (!startData || !goalData) {
+      setLineData([]);
+      setRecomandList([]);
+      return;
+    }
+    if (!isStartFinish || !isGoalFinish) {
+      setLineData([]);
+      setRecomandList([]);
+      return;
+    }
+    if (startData && goalData && isStartFinish && isGoalFinish) {
+      _showPathLine();
+      return;
+    }
+  };
+
+  // 출발지, 도착지 패스 표시 이후
+  // 추천 충전기 route state가 설정되면
+  // 추천 충전기 목록 가져오기
+  useEffect(() => {
+    if (recoLineData.length > 0) {
+      _showRecoStation();
+    }
+  }, [recoLineData]);
+
+  useEffect(() => {
+    _trigger();
+    console.log('finish', isStartFinish, 'goal', isGoalFinish);
+  }, [isStartFinish, isGoalFinish, startData, goalData]);
 
   const _getMarkerImg = (item: any) => {
     let isAc = false;
@@ -200,23 +292,27 @@ const PathMain = () => {
   // 본인의 실제 현위치로 포커스
   const _onPressMyLocation = () => {
     const temp = JSON.parse(JSON.stringify(currentUserLocation));
-    setCenter({...temp});
+    setCenter({...temp, zoom: 16});
   };
 
   // 카메라 설정
-  // useEffect(() => {
-  //   if (lineData?.length > 0) {
-  //     setTimeout(() => {
-  //       mapRef?.current?.animateToCoordinates(lineData, {
-  //         top: 550,
-  //         bottom: 700,
-  //         left: 275,
-  //         right: 275,
-  //       });
-  //       setModal(false);
-  //     }, 200);
-  //   }
-  // }, [lineData]);
+  useEffect(() => {
+    if (lineData?.length > 0) {
+      setTimeout(() => {
+        mapRef?.current?.animateToCoordinates(lineData, {
+          // top: 550,
+          // bottom: 600,
+          // left: 275,
+          // right: 275,
+          top: 550,
+          bottom: 600,
+          left: 159,
+          right: 150,
+        });
+        setModal(false);
+      }, 200);
+    }
+  }, [lineData]);
 
   // 추천 선택시 패스 함수 별도 생서 필요
   // useEffect(() => {
@@ -283,9 +379,6 @@ const PathMain = () => {
     }
   }, []);
 
-  // useEffect(() => {
-  // }, [bottomSheetUserStarRef.current]);
-
   useEffect(() => {
     dispatch(setBottomIdx(2));
   }, []);
@@ -336,7 +429,7 @@ const PathMain = () => {
               <Marker
                 width={35}
                 height={35}
-                zIndex={100}
+                // zIndex={100}
                 image={require('@assets/my_location.png')}
                 coordinate={currentUserLocation}
               />
@@ -392,6 +485,7 @@ const PathMain = () => {
                   color: 'ffffff',
                 }}
                 image={require('@assets/marker_fast.png')}
+                zIndex={100}
                 coordinate={{
                   latitude: Number(goalData?.location.lat),
                   longitude: Number(goalData?.location.lon),
@@ -400,46 +494,59 @@ const PathMain = () => {
             )}
 
             {/* 도착지 목적지 라인 */}
-            {/* <Path
-              coordinates={lineData}
-              width={7}
-              color={'#093BBC'}
-              outlineColor={'#093BBC'}
-              pattern={require('@assets/top_ic_history_w3.png')}
-              patternInterval={25}
-            /> */}
+            {lineData.length > 0 && (
+              <Path
+                coordinates={lineData}
+                width={7}
+                color={'#093BBC'}
+                outlineColor={'#093BBC'}
+                pattern={require('@assets/top_ic_history_w3.png')}
+                patternInterval={25}
+              />
+            )}
 
             {/* 추천 중전기 마커들 */}
-            {/* <Marker
-              key={index}
-              width={32}
-              height={65}
-              onClick={() => {}}
-              caption={
-                {
-                  // text:
-                  //   item.chargers.length > 9
-                  //     ? '9+'
-                  //     : String(item.chargers.length),
-                  // align: Align.Center,
-                  // haloColor: 'A6A6A6',
-                  // textSize: 15,
-                  // color: 'ffffff',
-                }
-              }
-              image={_getMarkerImg(item)}
-              coordinate={{}}
-            /> */}
+            {recomandList?.map((item: any, index: number) => (
+              <Marker
+                key={index}
+                width={32}
+                height={65}
+                onClick={() => {
+                  bottomSheetRecoRef.current?.present();
+                  setPickReco(item);
+                  setCenter({
+                    latitude: Number(item.location.lat),
+                    longitude: Number(item.location.lon),
+                    zoom: 16,
+                  });
+                }}
+                caption={{
+                  text:
+                    item.chargers.length > 9
+                      ? '9+'
+                      : String(item.chargers.length),
+                  align: Align.Center,
+                  haloColor: 'A6A6A6',
+                  textSize: 15,
+                  color: 'ffffff',
+                }}
+                image={_getMarkerImg(item)}
+                coordinate={{
+                  latitude: item.location.lat,
+                  longitude: item.location.lon,
+                }}
+              />
+            ))}
           </NaverMapView>
 
           {/* 추천 목록 */}
-          {showRec && (
+          {/* {showRec && (
             <PathRecommendList
               recomandList={recomandList}
               setCenter={setCenter}
               setModalNav={setModalNav}
             />
-          )}
+          )} */}
 
           {/* 도착지 현위치 바텀시트 */}
           {/* 출발지 바텀시트 */}
@@ -449,7 +556,8 @@ const PathMain = () => {
             footerComponent={() => (
               <Pressable
                 onPress={() => {
-                  setFinishStart(true);
+                  // setFinishStart(true);
+                  // dispatch(setIsStartFinish(true));
                   setModalStart(!modalStart);
                   bottomSheetStartRef.current?.close();
                 }}
@@ -510,8 +618,9 @@ const PathMain = () => {
             footerComponent={() => (
               <Pressable
                 onPress={() => {
-                  setFinishGoal(true);
+                  // setFinishGoal(true);
                   setModalGoal(!modalGoal);
+                  // dispatch(setIsGoalFinish(true));
                   bottomSheetGoalRef.current?.close();
                 }}
                 style={[
@@ -603,7 +712,8 @@ const PathMain = () => {
           </BottomSheetModal>
 
           {/* 추천 충전기 바텀시트 */}
-          {/* {pickReco && (
+
+          {pickReco && (
             <BottomSheetModal
               style={sheetStyle}
               ref={bottomSheetRecoRef}
@@ -616,10 +726,9 @@ const PathMain = () => {
                 recoRef={bottomSheetRecoRef}
               />
             </BottomSheetModal>
-          )} */}
+          )}
 
           {/* 즐겨찾기 바텀 시트 */}
-
           <BottomSheetModal
             index={0}
             style={sheetStyle}
@@ -823,14 +932,16 @@ const PathMain = () => {
             setVisible={setModalStart}
             visible={modalStart}
             title={'현위치 설정 완료'}
+            positivePress={() => dispatch(setIsStartFinish(true))}
           />
 
           <MyModal
             positive
             positiveTitle="확인"
-            setVisible={setModalGoal}
             visible={modalGoal}
+            setVisible={setModalGoal}
             title={'도착지 설정 완료'}
+            positivePress={() => dispatch(setIsGoalFinish(true))}
           />
 
           <BottomNav />
@@ -842,6 +953,16 @@ const PathMain = () => {
             visible={modalLogin}
             title="집 설정"
             text="로그인이 필요한 기능입니다."
+          />
+
+          {/* 경로내 추천 충전소 없을 시 */}
+          <MyModal
+            positive
+            positiveTitle="확인"
+            setVisible={setModalNoReco}
+            visible={modalNoReco}
+            title={'알림'}
+            text={'경로내 추천 충전소가 없습니다.'}
           />
           {/* 
           {startData && goalData && (

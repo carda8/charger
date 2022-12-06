@@ -13,6 +13,7 @@ import {
   setGoalData,
   setInputGoal,
   setInputStart,
+  setIsGoalFinish,
   setIsHoem,
   setKeywordList,
   switchPosition,
@@ -79,6 +80,7 @@ const PathSearchBox = ({
         currentUserLocation?.latitude,
         currentUserLocation?.longitude,
       ],
+      user_id: userInfo?.id,
     };
     await commonAPI
       ._postSearchBase(data)
@@ -112,6 +114,7 @@ const PathSearchBox = ({
       });
       dispatch(setGoalData(userInfo?.addressInfo));
       dispatch(setInputGoal(userInfo.addressInfo.address));
+      dispatch(setIsGoalFinish(false));
       goalBottomRef.current?.present();
       nav.navigate('PathMain');
     }
