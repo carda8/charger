@@ -33,9 +33,11 @@ import {commonTypes} from '@types';
 import PathBottomSheetItem from './components/PathBottomSheetItem';
 import {
   resetPath,
+  setInputStart,
   setIsGoalFinish,
   setIsStartFinish,
   setRecoIndex,
+  setStartData,
 } from 'redux/reducers/pathReducer';
 import MyModal from '@components/MyModal';
 import PathRecommendList from './components/PathRecommendList';
@@ -367,6 +369,49 @@ const PathMain = () => {
   //   };
   // }, []);
 
+  //현위치로?
+
+  //   address
+  // :
+  // "제주특별자치도 제주시 연동 312-1"
+  // location
+  // :
+  // {lat: 33.4889944, lon: 126.4982701}
+  // name
+  // :
+  // "제주특별자치도청"
+
+  const _getAddrByCoor = async () => {
+    if (currentUserLocation) {
+      const param = {
+        x: currentUserLocation.longitude,
+        y: currentUserLocation.latitude,
+      };
+      await commonAPI
+        ._getAddrByCoor(param)
+        .then(res => {
+          if (res?.data?.documents?.length > 0) {
+            const resData = res.data.documents[0];
+            console.log(resData.x);
+            const data = {
+              address: resData.address_name,
+              location: {
+                lat: currentUserLocation.latitude,
+                lon: currentUserLocation.longitude,
+              },
+              name: resData.address_name,
+            };
+            console.log('data', data);
+            dispatch(setStartData(data));
+            dispatch(setInputStart(data.address));
+            dispatch(setIsStartFinish(true));
+          }
+          console.log('## _getAddrByCoor ::', res.data.documents);
+        })
+        .catch(err => console.log('add err', err));
+    }
+  };
+
   // 초기 유저 현위치로 세팅
   useEffect(() => {
     console.log('currentUserLocation', currentUserLocation);
@@ -376,6 +421,9 @@ const PathMain = () => {
         longitude: currentUserLocation.longitude,
         zoom: 16,
       });
+    }
+    if (currentUserLocation) {
+      _getAddrByCoor();
     }
   }, []);
 
@@ -434,9 +482,8 @@ const PathMain = () => {
                 coordinate={currentUserLocation}
               />
             )}
-
             {/* 출발지 마커 */}
-            {startData?.location.lat && (
+            {startData?.location?.lat && (
               <Marker
                 width={32}
                 height={65}
@@ -508,6 +555,7 @@ const PathMain = () => {
             {/* 추천 중전기 마커들 */}
             {recomandList?.map((item: any, index: number) => (
               <Marker
+                alpha={}
                 key={index}
                 width={32}
                 height={65}
@@ -520,6 +568,7 @@ const PathMain = () => {
                     zoom: 16,
                   });
                 }}
+                pinColor={}
                 caption={{
                   text:
                     item.chargers.length > 9
@@ -531,6 +580,7 @@ const PathMain = () => {
                   color: 'ffffff',
                 }}
                 image={_getMarkerImg(item)}
+                ico_location
                 coordinate={{
                   latitude: item.location.lat,
                   longitude: item.location.lon,

@@ -12,8 +12,6 @@ import NavModal from '@components/NavModal';
 import {useDispatch, useSelector} from 'react-redux';
 import {RootState} from 'redux/store';
 import commonAPI from 'api/modules/commonAPI';
-import modules from 'constants/utils/modules';
-import Loading from '@components/Loading';
 import {setUserInfo} from 'redux/reducers/authReducer';
 
 const HomeMain = () => {
