@@ -33,6 +33,7 @@ import {commonTypes} from '@types';
 import PathBottomSheetItem from './components/PathBottomSheetItem';
 import {
   resetPath,
+  setGoalData,
   setInputStart,
   setIsGoalFinish,
   setIsStartFinish,
@@ -196,6 +197,43 @@ const PathMain = () => {
           });
           setLineData(temp);
           setRecoLineData(tempReco);
+          console.log('## temp', temp);
+        })
+        .catch(err => {
+          console.log('err', err);
+        })
+        .finally(() => {
+          setModal(false);
+        });
+    }
+  };
+
+  //현위치에서 추천 충전소 까지의 경로 가져오기
+  const _showRecoPathLine = async (item: any) => {
+    console.log('PICK RECO DATA', item);
+    if (startData && item) {
+      setModal(true);
+      const data = {
+        start: `${startData.location.lon},${startData.location.lat}`,
+        end: `${item.location.lon},${item.location.lat}`,
+      };
+      await commonAPI
+        ._getPathLine(data)
+        .then(res => {
+          console.log('## res', res.data);
+          let temp: any = [];
+          let tempReco: any = [];
+          // Naver Map Path 표시용 데이터
+          res.data.route.map((item: any, index: any) => {
+            temp.push({latitude: item[1], longitude: item[0]});
+          });
+
+          // 백앤드 경로값 호출용 데이터
+          res.data.route.map((item: any, index: any) => {
+            tempReco.push([item[1], item[0]]);
+          });
+          setLineData(temp);
+          // setRecoLineData(tempReco);
           console.log('## temp', temp);
         })
         .catch(err => {
@@ -555,20 +593,19 @@ const PathMain = () => {
             {/* 추천 중전기 마커들 */}
             {recomandList?.map((item: any, index: number) => (
               <Marker
-                alpha={}
                 key={index}
                 width={32}
                 height={65}
                 onClick={() => {
                   bottomSheetRecoRef.current?.present();
                   setPickReco(item);
+                  _showRecoPathLine(item);
                   setCenter({
                     latitude: Number(item.location.lat),
                     longitude: Number(item.location.lon),
                     zoom: 16,
                   });
                 }}
-                pinColor={}
                 caption={{
                   text:
                     item.chargers.length > 9
@@ -580,7 +617,6 @@ const PathMain = () => {
                   color: 'ffffff',
                 }}
                 image={_getMarkerImg(item)}
-                ico_location
                 coordinate={{
                   latitude: item.location.lat,
                   longitude: item.location.lon,
@@ -762,12 +798,43 @@ const PathMain = () => {
           </BottomSheetModal>
 
           {/* 추천 충전기 바텀시트 */}
-
           {pickReco && (
             <BottomSheetModal
               style={sheetStyle}
               ref={bottomSheetRecoRef}
-              footerComponent={() => <></>}
+              footerComponent={() => (
+                <>
+                  <Pressable
+                    onPress={() => {
+                      // setFinishGoal(true);
+                      setModalGoal(!modalGoal);
+                      // dispatch(setGoalData(pickReco));
+                      // dispatch(setIsGoalFinish(true));
+                      bottomSheetRecoRef.current?.close();
+                    }}
+                    style={[
+                      {
+                        height: 54,
+                        backgroundColor: '#00239C',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderRadius: 8,
+                        marginTop: 'auto',
+                        marginBottom: 22,
+                        marginHorizontal: 16,
+                      },
+                    ]}>
+                    <Text
+                      style={{
+                        fontFamily: FontList.PretendardBold,
+                        fontSize: 16,
+                        color: 'white',
+                      }}>
+                      길안내 받기
+                    </Text>
+                  </Pressable>
+                </>
+              )}
               index={0}
               snapPoints={snapPointsReco}
               onChange={handleSheetChanges}>

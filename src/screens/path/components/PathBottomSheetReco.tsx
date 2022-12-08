@@ -1,11 +1,15 @@
 import {View, Text, Image, Pressable} from 'react-native';
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import FontList from 'constants/FontList';
 import {BottomSheetModalMethods} from '@gorhom/bottom-sheet/lib/typescript/types';
 import {_getWidth} from 'constants/utils';
 import ChargerType from 'constants/ChargerType';
-import {useDispatch} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import {setRecomendStationData} from 'redux/reducers/pathReducer';
+import modules from 'constants/utils/modules';
+import {RootState} from 'redux/store';
+import commonAPI from 'api/modules/commonAPI';
+import {setUserInfo} from 'redux/reducers/authReducer';
 interface props {
   pickReco: any;
   recoRef: React.RefObject<BottomSheetModalMethods>;
@@ -13,6 +17,90 @@ interface props {
 const PathBottomSheetReco = ({pickReco, recoRef}: props) => {
   const [favorite, setFavorite] = useState(false);
   const dispatch = useDispatch();
+  const closed = modules._isClosed(pickReco);
+
+  // const nav = useNavigation<commonTypes.navi>();
+  const {userInfo} = useSelector((state: RootState) => state.authReducer);
+
+  const _fetchUserInfo = async () => {
+    const id = {user_id: userInfo?.id};
+    const res = await commonAPI
+      ._getUserInfo(id)
+      .then(res => {
+        if (res.data) {
+          dispatch(setUserInfo(res.data));
+        }
+        return res.data;
+      })
+      .catch(err => {
+        console.log('err', err);
+      });
+    if (res) return res;
+  };
+
+  const _filterStar = async (userFav: any, stationInfo: any) => {
+    const userFavList = userFav.favorites;
+    const stationId = stationInfo.statId;
+    // console.log('user', userFavList, stationId);
+    let temp = [];
+    if (userFavList.length > 0) {
+      temp = userFavList.filter((item: any) => item.statId === stationId);
+    }
+    if (temp.length > 0) {
+      setFavorite(true);
+    } else setFavorite(false);
+  };
+
+  useEffect(() => {
+    _fetchUserInfo().then(res => {
+      _filterStar(res, pickReco);
+    });
+  }, [pickReco]);
+
+  const _delUserStar = async () => {
+    const data = {
+      user_id: userInfo?.id,
+      stat_id: pickReco.statId,
+    };
+
+    setFavorite(false);
+    await commonAPI
+      ._deleteUserStar(data)
+      .then(async res => {
+        await _fetchUserInfo();
+        console.log('## _delUserStar', res);
+      })
+      .catch(res => {
+        console.log('_delUserStar err', res);
+      });
+  };
+
+  const _setUserStar = async () => {
+    const data = {
+      user_id: userInfo?.id,
+      stat_id: pickReco.statId,
+    };
+
+    setFavorite(true);
+    await commonAPI
+      ._postUserStar(data)
+      .then(async res => {
+        await _fetchUserInfo();
+        console.log('## _setUserStar', res);
+      })
+      .catch(err => {
+        console.log('## _setUserStar err', err);
+      });
+  };
+
+  const _onPressed = async () => {
+    // if (!userInfo?.id && setNeedLogin) return setNeedLogin(true);
+    if (favorite && userInfo?.id) {
+      await _delUserStar();
+    } else {
+      await _setUserStar();
+    }
+  };
 
   const _getChgerImg = (item: any) => {
     let chgerImgTemp = {
@@ -78,6 +166,10 @@ const PathBottomSheetReco = ({pickReco, recoRef}: props) => {
     return res;
   };
 
+  const _onPressFav = () => {
+    setFavorite(!favorite);
+  };
+
   return (
     <View style={{flex: 1}}>
       <View style={{marginHorizontal: 16, marginTop: 10}}>
@@ -125,7 +217,10 @@ const PathBottomSheetReco = ({pickReco, recoRef}: props) => {
               alignItems: 'center',
             }}
             hitSlop={10}
-            onPress={() => {}}>
+            onPress={() => {
+              // _onPressFav();
+              _onPressed();
+            }}>
             <Image
               source={
                 favorite
@@ -216,9 +311,9 @@ const PathBottomSheetReco = ({pickReco, recoRef}: props) => {
                 style={{
                   fontFamily: FontList.PretendardMedium,
                   fontSize: 16,
-                  color: '#6FCF24',
+                  color: closed ? '#6FCF24' : '#959595',
                 }}>
-                충전가능
+                {closed ? '충전가능' : '충전불가'}
               </Text>
             </View>
             <View style={{flexDirection: 'row'}}>
@@ -326,7 +421,7 @@ const PathBottomSheetReco = ({pickReco, recoRef}: props) => {
           </View>
         </View>
       </View>
-      <View style={{flex: 1, marginHorizontal: 18}}>
+      {/* <View style={{flex: 1, marginHorizontal: 18}}>
         <Pressable
           onPress={() => {
             recoRef.current?.close();
@@ -351,7 +446,7 @@ const PathBottomSheetReco = ({pickReco, recoRef}: props) => {
             도착지 설정
           </Text>
         </Pressable>
-      </View>
+      </View> */}
     </View>
   );
 };

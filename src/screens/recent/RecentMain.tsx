@@ -64,7 +64,7 @@ const RecentMain = () => {
         ListEmptyComponent={
           <View style={{margin: 16, alignItems: 'center'}}>
             <Text style={{fontSize: 16, color: '#959595'}}>
-              마이홈이 없습니다
+              최근충전소가 없습니다
             </Text>
           </View>
         }
