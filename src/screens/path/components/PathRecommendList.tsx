@@ -21,24 +21,27 @@ interface coor {
 
 interface props {
   recomandList: any;
-  setCenter?: Dispatch<SetStateAction<coor | undefined>>;
+  setCenter: Dispatch<SetStateAction<coor | undefined>>;
   setModalNav: Dispatch<SetStateAction<any>>;
+  fc: any;
 }
 
-const PathRecommendList = ({recomandList, setCenter, setModalNav}: props) => {
-  const {keywordList, recoIndex, goalData} = useSelector(
+const PathRecommendList = ({
+  recomandList,
+  setCenter,
+  setModalNav,
+  fc,
+}: props) => {
+  const {startData, goalData} = useSelector(
     (state: RootState) => state.pathReducer,
   );
-  console.log('goalDatagoalDatagoalData', goalData);
   const dispatch = useDispatch();
-  // console.log('IN RECO LIST', recomandList);
   const [pick, setPick] = useState<any>();
   const _sortChgerBySpeed = (item: any) => {
     let normal = 0;
     let fast = 0;
-    // console.log('sort', item);
     if (item) {
-      item?.chargers.map((item, index) => {
+      item?.chargers.map((item: any, index: any) => {
         if (item.chgerTypeInfo === 'AC완속' || item.chgerTypeInfo === 'AC3상')
           normal++;
         else fast++;
@@ -51,11 +54,12 @@ const PathRecommendList = ({recomandList, setCenter, setModalNav}: props) => {
     return res;
   };
 
-  // const scrollRef = useRef<ScrollView>();
-
-  // useEffect(() => {
-  //   scrollRef.current?.scrollTo;
-  // }, [recoIndex]);
+  useEffect(() => {
+    if (recomandList.length > 0) {
+      setPick(recomandList[0]);
+      fc(recomandList[0]);
+    }
+  }, []);
 
   return (
     <View>
@@ -66,17 +70,15 @@ const PathRecommendList = ({recomandList, setCenter, setModalNav}: props) => {
           width: '100%',
           height: 196,
           zIndex: 100,
-          // backgroundColor: 'pink',
         }}>
         <ScrollView
-          // ref={scrollRef.current}
           horizontal
           showsHorizontalScrollIndicator={false}
           bounces={false}
           style={{flex: 1}}>
           <View style={{flexDirection: 'row', paddingTop: 4}}>
             {recomandList.length > 0 &&
-              recomandList.map((item, index) => (
+              recomandList.map((item: any, index: any) => (
                 <Shadow
                   key={item?.statId}
                   offset={[0, 1]}
@@ -90,21 +92,22 @@ const PathRecommendList = ({recomandList, setCenter, setModalNav}: props) => {
                   }}>
                   <Pressable
                     onPress={() => {
-                      setPick(index);
-                      dispatch(setRecomendStationData(item));
+                      setPick(item);
+                      // dispatch(setRecomendStationData(item));
                       // dispatch(setGoalData(item));
-                      // setCenter({
-                      //   latitude: item.location.lat,
-                      //   longitude: item.location.lon,
-                      //   zoom: 16,
-                      // });
+                      fc(item);
+                      setCenter({
+                        latitude: item.location.lat,
+                        longitude: item.location.lon,
+                        zoom: 16,
+                      });
                     }}
                     style={{
                       flex: 1,
                       backgroundColor: 'white',
                       borderRadius: 3,
                       borderWidth: 2,
-                      borderColor: index === pick ? '#00C2FF' : 'white',
+                      borderColor: item === pick ? '#00C2FF' : 'white',
                       paddingLeft: 6,
                       paddingVertical: 6.68,
                     }}>
@@ -188,7 +191,17 @@ const PathRecommendList = ({recomandList, setCenter, setModalNav}: props) => {
           }}>
           <Pressable
             onPress={() => {
-              setModalNav(true);
+              if (pick) {
+                setModalNav({
+                  visible: true,
+                  // start: startData,
+                  goal: {
+                    address: pick.addr,
+                    location: {lat: pick.location.lat, lon: pick.location.lon},
+                    name: pick.statNm,
+                  },
+                });
+              }
             }}
             style={[
               {

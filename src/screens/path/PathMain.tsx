@@ -45,6 +45,7 @@ import PathRecommendList from './components/PathRecommendList';
 import PathBottomSheetReco from './components/PathBottomSheetReco';
 import PathStarRenderItem from './components/PathStarRenderItem';
 import NavModal from '@components/NavModal';
+import NavPathModal from '@components/NavPathModal';
 
 interface coor {
   latitude: number;
@@ -106,7 +107,7 @@ const PathMain = () => {
   // 선택된 추천 충전기 정보
   const [pickReco, setPickReco] = useState<any>();
   // 길안내모달
-  const [modalNav, setModalNav] = useState(false);
+  const [modalNav, setModalNav] = useState<any>({visible: false, goal: ''});
 
   // map ref
   const mapRef = useRef<NaverMapView>(null);
@@ -171,6 +172,11 @@ const PathMain = () => {
   //     })
   //     .catch(err => console.log('add err', err));
   // };
+
+  useEffect(() => {
+    console.log('## modal nav goal::', modalNav);
+    console.log('## modal nav start::', startData);
+  }, [modalNav]);
 
   // start, goal 간의 path 표시
   const _showPathLine = async () => {
@@ -401,11 +407,11 @@ const PathMain = () => {
     _UserStar();
   }, [userInfo, starFilter]);
 
-  // useEffect(() => {
-  //   return () => {
-  //     dispatch(resetPath({}));
-  //   };
-  // }, []);
+  useEffect(() => {
+    return () => {
+      dispatch(resetPath());
+    };
+  }, []);
 
   //현위치로?
 
@@ -418,6 +424,14 @@ const PathMain = () => {
   // name
   // :
   // "제주특별자치도청"
+
+  const _closeAllSheet = () => {
+    bottomSheetRef.current?.dismiss();
+    bottomSheetUserStarRef.current?.dismiss();
+    bottomSheetRecoRef.current?.dismiss();
+    bottomSheetGoalRef.current?.dismiss();
+    bottomSheetStartRef.current?.dismiss();
+  };
 
   const _getAddrByCoor = async () => {
     if (currentUserLocation) {
@@ -480,6 +494,7 @@ const PathMain = () => {
               width: '100%',
             }}>
             <PathSearchBox
+              closeAll={_closeAllSheet}
               setCenter={setCenter}
               startBottomRef={bottomSheetStartRef}
               goalBottomRef={bottomSheetGoalRef}
@@ -555,6 +570,9 @@ const PathMain = () => {
                 width={32}
                 height={65}
                 onClick={() => {
+                  if (isStartFinish) {
+                    _showRecoPathLine(goalData);
+                  }
                   setCenter({
                     latitude: Number(goalData.location.lat),
                     longitude: Number(goalData.location.lon),
@@ -626,13 +644,14 @@ const PathMain = () => {
           </NaverMapView>
 
           {/* 추천 목록 */}
-          {/* {showRec && (
+          {recomandList.length > 0 && (
             <PathRecommendList
               recomandList={recomandList}
               setCenter={setCenter}
               setModalNav={setModalNav}
+              fc={_showRecoPathLine}
             />
-          )} */}
+          )}
 
           {/* 도착지 현위치 바텀시트 */}
           {/* 출발지 바텀시트 */}
@@ -704,10 +723,19 @@ const PathMain = () => {
             footerComponent={() => (
               <Pressable
                 onPress={() => {
+                  if (isGoalFinish && isStartFinish) {
+                    setModalNav({
+                      visible: true,
+                      // start: startData,
+                      goal: goalData,
+                    });
+                  } else {
+                    setModalGoal(!modalGoal);
+                    bottomSheetGoalRef.current?.close();
+                  }
                   // setFinishGoal(true);
-                  setModalGoal(!modalGoal);
+
                   // dispatch(setIsGoalFinish(true));
-                  bottomSheetGoalRef.current?.close();
                 }}
                 style={[
                   {
@@ -727,7 +755,9 @@ const PathMain = () => {
                     fontSize: 16,
                     color: 'white',
                   }}>
-                  도착지 설정
+                  {isGoalFinish && isStartFinish
+                    ? '길안내 받기'
+                    : '도착지 설정'}
                 </Text>
               </Pressable>
             )}
@@ -759,7 +789,6 @@ const PathMain = () => {
             </View>
           </BottomSheetModal>
 
-          {/* 분리 할 것 */}
           <BottomSheetModal
             style={sheetStyle}
             ref={bottomSheetRef}
@@ -977,71 +1006,74 @@ const PathMain = () => {
               renderItem={item => renderItemStar(item)}
             />
           </BottomSheetModal>
+          {recomandList.length === 0 && (
+            <>
+              <Shadow
+                distance={3}
+                containerStyle={{
+                  position: 'absolute',
+                  zIndex: 500,
+                  bottom: 173,
+                  right: 16,
+                }}
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 36 / 2,
+                  backgroundColor: 'white',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                <Pressable
+                  hitSlop={10}
+                  style={{alignItems: 'center', justifyContent: 'center'}}
+                  onPress={async () => {
+                    // await _getUserStars();
+                    bottomSheetUserStarRef.current?.present();
+                  }}>
+                  <Image
+                    source={require('@assets/star_off.png')}
+                    style={{width: 20, height: 20}}
+                    resizeMode="contain"
+                  />
+                </Pressable>
+              </Shadow>
 
-          <Shadow
-            distance={3}
-            containerStyle={{
-              position: 'absolute',
-              zIndex: 500,
-              bottom: 173,
-              right: 16,
-            }}
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 36 / 2,
-              backgroundColor: 'white',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-            <Pressable
-              hitSlop={10}
-              style={{alignItems: 'center', justifyContent: 'center'}}
-              onPress={async () => {
-                // await _getUserStars();
-                bottomSheetUserStarRef.current?.present();
-              }}>
-              <Image
-                source={require('@assets/star_off.png')}
-                style={{width: 20, height: 20}}
-                resizeMode="contain"
-              />
-            </Pressable>
-          </Shadow>
-
-          <Shadow
-            distance={3}
-            containerStyle={{
-              position: 'absolute',
-              zIndex: 500,
-              top: showRec ? 150 : undefined,
-              bottom: showRec ? undefined : 131,
-              right: 16,
-            }}
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 36 / 2,
-              backgroundColor: 'white',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-            <Pressable
-              hitSlop={5}
-              onPress={() => {
-                if (currentUserLocation) _onPressMyLocation();
-              }}
-              style={{
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}>
-              <Image
-                source={require('@assets/location.png')}
-                style={{width: 20, height: 20}}
-                resizeMode="contain"
-              />
-            </Pressable>
-          </Shadow>
+              <Shadow
+                distance={3}
+                containerStyle={{
+                  position: 'absolute',
+                  zIndex: 500,
+                  top: showRec ? 150 : undefined,
+                  bottom: showRec ? undefined : 131,
+                  right: 16,
+                }}
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: 36 / 2,
+                  backgroundColor: 'white',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                <Pressable
+                  hitSlop={5}
+                  onPress={() => {
+                    if (currentUserLocation) _onPressMyLocation();
+                  }}
+                  style={{
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
+                  <Image
+                    source={require('@assets/location.png')}
+                    style={{width: 20, height: 20}}
+                    resizeMode="contain"
+                  />
+                </Pressable>
+              </Shadow>
+            </>
+          )}
 
           <MyModal
             positive
@@ -1081,15 +1113,20 @@ const PathMain = () => {
             title={'알림'}
             text={'경로내 추천 충전소가 없습니다.'}
           />
-          {/* 
-          {startData && goalData && (
-            <NavModal
-              title="길안내 연결"
-              setVisible={setModalNav}
-              visible={modalNav}
-              startCoor={{}}
-            />
-          )} */}
+
+          <NavPathModal
+            title="길안내 연결"
+            setVisible={setModalNav}
+            visible={modalNav.visible}
+            startCoor={{
+              latitude: startData?.location?.lat,
+              longitude: startData?.location?.lon,
+            }}
+            goalCoor={{
+              latitude: modalNav?.goal?.location?.lat,
+              longitude: modalNav?.goal?.location?.lon,
+            }}
+          />
 
           <Loading visible={modal} />
         </SafeAreaView>

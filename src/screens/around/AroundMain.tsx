@@ -124,14 +124,6 @@ const AroundMain = () => {
   }, [starFilter]);
 
   const _convert = () => {
-    // "key": "AC완속",
-    // "key": "DC차데모+AC3상+DC콤보",
-    // "key": "DC콤보",
-    // "key": "DC차데모+DC콤보",
-    // "key": "DC차데모+AC3상",
-    // "key": "AC3상",
-    // "key": "DC차데모",
-    //['DC콤보', 'DC차데모', 'AC3상', 'AC완속', '데스티네이션', '수퍼차저']
     if (filter.chgerType) {
       const res = filter.chgerType.filter(
         item => item !== '수퍼차저' && item !== '데스티네이션',
@@ -343,7 +335,7 @@ const AroundMain = () => {
         <View
           style={{
             flexDirection: 'row',
-            alignItems: 'center',
+            alignItems: 'baseline',
             marginLeft: 10,
           }}>
           <Pressable
@@ -361,7 +353,7 @@ const AroundMain = () => {
             horizontal
             showsHorizontalScrollIndicator={false}
             overScrollMode={'never'}
-            contentContainerStyle={{paddingVertical: 10}}>
+            contentContainerStyle={{paddingVertical: 10, height: 100}}>
             <View style={{flexDirection: 'row'}}>
               {arrFliter.map((item, idx) => (
                 <Shadow
@@ -390,16 +382,33 @@ const AroundMain = () => {
                   </Pressable>
                 </Shadow>
               ))}
-              {/* <View
+              <View
                 style={{
+                  flexDirection: 'row',
+                  marginRight: 10,
+                  top: 37,
                   position: 'absolute',
-                  width: 100,
-                  height: 100,
-                  backgroundColor: 'teal',
-                  zIndex: 100,
                 }}>
-                <Text>123</Text>
-              </View> */}
+                <Shadow
+                  stretch={true}
+                  distance={2}
+                  containerStyle={{
+                    marginHorizontal: 4,
+                  }}>
+                  <View
+                    style={{
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: 'white',
+                      paddingHorizontal: 14,
+                      height: 30,
+                      zIndex: 100,
+                      borderRadius: 53,
+                    }}>
+                    <Text>123</Text>
+                  </View>
+                </Shadow>
+              </View>
             </View>
           </ScrollView>
         </View>
@@ -511,6 +520,7 @@ const AroundMain = () => {
             key={index}
             width={32}
             height={65}
+            zIndex={100}
             onClick={() => {
               console.log('## station info ::', item);
               setPick([item]);
@@ -722,7 +732,9 @@ const AroundMain = () => {
                   fontSize: 16,
                   color: '#333333',
                 }}>
-                {aroundKeyData?.name}
+                {aroundKeyData?.name
+                  ? aroundKeyData?.name
+                  : aroundKeyData?.statNm}
               </Text>
             </View>
             <Pressable
@@ -742,7 +754,9 @@ const AroundMain = () => {
                 fontFamily: FontList.PretendardRegular,
                 color: '#959595',
               }}>
-              {aroundKeyData?.address}
+              {aroundKeyData?.address
+                ? aroundKeyData?.address
+                : aroundKeyData?.addr}
             </Text>
           </View>
           <View

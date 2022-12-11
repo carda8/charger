@@ -61,7 +61,12 @@ const SearchMain = () => {
       ._getUserHistory(data)
       .then(res => {
         console.log('User History RES::', res.data.histories);
-        setRecent(res.data.histories);
+        let temp = [];
+        temp = res.data.histories.filter(
+          (item: any) => item.searchType === 'station',
+        );
+        console.log('temp', temp);
+        setRecent(temp);
       })
       .catch(err => console.log('ERR', err))
       .finally(() => {
@@ -117,6 +122,7 @@ const SearchMain = () => {
           currentUserLocation?.latitude,
           currentUserLocation?.longitude,
         ],
+        user_id: userInfo?.id,
       };
       await commonAPI
         ._postSearchBase(data)
@@ -310,7 +316,12 @@ const SearchMain = () => {
             hitSlop={10}
             onPress={() => {
               console.log('recent item', item);
-              dispatch(setAroundKeyData(item));
+              let temp = JSON.parse(JSON.stringify(item));
+              let tempLat = temp.location.lat;
+              let tempLon = temp.location.lon;
+              temp.location = {lon: tempLat, lat: tempLon};
+              console.log('temp', temp);
+              dispatch(setAroundKeyData(temp));
               nav.navigate('AroundMain');
             }}
             key={index}
