@@ -199,6 +199,7 @@ const PathRecommendList = ({
                     address: pick.addr,
                     location: {lat: pick.location.lat, lon: pick.location.lon},
                     name: pick.statNm,
+                    statId: pick.statId,
                   },
                 });
               }

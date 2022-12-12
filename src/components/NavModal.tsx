@@ -12,6 +12,7 @@ import FontList from 'constants/FontList';
 import {_getHeight, _getWidth} from 'constants/utils';
 import {useSelector} from 'react-redux';
 import {RootState} from 'redux/store';
+import commonAPI from 'api/modules/commonAPI';
 interface props {
   visible: boolean;
   text?: string;
@@ -23,20 +24,18 @@ interface props {
   setVisible: React.Dispatch<React.SetStateAction<boolean>>;
   startCoor?: any;
   // positivePress?: () => void;
+  statId?: string;
 }
 
 const NavModal = ({
   visible,
-  text,
   title,
   setVisible,
   goalCoor,
-  item,
-  isPath,
   startCoor,
+  statId,
 }: props) => {
-  //   const GOOGLE_PLAY_STORE_LINK = 'market://details?id=io.github.Antodo';
-  //route?y=${“도착”}&x=${“도착”}&sX=${“출발”}&sY=${“출발”}
+  const {userInfo} = useSelector((state: RootState) => state.authReducer);
   const {currentUserLocation} = useSelector(
     (state: RootState) => state.locationReducer,
   );
@@ -105,23 +104,44 @@ const NavModal = ({
       if (index === 2) await Linking.openURL(APPLE_STORE_T_MAP);
     }
   };
-
-  const handlePress = useCallback(async (url: string, index: number) => {
-    // 만약 어플이 설치되어 있으면 true, 없으면 false
-    const supported = await Linking.canOpenURL(url);
-    console.log('KAKAO_MAP_SCHEMA', KAKAO_MAP_SCHEMA);
-    console.log('supported', supported);
-
-    await Linking.openURL(url)
+  const _postHistory = async () => {
+    const data = {
+      user_id: userInfo?.id,
+      stat_id: statId,
+    };
+    await commonAPI
+      ._postUserHistory(data)
       .then(res => {
-        if (!res) _routeMarket(url, index);
-        console.log('true res', res);
+        console.log('res', res.data);
       })
       .catch(err => {
-        _routeMarket(url, index);
-        console.log('linking err', err);
+        console.log('err');
       });
-  }, []);
+  };
+
+  const handlePress = useCallback(
+    async (url: string, index: number) => {
+      // 만약 어플이 설치되어 있으면 true, 없으면 false
+      const supported = await Linking.canOpenURL(url);
+      console.log('KAKAO_MAP_SCHEMA', KAKAO_MAP_SCHEMA);
+      console.log('supported', supported);
+      await _postHistory();
+
+      await Linking.openURL(url)
+        .then(res => {
+          console.log('statid', statId);
+          if (res && statId) {
+          }
+          if (!res) _routeMarket(url, index);
+          console.log('true res', res);
+        })
+        .catch(err => {
+          _routeMarket(url, index);
+          console.log('linking err', err);
+        });
+    },
+    [statId],
+  );
 
   return (
     <Modal

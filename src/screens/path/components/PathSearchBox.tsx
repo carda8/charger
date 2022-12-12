@@ -32,13 +32,6 @@ interface props {
   goalBottomRef: React.RefObject<BottomSheetModalMethods>;
   userStarRef: React.RefObject<BottomSheetModalMethods>;
   closeAll: any;
-  // showOnlyMap?: boolean;
-  // setShowOnlyMap?: Dispatch<SetStateAction<boolean>>;
-  // sheetRef?: React.RefObject<BottomSheetModalMethods>;
-  // setRec?: Dispatch<SetStateAction<boolean>>;
-  // setRecomandList?: Dispatch<SetStateAction<any>>;
-  // sheetStarRef?: React.RefObject<BottomSheetModalMethods>;
-  // setModalLogin?: Dispatch<SetStateAction<boolean>>;
 }
 
 const PathSearchBox = ({
@@ -58,9 +51,6 @@ const PathSearchBox = ({
   const {isHome, inputStart, inputGoal} = useSelector(
     (state: RootState) => state.pathReducer,
   );
-
-  // const [inputStart, setInputStart] = useState('');
-  // const [inputGoal, setInputGoal] = useState('');
 
   const startRef = useRef<TextInput>(null);
 
@@ -123,7 +113,7 @@ const PathSearchBox = ({
   };
 
   const _onPressSwitch = () => {
-    closeAll()
+    closeAll();
     startRef.current?.blur();
     goalBottomRef.current?.close();
     startBottomRef.current?.close();

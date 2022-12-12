@@ -75,6 +75,7 @@ declare module commonTypes {
     car_brand?: string;
     car_model?: string;
     chgerType?: string[];
+    car_image_url?: string;
   };
   // export namespace helloo {
   //   type hello = 'hi';

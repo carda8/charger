@@ -37,7 +37,14 @@ import FontList from 'constants/FontList';
 import MyModal from '@components/MyModal';
 import Loading from '@components/Loading';
 import modules from 'constants/utils/modules';
-import {setAroundKeyData} from 'redux/reducers/aroundReducer';
+import {
+  setAroundKeyData,
+  setCanUse,
+  setChgerFree,
+  setFreePark,
+  setReset,
+  setSpeed,
+} from 'redux/reducers/aroundReducer';
 import RenderItem from '@screens/favStation/components/RenderItem';
 import {setUserInfo} from 'redux/reducers/authReducer';
 
@@ -99,6 +106,10 @@ const AroundMain = () => {
   );
 
   const [starFilter, setStarFilter] = useState('1');
+  const [sltdFilter, setSltdFilter] = useState(0);
+  const [sltdSpeed, setSltdSpeed] = useState([]);
+  const [sltdFee, setSltdFee] = useState([]);
+  const [sltdPark, setSltdPark] = useState([]);
   const [showStarFilter, setShowStarFilter] = useState(false);
 
   const _getUserStars = async () => {
@@ -123,22 +134,27 @@ const AroundMain = () => {
     _getUserStars();
   }, [starFilter]);
 
+  const chgerSpeed = ['완속', '급속', '초고속'];
+  const chgerFee = ['유료 충전소', '무료 충전소'];
+  const chgerPark = ['무료주차', '입주민 전용'];
+  const chgerCanuse = [''];
+
   const _convert = () => {
-    if (filter.chgerType) {
-      const res = filter.chgerType.filter(
-        item => item !== '수퍼차저' && item !== '데스티네이션',
-      );
-      console.log('res chgerTypechgerTypechgerType', res);
-      if (filter.speed?.includes('완속')) {
-        if (!res.includes('AC완손')) res.push('AC완속');
-      }
-      if (filter.speed?.includes('급속') || filter.speed?.includes('초고속')) {
-        if (!res.includes('DC콤보')) res.push('DC콤보');
-        if (!res.includes('DC차데모')) res.push('DC차데모');
-        if (!res.includes('AC3상')) res.push('AC3상');
-      }
-      return res;
+    // if (filter.chgerType) {
+    const res = filter?.chgerType?.filter(
+      item => item !== '수퍼차저' && item !== '데스티네이션',
+    );
+    console.log('res chgerTypechgerTypechgerType', res);
+    if (filter.speed?.includes('완속')) {
+      if (!res.includes('AC완손')) res.push('AC완속');
     }
+    if (filter.speed?.includes('급속') || filter.speed?.includes('초고속')) {
+      if (!res.includes('DC콤보')) res.push('DC콤보');
+      if (!res.includes('DC차데모')) res.push('DC차데모');
+      if (!res.includes('AC3상')) res.push('AC3상');
+    }
+    return res;
+    // }
   };
 
   const _getAroundStation = async () => {
@@ -159,7 +175,8 @@ const AroundMain = () => {
           : 'N',
       statInfo: filter.canUse ? ['충전대기'] : [],
       // busiId: ['ME'],
-      chgerTypeInfo: filter.chgerType?.length === 0 ? [] : _convert(),
+      // chgerTypeInfo: filter.chgerType?.length === 0 ? [] : _convert(),
+      chgerTypeInfo: _convert(),
       offset: 0,
       limit: 100,
     };
@@ -187,6 +204,12 @@ const AroundMain = () => {
       _getAroundStation();
     }
   };
+
+  useEffect(() => {
+    return () => {
+      dispatch(setReset());
+    };
+  }, []);
 
   useEffect(() => {
     if (initRef.current > 1) _init();
@@ -320,6 +343,16 @@ const AroundMain = () => {
     );
   };
 
+  const btnRef = useRef<any>([]);
+  useEffect(() => {
+    console.log('ref', btnRef?.current);
+  }, [btnRef.current]);
+
+  useEffect(() => {
+    console.log('filter', filter);
+    // console.log('filter', filter.freePark?.includes('무료주차'));
+  }, [filter]);
+
   return (
     <SafeAreaView style={{...GlobalStyles.safeAreaStyle}}>
       <View
@@ -359,15 +392,27 @@ const AroundMain = () => {
                 <Shadow
                   key={idx}
                   stretch={true}
-                  distance={2}
+                  distance={1}
                   containerStyle={{
                     marginHorizontal: 4,
                   }}>
                   <Pressable
+                    ref={el =>
+                      el?.measure((fx, fy, width, height, px, py) => {
+                        // console.log('X offset to page: ' + px);
+                        if (btnRef.current[3] === undefined)
+                          btnRef.current[idx] = px;
+                      })
+                    }
                     onPress={() => {
-                      // setFilterBtn(item);
-                      // console.log('item', item);
-                      setRepair(!repair);
+                      if (idx === 3) {
+                        dispatch(setCanUse());
+                        setSltdFilter(idx + 1);
+                      } else {
+                        if (sltdFilter === idx + 1) {
+                          setSltdFilter(0);
+                        } else setSltdFilter(idx + 1);
+                      }
                     }}
                     key={idx}
                     style={{
@@ -375,10 +420,39 @@ const AroundMain = () => {
                       justifyContent: 'center',
                       paddingHorizontal: 14,
                       height: 30,
-                      backgroundColor: 'white',
+                      backgroundColor:
+                        idx === 3
+                          ? filter.canUse
+                            ? '#C7EEFF'
+                            : 'white'
+                          : idx + 1 === sltdFilter
+                          ? '#C7EEFF'
+                          : 'white',
+                      borderWidth:
+                        idx === 3
+                          ? filter.canUse
+                            ? 1
+                            : 0
+                          : idx + 1 === sltdFilter
+                          ? 1
+                          : 0,
+                      borderColor: '#07B3FD',
                       borderRadius: 53,
                     }}>
-                    <Text>{item}</Text>
+                    <Text
+                      style={{
+                        // color: idx + 1 === sltdFilter ? '#07B3FD' : undefined,
+                        color:
+                          idx === 3
+                            ? filter.canUse
+                              ? '#07B3FD'
+                              : undefined
+                            : idx + 1 === sltdFilter
+                            ? '#07B3FD'
+                            : undefined,
+                      }}>
+                      {item}
+                    </Text>
                   </Pressable>
                 </Shadow>
               ))}
@@ -387,27 +461,129 @@ const AroundMain = () => {
                   flexDirection: 'row',
                   marginRight: 10,
                   top: 37,
+                  left:
+                    btnRef.current[0] > 0 && sltdFilter > 0
+                      ? btnRef.current[sltdFilter - 1] - 36
+                      : 0,
                   position: 'absolute',
                 }}>
-                <Shadow
-                  stretch={true}
-                  distance={2}
-                  containerStyle={{
-                    marginHorizontal: 4,
-                  }}>
-                  <View
-                    style={{
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backgroundColor: 'white',
-                      paddingHorizontal: 14,
-                      height: 30,
-                      zIndex: 100,
-                      borderRadius: 53,
-                    }}>
-                    <Text>123</Text>
-                  </View>
-                </Shadow>
+                {sltdFilter === 1 &&
+                  chgerSpeed.map((item, index) => (
+                    <Shadow
+                      key={index}
+                      distance={1}
+                      stretch={true}
+                      containerStyle={{
+                        marginHorizontal: 4,
+                      }}>
+                      <Pressable
+                        onPress={() => {
+                          dispatch(setSpeed(item));
+                        }}
+                        style={{
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          backgroundColor: filter.speed?.includes(item)
+                            ? '#C7EEFF'
+                            : 'white',
+                          borderWidth: filter.speed?.includes(item) ? 1 : 0,
+                          borderColor: filter.speed?.includes(item)
+                            ? '#07B3FD'
+                            : '#333333',
+                          paddingHorizontal: 14,
+                          height: 30,
+                          zIndex: 100,
+                          borderRadius: 53,
+                        }}>
+                        <Text
+                          style={{
+                            color: filter.speed?.includes(item)
+                              ? '#07B3FD'
+                              : undefined,
+                          }}>
+                          {item}
+                        </Text>
+                      </Pressable>
+                    </Shadow>
+                  ))}
+                {sltdFilter === 2 &&
+                  chgerFee.map((item, index) => (
+                    <Shadow
+                      key={index}
+                      distance={1}
+                      stretch={true}
+                      containerStyle={{
+                        marginHorizontal: 4,
+                      }}>
+                      <Pressable
+                        onPress={() => {
+                          dispatch(setChgerFree(item));
+                        }}
+                        style={{
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          backgroundColor: filter.chgerFree?.includes(item)
+                            ? '#C7EEFF'
+                            : 'white',
+                          borderWidth: filter.chgerFree?.includes(item) ? 1 : 0,
+                          borderColor: filter.chgerFree?.includes(item)
+                            ? '#07B3FD'
+                            : '#333333',
+                          paddingHorizontal: 14,
+                          height: 30,
+                          zIndex: 100,
+                          borderRadius: 53,
+                        }}>
+                        <Text
+                          style={{
+                            color: filter.chgerFree?.includes(item)
+                              ? '#07B3FD'
+                              : undefined,
+                          }}>
+                          {item}
+                        </Text>
+                      </Pressable>
+                    </Shadow>
+                  ))}
+                {sltdFilter === 3 &&
+                  chgerPark.map((item, index) => (
+                    <Shadow
+                      key={index}
+                      distance={1}
+                      stretch={true}
+                      containerStyle={{
+                        marginHorizontal: 4,
+                      }}>
+                      <Pressable
+                        onPress={() => {
+                          dispatch(setFreePark(item));
+                        }}
+                        style={{
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          backgroundColor: filter.freePark?.includes(item)
+                            ? '#C7EEFF'
+                            : 'white',
+                          borderWidth: filter.freePark?.includes(item) ? 1 : 0,
+                          borderColor: filter.freePark?.includes(item)
+                            ? '#07B3FD'
+                            : '#333333',
+                          paddingHorizontal: 14,
+                          height: 30,
+                          zIndex: 100,
+                          borderRadius: 53,
+                        }}>
+                        <Text
+                          style={{
+                            color: filter.freePark?.includes(item)
+                              ? '#07B3FD'
+                              : undefined,
+                          }}>
+                          {item}
+                        </Text>
+                      </Pressable>
+                    </Shadow>
+                  ))}
               </View>
             </View>
           </ScrollView>
@@ -933,6 +1109,7 @@ const AroundMain = () => {
         setVisible={setVisible}
         title="길안내 연결"
         goalCoor={clickedMarker}
+        statId={pick ? pick[0]?.statId : undefined}
       />
 
       {/* 빠른 필터 모달 */}

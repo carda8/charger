@@ -12,6 +12,7 @@ import FontList from 'constants/FontList';
 import {_getHeight, _getWidth} from 'constants/utils';
 import {useSelector} from 'react-redux';
 import {RootState} from 'redux/store';
+import commonAPI from 'api/modules/commonAPI';
 interface props {
   visible: boolean;
   text?: string;
@@ -19,6 +20,7 @@ interface props {
   startCoor: any;
   goalCoor: any;
   setVisible: React.Dispatch<React.SetStateAction<any>>;
+  statId: string;
 }
 
 const NavPathModal = ({
@@ -27,17 +29,11 @@ const NavPathModal = ({
   setVisible,
   startCoor,
   goalCoor,
+  statId,
 }: props) => {
   console.log('Nav data start', startCoor);
   console.log('Nav data goal', goalCoor);
-  const {currentUserLocation} = useSelector(
-    (state: RootState) => state.locationReducer,
-  );
-  // ? `kakaomap://route?sp=${USER_Lat},${USER_Lon}&ep=${goalCoor.latitude},${goalCoor.longitude}&by=CAR`
-  // : 'kakaomap://route?sp=37.537229,127.005515&ep=37.4979502,127.0276368&by=CAR';
 
-  // ? `tmap://route?startx=${USER_Lon}&starty=${USER_Lat}&goalx=${goalCoor.longitude}&goaly=${goalCoor.latitude}`
-  // : 'tmap://route?startx=129.0756416&starty=35.1795543&goalx=127.005515&goaly=37.537229';
   const _getCoor = (target: any) => {
     if (target === 'kakao') {
       if (!startCoor)
@@ -51,6 +47,22 @@ const NavPathModal = ({
       else
         return `tmap://route?startx=${startCoor.longitude}&starty=${startCoor.latitude}&goalx=${goalCoor.longitude}&goaly=${goalCoor.latitude}`;
     }
+  };
+  const {userInfo} = useSelector((state: RootState) => state.authReducer);
+
+  const _postHistory = async () => {
+    const data = {
+      user_id: userInfo?.id,
+      stat_id: statId,
+    };
+    await commonAPI
+      ._postUserHistory(data)
+      .then(res => {
+        console.log('res', res.data);
+      })
+      .catch(err => {
+        console.log('err');
+      });
   };
 
   // 카카오맵 스킴
@@ -76,29 +88,32 @@ const NavPathModal = ({
     }
   };
 
-  const handlePress = useCallback(async (url: string, index: number) => {
-    // 만약 어플이 설치되어 있으면 true, 없으면 false
-    const supported = await Linking.canOpenURL(url);
-    console.log('KAKAO_MAP_SCHEMA', KAKAO_MAP_SCHEMA);
-    console.log('supported', supported);
+  const handlePress = useCallback(
+    async (url: string, index: number) => {
+      const supported = await Linking.canOpenURL(url);
+      console.log('KAKAO_MAP_SCHEMA', KAKAO_MAP_SCHEMA);
+      console.log('supported', supported);
 
-    await Linking.openURL(url)
-      .then(res => {
-        if (!res) _routeMarket(url, index);
-        console.log('true res', res);
-      })
-      .catch(err => {
-        _routeMarket(url, index);
-        console.log('linking err', err);
-      });
-  }, []);
+      await _postHistory();
+      await Linking.openURL(url)
+        .then(res => {
+          if (!res) _routeMarket(url, index);
+          console.log('true res', res);
+        })
+        .catch(err => {
+          _routeMarket(url, index);
+          console.log('linking err', err);
+        });
+    },
+    [statId],
+  );
 
   const onPress = (index: number) => {
     if (index === 1) {
       handlePress(KAKAO_MAP_SCHEMA, index);
     }
     if (index === 2) {
-      // handlePress(T_MAP_SCHEMA, index);
+      handlePress(T_MAP_SCHEMA, index);
     }
   };
 

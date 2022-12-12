@@ -78,6 +78,7 @@ const MyPageMyCharger = () => {
   const [type, setType] = useState<any[]>(
     userInfo?.chgerType ? userInfo.chgerType : [],
   );
+  const [carImg, setCarImg] = useState('');
   const [isReady, setIsReady] = useState(false);
 
   // useEffect(() => {
@@ -134,7 +135,11 @@ const MyPageMyCharger = () => {
     temp = temp.filter((item: any, index: number) => item.car_brand === brand);
     temp.map((item: any, index) => {
       if (item.car_model + item.car_detail !== selectedModel + trim)
-        modelList.push({model: item.car_model, trim: item.car_detail});
+        modelList.push({
+          model: item.car_model,
+          trim: item.car_detail,
+          img: item.car_image_url,
+        });
     });
     if (modelList.length > 0) return modelList;
     else return [];
@@ -158,7 +163,11 @@ const MyPageMyCharger = () => {
     let temp: any[] = [];
     res.map((item: any, index) => {
       temp.push(item.car_brand);
-      temp.push({model: item.car_model, trim: item.car_detail});
+      temp.push({
+        model: item.car_model,
+        trim: item.car_detail,
+        img: item.car_image_url,
+      });
     });
     const set = new Set(temp);
     const uniqueArr = [...set];
@@ -218,7 +227,6 @@ const MyPageMyCharger = () => {
       // _postUserDB();
     }
   };
-
   const _putUserDB = async () => {
     const res = etcOrigin?.find(item => item.car_model === selectedModel);
     setLoading(true);
@@ -228,6 +236,7 @@ const MyPageMyCharger = () => {
       chgerType: type,
       name: userInfo?.name,
       user_id: userInfo?.id,
+      car_image_url: carImg,
     };
     console.log('data', data);
     // return;
@@ -464,6 +473,7 @@ const MyPageMyCharger = () => {
                       setShowModel(false);
                       setSelectedModel(item.model);
                       setTrim(item.trim);
+                      setCarImg(item.img);
                       console.log('item', item);
                     }}
                     style={{

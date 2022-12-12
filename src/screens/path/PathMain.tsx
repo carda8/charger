@@ -144,35 +144,6 @@ const PathMain = () => {
   );
   // ########## END 바텀시트 ##########
 
-  // 좌표를 주소로 변환 필요여부?
-  // const _convertCoor = (routes: any) => {
-  //   let temp: any[] = [];
-  //   routes.map((item: any, index: any) => {
-  //     temp.push([item[1], item[0]]);
-  //   });
-  //   // setConvertedCoor(temp);
-  //   if (!showRec && recomandList.length === 0) _getRecomand(temp);
-  //   // console.log('converted temp', temp);
-  // };
-
-  // 경로 표시 이후
-  // 좌표에서 주소 도출 기능?
-  // const _getAddrByCoor = async () => {
-  //   const param = {
-  //     x: currentUserLocation.longitude,
-  //     y: currentUserLocation.latitude,
-  //   };
-  //   await commonAPI
-  //     ._getAddrByCoor(param)
-  //     .then(res => {
-  //       if (res?.data?.documents?.length > 0) {
-  //         // dispatch(setStart(res.data.documents[0].address_name));
-  //       }
-  //       console.log('add res', res.data.documents);
-  //     })
-  //     .catch(err => console.log('add err', err));
-  // };
-
   useEffect(() => {
     console.log('## modal nav goal::', modalNav);
     console.log('## modal nav start::', startData);
@@ -360,13 +331,6 @@ const PathMain = () => {
     }
   }, [lineData]);
 
-  // 추천 선택시 패스 함수 별도 생서 필요
-  // useEffect(() => {
-  //   if (recomendStationData) {
-  //     _getPathReco();
-  //   }
-  // }, [recomendStationData]);
-
   // 즐겨찾기 관련
   const [userStar, setUserStar] = useState([]);
   const [starFilter, setStarFilter] = useState('1');
@@ -412,18 +376,6 @@ const PathMain = () => {
       dispatch(resetPath());
     };
   }, []);
-
-  //현위치로?
-
-  //   address
-  // :
-  // "제주특별자치도 제주시 연동 312-1"
-  // location
-  // :
-  // {lat: 33.4889944, lon: 126.4982701}
-  // name
-  // :
-  // "제주특별자치도청"
 
   const _closeAllSheet = () => {
     bottomSheetRef.current?.dismiss();
@@ -1126,6 +1078,7 @@ const PathMain = () => {
               latitude: modalNav?.goal?.location?.lat,
               longitude: modalNav?.goal?.location?.lon,
             }}
+            statId={modalNav?.goal?.statId}
           />
 
           <Loading visible={modal} />

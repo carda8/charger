@@ -107,6 +107,9 @@ const aroundSlice = createSlice({
   name: 'around',
   initialState,
   reducers: {
+    setFilter: (state, action) => {
+      state.filter = action.payload;
+    },
     setAroundKey: (state, action: PayloadAction<aroundInit>) => {
       state.aroundKey = action.payload.aroundKey;
     },
@@ -119,9 +122,9 @@ const aroundSlice = createSlice({
     ) => {
       state.aroundKeyData = action.payload;
     },
-    setFilter: (state, action: PayloadAction<filter>) => {
-      state.filter = action.payload;
-    },
+    // setFilter: (state, action: PayloadAction<filter>) => {
+    //   state.filter = action.payload;
+    // },
     setFreePark: (state, action) => {
       let temp = [];
       if (state.filter.freePark?.includes(action.payload)) {
@@ -192,8 +195,8 @@ const aroundSlice = createSlice({
       state.filter.company = [];
       state.filter.pickAll = !state.filter.pickAll;
     },
-    setIsSaved: state => {
-      state.isFilterSaved = true;
+    setIsSaved: (state, action) => {
+      state.isFilterSaved = action.payload;
     },
     setReset: state => {
       state.filter = {

@@ -48,6 +48,7 @@ const AccountCarInfo = () => {
   const [selectedModel, setSelectedModel] = useState('');
   const [selectedBrand, setSelectedBrand] = useState('');
   const [type, setType] = useState<any[]>([]);
+  const [carImg, setCarImg] = useState('');
   const [isReady, setIsReady] = useState(false);
 
   const layout = useWindowDimensions();
@@ -79,21 +80,17 @@ const AccountCarInfo = () => {
     );
   };
 
-  // const _filterList = (brand: string) => {
-  //   let temp = [...carList];
-  //   let modelList: any[] = [];
-  //   temp = temp.filter((item, index) => item.car_brand === brand);
-  //   temp.map((item, index) => modelList.push(item.car_model));
-  //   if (modelList.length > 0) return modelList;
-  //   else return [];
-  // };
   const _filterList = (brand: string) => {
     let temp = [...carList];
     let modelList: any[] = [];
     temp = temp.filter((item: any, index: number) => item.car_brand === brand);
     temp.map((item: any, index) => {
       if (item.car_model + item.car_detail !== selectedModel + trim)
-        modelList.push({model: item.car_model, trim: item.car_detail});
+        modelList.push({
+          model: item.car_model,
+          trim: item.car_detail,
+          img: item.car_image_url,
+        });
     });
     if (modelList.length > 0) return modelList;
     else return [];
@@ -111,25 +108,17 @@ const AccountCarInfo = () => {
       'BMW',
     ];
 
-    // const res = carList.filter(item => !mainCarList.includes(item.car_brand));
-    // let temp: any[] = [];
-    // res.map((item, index) => {
-    //   temp.push(item.car_brand);
-    //   temp.push(item.car_model);
-    // });
-    // const set = new Set(temp);
-    // const uniqueArr = [...set];
-    // setCarListEtc(uniqueArr);
-    // setEtcOrigin(res);
-    // console.log('set', set);
-    // console.log('filter res', res);
     const res = carList.filter(
       (item: any) => !mainCarList.includes(item.car_brand),
     );
     let temp: any[] = [];
     res.map((item: any, index) => {
       temp.push(item.car_brand);
-      temp.push({model: item.car_model, trim: item.car_detail});
+      temp.push({
+        model: item.car_model,
+        trim: item.car_detail,
+        img: item.car_image_url,
+      });
     });
     const set = new Set(temp);
     const uniqueArr = [...set];
@@ -190,6 +179,7 @@ const AccountCarInfo = () => {
           car_brand: res ? res.car_brand : selectedBrand,
           car_model: selectedModel,
           chgerType: type,
+          car_image_url: carImg,
         }),
       );
       _postUserDB();
@@ -207,6 +197,7 @@ const AccountCarInfo = () => {
       chgerType: type,
       name: userInfo?.name,
       user_id: userInfo?.id,
+      car_image_url: carImg,
     };
     console.log('data', data);
     // return;
@@ -216,12 +207,6 @@ const AccountCarInfo = () => {
         .then(res => {
           console.log('_postSaveUserInfo :: res', res);
           nav.navigate('AccountCarInfoFinish');
-          // modules
-          //   ._updateUserInfo(dispatch, userInfo)
-          //   .then(() => {
-          //     nav.navigate('AccountCarInfoFinish');
-          //   })
-          //   .catch(err => console.log('carinfo err', err));
         })
         .catch(err => console.log('err', err));
     } else {
@@ -238,7 +223,7 @@ const AccountCarInfo = () => {
         console.log('res', data);
         if (data.length > 0) {
           let temp: any[] = [];
-          data.map((item, index) => {
+          data.map((item: any, index: any) => {
             temp.push(item.car_brand);
           });
           const set = new Set(temp);
@@ -270,10 +255,10 @@ const AccountCarInfo = () => {
   };
 
   const _autoSetType = () => {
-    const res = carList.find(item => item.car_model === selectedModel);
+    const res = carList.find((item: any) => item.car_model === selectedModel);
     if (res) {
       let temp: any[] = [];
-      res.chagers.map(item => {
+      res.chagers.map((item: any) => {
         temp.push(item.name);
       });
       console.log('temp', temp);
@@ -291,11 +276,6 @@ const AccountCarInfo = () => {
       _filterEtcList();
     }
   }, [carList]);
-
-  useEffect(() => {
-    // setSelectedModel('');
-    // setType([]);
-  }, [selectedBrand]);
 
   useEffect(() => {
     if (selectedModel) _autoSetType();
@@ -450,6 +430,7 @@ const AccountCarInfo = () => {
                       setShowModel(false);
                       // setSelectedModel(item);
                       setSelectedModel(item.model);
+                      setCarImg(item?.img);
                       setTrim(item.trim);
                       console.log('item', item);
                     }}

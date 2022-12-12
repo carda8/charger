@@ -8,6 +8,7 @@ interface userInfo {
   histories?: string[];
   car_brand?: string;
   car_model?: string;
+  car_image_url?: string;
   chgerType?: string[];
   addressInfo?: commonTypes.userAddr;
 }
@@ -27,6 +28,7 @@ const initialState: initialState = {
     histories: [],
     car_brand: '',
     car_model: '',
+    car_image_url: '',
     chgerType: [],
   },
   autoLogin: false,

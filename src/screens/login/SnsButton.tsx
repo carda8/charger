@@ -81,6 +81,7 @@ const SnsButton = ({text, snsType, navigation, idx, setLoading}: props) => {
               favorites: resData.favorites,
               histories: resData.histories,
               addressInfo: resData?.addressInfo,
+              car_image_url: resData?.car_image_url,
             }),
           );
           await AsyncStorage.setItem(StorageKeys.KEY.AUTO_LOGIN, resData.id);

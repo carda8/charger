@@ -6,7 +6,7 @@ import {
   useWindowDimensions,
   StyleSheet,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import GlobalStyles from 'styles/GlobalStyles';
 import HeaderCenter from '@components/HeaderCenter';
@@ -45,7 +45,12 @@ interface optionView {
 
 const AroundFilter = () => {
   const dispatch = useDispatch();
-  const {filter} = useSelector((state: RootState) => state.aroundReducer);
+  const {filter, isFilterSaved} = useSelector(
+    (state: RootState) => state.aroundReducer,
+  );
+  const savedRef = useRef(false);
+
+  const [prevFilter, setPrevFilter] = useState({...filter});
   const [modalSave, setModalSave] = useState(false);
   const [showAvailable, setShowAvailable] = useState(false);
   const [pickAll, setPickAll] = useState(false);
@@ -54,13 +59,7 @@ const AroundFilter = () => {
   const [busiList, setBusiList] = useState<any[]>();
   const layout = useWindowDimensions();
   const WIDTH = (layout.width - 32 - 48) / 4;
-
-  // const [speed, setSpeed] = useState<string[]>([]);
-  // const [fee, setFee] = useState<string[]>([]);
-  // const [parking, setParking] = useState<string[]>([]);
-  // const [area, setArea] = useState<string[]>([]);
-  // const [road, setRoad] = useState<string[]>([]);
-  // const [chargerType, setChargerType] = useState<string[]>([]);
+  const [saved, setSaved] = useState(false);
 
   const dumSpeed = ['완속', '급속', '초고속'];
   const dumFee = ['유료 충전소', '무료 충전소'];
@@ -130,8 +129,12 @@ const AroundFilter = () => {
   };
 
   const _onPressSave = () => {
+    // setSaved(true);
+    savedRef.current = true;
+    console.log('prevFilter', prevFilter);
+    console.log('filterOrigin', filter);
+    dispatch(setIsSaved(true));
     setModalSave(!modalSave);
-    dispatch(setIsSaved());
   };
 
   const _pickAll = () => {
@@ -154,36 +157,6 @@ const AroundFilter = () => {
     }
   }, [filter.pickAll]);
 
-  // const _setOption = (state: any, data: string, setState: any) => {
-  //   console.log(state, data);
-  //   let temp = [...state];
-  //   const res = temp.filter((item, index) => item === data);
-  //   if (res.length > 0) {
-  //     const res = temp.filter((item, index) => item !== data);
-  //     if (state === parking) {
-  //     }
-  //     setState(res);
-  //   } else {
-  //     let temp2: string[] = [...state];
-  //     temp2.push(data);
-  //     setState(temp2);
-  //   }
-  // };
-
-  // const _getColor = (state: string[], data: any) => {
-  //   const temp = state.filter((item, index) => item === data);
-  //   if (temp.length > 0) {
-  //     return '#07B3FD';
-  //   } else return '#333333';
-  // };
-
-  // const _getOpasity = (state: string[], data: any) => {
-  // const temp = state.filter((item, index) => item === data);
-  //   if (temp.length > 0) {
-  //     return 1;
-  //   } else return 0.3;
-  // };
-
   useEffect(() => {
     if (!busiList) {
       _getInfo();
@@ -191,9 +164,15 @@ const AroundFilter = () => {
   }, []);
 
   useEffect(() => {
-    console.log('filter', filter);
-    // console.log('filter', filter.freePark?.includes('무료주차'));
-  }, [filter]);
+    return () => {
+      if (!savedRef.current) {
+        console.log('prvFIlter', prevFilter, isFilterSaved, saved);
+        dispatch(setFilter(prevFilter));
+      } else {
+        console.log('return eff', isFilterSaved, saved);
+      }
+    };
+  }, []);
 
   return (
     <SafeAreaView style={{...GlobalStyles.safeAreaStyle}}>
