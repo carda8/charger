@@ -18,6 +18,7 @@ import {RootState} from 'redux/store';
 import {setBottomIdx} from 'redux/reducers/navReducer';
 import {Shadow} from 'react-native-shadow-2';
 import {SafeAreaView} from 'react-native-safe-area-context';
+import MyModal from './MyModal';
 
 interface props {
   style?: StyleProp<ViewStyle>;
@@ -29,6 +30,10 @@ const BottomNav = ({style, shadowStyle, sheetRef}: props) => {
   const nav = useNavigation<commonTypes.navi>();
   const {bottomIdx} = useSelector((state: RootState) => state.navReducer);
   const dispatch = useDispatch();
+  const {userInfo} = useSelector((state: RootState) => state.authReducer);
+  const [visible, setVisible] = useState(false);
+  const [modalLogin, setModalLogin] = useState(false);
+
   useEffect(() => {
     if (sheetRef?.current) sheetRef.current?.dismiss();
   }, [bottomIdx]);
@@ -123,8 +128,13 @@ const BottomNav = ({style, shadowStyle, sheetRef}: props) => {
         </Pressable>
         <Pressable
           onPress={() => {
-            dispatch(setBottomIdx(3));
-            nav.navigate('RecentMain');
+            if (userInfo?.addressInfo) {
+              dispatch(setBottomIdx(3));
+              return nav.navigate('HomeMain', {addr: userInfo?.addressInfo});
+            }
+            if (!userInfo?.id) return setModalLogin(true);
+            else return setVisible(!visible);
+            // nav.navigate('RecentMain');
           }}
           style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
           <Image
@@ -174,6 +184,30 @@ const BottomNav = ({style, shadowStyle, sheetRef}: props) => {
             마이페이지
           </Text>
         </Pressable>
+        <MyModal
+          title="집 등록하기"
+          text={'로그인이 필요한 기능입니다.'}
+          visible={modalLogin}
+          setVisible={setModalLogin}
+          positive={true}
+          positiveTitle="확인"
+          // positivePress={() => nav.navigate('HomeSearch')}
+          // negative={true}
+          // negativeTitle="아니요"
+        />
+              <MyModal
+        title="집 등록하기"
+        text={
+          '설정된 집이 없네요.\n장소를 등록하면 충전소찾기를\n보다 편리하게 이용할수 있습니다.\n등록하시겠습니까?'
+        }
+        visible={visible}
+        setVisible={setVisible}
+        positive={true}
+        positiveTitle="네"
+        positivePress={() => nav.navigate('HomeSearch')}
+        negative={true}
+        negativeTitle="아니요"
+      />
       </KeyboardAvoidingView>
       {/* </Shadow> */}
       {/* </SafeAreaView> */}

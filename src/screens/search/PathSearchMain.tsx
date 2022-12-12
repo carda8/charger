@@ -7,7 +7,7 @@ import {
   Image,
   ListRenderItem,
 } from 'react-native';
-import React, {Dispatch, SetStateAction, useEffect} from 'react';
+import React, {useState, useEffect} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import GlobalStyles from 'styles/GlobalStyles';
 import BottomNav from '@components/BottomNav';
@@ -27,6 +27,8 @@ import {
   setIsStartFinish,
   setStartData,
 } from 'redux/reducers/pathReducer';
+import commonAPI from 'api/modules/commonAPI';
+import modules from 'constants/utils/modules';
 
 interface coor {
   latitude: number;
@@ -46,13 +48,53 @@ const PathSearchMain = () => {
   const {keywordList, lastRef, goalData, startData} = useSelector(
     (state: RootState) => state.pathReducer,
   );
+  const {userInfo} = useSelector((state: RootState) => state.authReducer);
+  const [history, setHistory] = useState([]);
 
   useEffect(() => {
     console.log('LIST', keywordList);
   }, [keywordList]);
 
   const dispatch = useDispatch();
-  // console.log('keywordk', keywordList);
+
+  const _getUserHsty = async () => {
+    const data = {
+      user_id: userInfo?.id,
+    };
+    await commonAPI
+      ._getUserHistory(data)
+      .then(res => {
+        console.log('res', res.data.histories);
+        let temp = [];
+        temp = res.data.histories.filter(
+          (item: any) => item.searchType === 'station',
+        );
+        console.log('temp', temp);
+        setHistory(temp);
+      })
+      .catch(err => {
+        console.log('err', err);
+      });
+  };
+
+  const _delelteHistory = async (statId: any) => {
+    const data = {
+      user_id: userInfo?.id,
+      stat_id: history[statId].statId,
+    };
+    await commonAPI
+      ._deleteUserHistory(data)
+      .then(res => {
+        console.log('res', res.data);
+      })
+      .catch(err => {
+        console.log('err', err);
+      });
+  };
+
+  useEffect(() => {
+    if (userInfo?.id) _getUserHsty();
+  }, []);
 
   // const _onPress = (item: any) => {
   //   // console.log('item1', item);
@@ -73,12 +115,13 @@ const PathSearchMain = () => {
   //   // nav.navigate('PathMain');
   // };
 
-  // const _delelteItem = (target: any[], setTarget: any, index: any) => {
-  //   let temp = [...target];
-  //   console.log('index', index);
-  //   temp = target.filter((item, idx) => idx !== index);
-  //   setTarget(temp);
-  // };
+  const _delelteItem = (target: any[], setTarget: any, index: any) => {
+    let temp = [...target];
+    console.log('index', index);
+    temp = target.filter((item, idx) => idx !== index);
+    setTarget(temp);
+    _delelteHistory(index);
+  };
 
   const _onPressItem = (item: any) => {
     console.log('item', item);
@@ -96,6 +139,25 @@ const PathSearchMain = () => {
     routeProps?.setCenter({
       latitude: item.location.lat,
       longitude: item.location.lon,
+      zoom: 16,
+    });
+    Keyboard.dismiss();
+    nav.navigate('PathMain');
+  };
+
+  const _onPressHistory = (item: any) => {
+    const data = {
+      address: item.addr,
+      location: {lat: item.location.lat, lon: item.location.lon},
+      name: item.statNm,
+    };
+    dispatch(setGoalData(data));
+    dispatch(setInputGoal(data.address));
+    dispatch(setIsGoalFinish(false));
+    routeProps?.goalBottomRef.current?.present();
+    routeProps?.setCenter({
+      latitude: data.location.lat,
+      longitude: data.location.lon,
       zoom: 16,
     });
     Keyboard.dismiss();
@@ -218,17 +280,97 @@ const PathSearchMain = () => {
         style={{paddingBottom: 60, marginBottom: 60}}
         ListEmptyComponent={
           <>
-            <View style={{margin: 16}}>
-              <Text
-                style={{
-                  lineHeight: 24,
-                  color: '#7A7A7A',
-                  marginHorizontal: 16,
-                  fontSize: 13,
-                }}>
-                최근 검색지가 없습니다
-              </Text>
-            </View>
+            {history.length > 0 ? (
+              history.map((item, index) => (
+                <Pressable
+                  hitSlop={10}
+                  onPress={() => {
+                    _onPressHistory(item);
+                  }}
+                  key={index}
+                  style={{
+                    justifyContent: 'center',
+                    borderColor: '#F6F6F6',
+                    borderBottomWidth: 1,
+                  }}>
+                  <View
+                    style={{
+                      marginHorizontal: 16,
+                      paddingVertical: 18,
+                      justifyContent: 'center',
+                    }}>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                      }}>
+                      <View
+                        style={{flexDirection: 'row', alignItems: 'center'}}>
+                        <Image
+                          source={require('@assets/search_goal.png')}
+                          style={{width: 12, height: 12, marginRight: 6}}
+                          resizeMode="contain"
+                        />
+                        <Text
+                          style={{
+                            fontFamily: FontList.PretendardMedium,
+                            fontSize: 16,
+                            color: '#333333',
+                          }}>
+                          {item.statNm}
+                        </Text>
+                      </View>
+                      <Pressable
+                        hitSlop={10}
+                        onPress={() => {
+                          _delelteItem(history, setHistory, index, item.statId);
+                        }}
+                        style={{flexDirection: 'row', alignItems: 'center'}}>
+                        <Text
+                          style={{
+                            fontFamily: FontList.PretendardRegular,
+                            color: '#C6C6C6',
+                          }}>
+                          {modules._convertDate(item.updated_at)}
+                        </Text>
+                        <Image
+                          source={require('@assets/search_close.png')}
+                          style={{
+                            width: 12,
+                            height: 12,
+                            marginLeft: 10,
+                            tintColor: '#959595',
+                          }}
+                          resizeMode="contain"
+                        />
+                      </Pressable>
+                    </View>
+
+                    <Text
+                      style={{
+                        lineHeight: 24,
+                        fontFamily: FontList.PretendardRegular,
+                        color: '#7A7A7A',
+                      }}>
+                      {item.addr}
+                    </Text>
+                  </View>
+                </Pressable>
+              ))
+            ) : (
+              <View style={{margin: 16}}>
+                <Text
+                  style={{
+                    lineHeight: 24,
+                    color: '#7A7A7A',
+                    marginHorizontal: 16,
+                    fontSize: 13,
+                  }}>
+                  최근 검색지가 없습니다
+                </Text>
+              </View>
+            )}
           </>
         }
         data={[]}

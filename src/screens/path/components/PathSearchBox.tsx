@@ -31,6 +31,7 @@ interface props {
   startBottomRef: React.RefObject<BottomSheetModalMethods>;
   goalBottomRef: React.RefObject<BottomSheetModalMethods>;
   userStarRef: React.RefObject<BottomSheetModalMethods>;
+  closeAll: any;
   // showOnlyMap?: boolean;
   // setShowOnlyMap?: Dispatch<SetStateAction<boolean>>;
   // sheetRef?: React.RefObject<BottomSheetModalMethods>;
@@ -46,6 +47,7 @@ const PathSearchBox = ({
   userStarRef,
   goalBottomRef,
   startBottomRef,
+  closeAll,
 }: props) => {
   const dispatch = useDispatch();
   const nav = useNavigation<commonTypes.navi>();
@@ -121,6 +123,7 @@ const PathSearchBox = ({
   };
 
   const _onPressSwitch = () => {
+    closeAll()
     startRef.current?.blur();
     goalBottomRef.current?.close();
     startBottomRef.current?.close();
