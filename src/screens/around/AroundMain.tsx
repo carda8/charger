@@ -362,7 +362,7 @@ const AroundMain = () => {
           position: 'absolute',
           width: layout.width,
         }}>
-        <View style={{marginHorizontal: 10}}>
+        <View style={{marginHorizontal: 10, marginTop: 20}}>
           <SearchBox bottomSheetRef={bottomSheetRef} />
         </View>
         <View

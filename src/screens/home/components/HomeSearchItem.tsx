@@ -113,7 +113,7 @@ const HomeSearchItem = ({
 
   useEffect(() => {
     userInfo?.favorites?.map(item => {
-      if (item.statId === renderData.statId) setFavorite(true);
+      if (item?.statId === renderData?.statId) setFavorite(true);
     });
   }, []);
 

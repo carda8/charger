@@ -108,8 +108,8 @@ const HomeHeader = ({
                 : require('@assets/carinfo_false.png')
             }
             style={{
-              width: _getWidth(89),
-              height: _getHeight(89),
+              width: 89,
+              height: 89,
               borderRadius: 89 / 2,
               borderWidth: userInfo?.car_image_url ? 1 : 0,
               borderColor: '#E3E3E3',

@@ -6,6 +6,7 @@ import {
   Text,
   Image,
   ListRenderItem,
+  Platform,
 } from 'react-native';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -316,16 +317,28 @@ const PathMain = () => {
   useEffect(() => {
     if (lineData?.length > 0) {
       setTimeout(() => {
-        mapRef?.current?.animateToCoordinates(lineData, {
-          // top: 550,
-          // bottom: 600,
-          // left: 275,
-          // right: 275,
-          top: 550,
-          bottom: 600,
-          left: 159,
-          right: 150,
-        });
+        Platform.OS === 'ios'
+          ? mapRef.current?.animateToTwoCoordinates(
+              {
+                latitude: Number(lineData[0].latitude) - 0.01,
+                longitude: Number(lineData[0].longitude) - 0.01,
+              },
+              {
+                latitude: Number(lineData[lineData.length - 1].latitude) + 0.01,
+                longitude:
+                  Number(lineData[lineData.length - 1].longitude) + 0.01,
+              },
+            )
+          : mapRef?.current?.animateToCoordinates(lineData, {
+              // top: 550,
+              // bottom: 600,
+              // left: 275,
+              // right: 275,
+              top: 550,
+              bottom: 600,
+              left: 159,
+              right: 150,
+            });
         setModal(false);
       }, 200);
     }

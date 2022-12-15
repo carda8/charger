@@ -2,7 +2,15 @@ import React, {useEffect, useRef} from 'react';
 import {_getHeight, _getWidth} from 'constants/utils';
 import {commonTypes} from '@types';
 import {useNavigation} from '@react-navigation/native';
-import {Image, Keyboard, Pressable, Text, TextInput, View} from 'react-native';
+import {
+  Image,
+  Keyboard,
+  Platform,
+  Pressable,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import FontList from 'constants/FontList';
 import {useDispatch, useSelector} from 'react-redux';
 import {RootState} from 'redux/store';
@@ -161,83 +169,93 @@ const PathSearchBox = ({
             />
           </Pressable>
 
-          <Pressable
+          {/* <Pressable
             style={{
               flex: 1,
               marginHorizontal: 5,
+            }}> */}
+          <View
+            style={{
+              backgroundColor: '#F4F2F2',
+              borderRadius: 3,
+              flex: 1,
+              marginHorizontal: 5,
             }}>
-            <View style={{backgroundColor: '#F4F2F2', borderRadius: 3}}>
-              <Pressable
-                onPress={() => {
-                  _onPressBox();
-                }}
+            <Pressable
+              onPress={() => {
+                _onPressBox();
+              }}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginHorizontal: 8,
+              }}>
+              <Text
                 style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  marginHorizontal: 8,
+                  fontFamily: FontList.PretendardRegular,
+                  color: '#959595',
                 }}>
-                <Text
-                  style={{
-                    fontFamily: FontList.PretendardRegular,
-                    color: '#959595',
-                  }}>
-                  현위치
-                </Text>
-                <TextInput
-                  ref={startRef}
-                  onSubmitEditing={() => {
-                    Keyboard.dismiss();
-                  }}
-                  onFocus={() => {}}
-                  value={inputStart}
-                  onChangeText={e => dispatch(setInputStart(e))}
-                  editable={editable ? true : false}
-                  style={{
-                    flex: 1,
-                    height: 39,
-                    borderBottomWidth: 1,
-                    marginHorizontal: 10,
-                    borderColor: '#C6C6C6',
-                  }}
-                  placeholder={'목적지를 검색하세요'}
-                />
-              </Pressable>
+                현위치
+              </Text>
+              <TextInput
+                onTouchEnd={() =>
+                  Platform.OS === 'ios' && !editable && _onPressBox()
+                }
+                ref={startRef}
+                onSubmitEditing={() => {
+                  Keyboard.dismiss();
+                }}
+                value={inputStart}
+                onChangeText={e => dispatch(setInputStart(e))}
+                editable={editable ? true : false}
+                style={{
+                  flex: 1,
+                  height: 39,
+                  borderBottomWidth: 1,
+                  marginHorizontal: 10,
+                  borderColor: '#C6C6C6',
+                }}
+                placeholder={'목적지를 검색하세요'}
+              />
+            </Pressable>
 
-              <Pressable
-                onPress={() => {
-                  _onPressBox();
+            <Pressable
+              onPress={() => {
+                _onPressBox();
+              }}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                marginHorizontal: 8,
+              }}>
+              <Text
+                style={{
+                  fontFamily: FontList.PretendardRegular,
+                  color: '#959595',
+                }}>
+                도착지
+              </Text>
+              <TextInput
+                onTouchEnd={() =>
+                  Platform.OS === 'ios' && !editable && _onPressBox()
+                }
+                editable={editable ? true : false}
+                autoCapitalize="none"
+                value={inputGoal}
+                onChangeText={e => dispatch(setInputGoal(e))}
+                onSubmitEditing={() => {
+                  Keyboard.dismiss();
                 }}
                 style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  marginHorizontal: 8,
-                }}>
-                <Text
-                  style={{
-                    fontFamily: FontList.PretendardRegular,
-                    color: '#959595',
-                  }}>
-                  도착지
-                </Text>
-                <TextInput
-                  onFocus={() => {}}
-                  editable={editable ? true : false}
-                  autoCapitalize="none"
-                  value={inputGoal}
-                  onChangeText={e => dispatch(setInputGoal(e))}
-                  onSubmitEditing={() => {
-                    Keyboard.dismiss();
-                  }}
-                  style={{
-                    flex: 1,
-                    height: 39,
-                    marginHorizontal: 10,
-                  }}
-                  placeholder={'목적지를 검색하세요'}
-                />
-              </Pressable>
-            </View>
-          </Pressable>
+                  flex: 1,
+                  height: 39,
+                  marginHorizontal: 10,
+                }}
+                placeholder={'목적지를 검색하세요'}
+              />
+            </Pressable>
+          </View>
+          {/* </Pressable> */}
         </View>
         <Pressable
           hitSlop={5}
