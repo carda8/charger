@@ -214,7 +214,9 @@ const Home = () => {
         negative={true}
         negativeTitle="아니요"
       />
+      {/* <SafeAreaView> */}
       <BottomNav />
+      {/* </SafeAreaView> */}
       <Loading visible={modal} />
     </SafeAreaView>
   );

@@ -36,13 +36,15 @@ const SearchBox = ({bottomSheetRef}: props) => {
         height: 42,
         marginTop: 7.8,
         backgroundColor: 'white',
-        // position: 'absolute',
-        // zIndex: 100,
         alignItems: 'center',
         alignSelf: 'center',
         borderRadius: 3,
       }}>
       <TextInput
+        onTouchEnd={() => {
+          bottomSheetRef.current?.close();
+          nav.navigate('SearchMain');
+        }}
         editable={false}
         value={aroundKeyData?.addr ? aroundKeyData?.addr : ''}
         onSubmitEditing={() => Keyboard.dismiss()}

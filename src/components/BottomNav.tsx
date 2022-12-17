@@ -43,7 +43,7 @@ const BottomNav = ({style, shadowStyle, sheetRef}: props) => {
       <KeyboardAvoidingView
         style={[
           {
-            position: 'absolute',
+            // position: 'absolute',
             bottom: 0,
             width: '100%',
             backgroundColor: 'white',
@@ -195,19 +195,19 @@ const BottomNav = ({style, shadowStyle, sheetRef}: props) => {
           // negative={true}
           // negativeTitle="아니요"
         />
-              <MyModal
-        title="집 등록하기"
-        text={
-          '설정된 집이 없네요.\n장소를 등록하면 충전소찾기를\n보다 편리하게 이용할수 있습니다.\n등록하시겠습니까?'
-        }
-        visible={visible}
-        setVisible={setVisible}
-        positive={true}
-        positiveTitle="네"
-        positivePress={() => nav.navigate('HomeSearch')}
-        negative={true}
-        negativeTitle="아니요"
-      />
+        <MyModal
+          title="집 등록하기"
+          text={
+            '설정된 집이 없네요.\n장소를 등록하면 충전소찾기를\n보다 편리하게 이용할수 있습니다.\n등록하시겠습니까?'
+          }
+          visible={visible}
+          setVisible={setVisible}
+          positive={true}
+          positiveTitle="네"
+          positivePress={() => nav.navigate('HomeSearch')}
+          negative={true}
+          negativeTitle="아니요"
+        />
       </KeyboardAvoidingView>
       {/* </Shadow> */}
       {/* </SafeAreaView> */}

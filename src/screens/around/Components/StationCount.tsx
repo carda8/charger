@@ -5,6 +5,7 @@ import {_getHeight, _getWidth} from 'constants/utils';
 import FontList from 'constants/FontList';
 import {BottomSheetModal} from '@gorhom/bottom-sheet';
 import {BottomSheetModalMethods} from '@gorhom/bottom-sheet/lib/typescript/types';
+import {SafeAreaView} from 'react-native-safe-area-context';
 interface props {
   bottomSheetRef: React.RefObject<BottomSheetModalMethods>;
   stationList: any[];
@@ -17,19 +18,19 @@ const StationCount = ({bottomSheetRef, stationList, setPick}: props) => {
   };
 
   return (
-    <View
+    <SafeAreaView
       style={{
         alignSelf: 'center',
         position: 'absolute',
-        bottom: _getHeight(70),
+        bottom: 70,
         // backgroundColor: 'gray',
       }}>
       <Shadow
         distance={4}
         stretch={true}
         style={{
-          width: _getWidth(149),
-          height: _getHeight(40),
+          width: 149,
+          height: 40,
         }}
         containerStyle={{
           flex: 1,
@@ -42,8 +43,8 @@ const StationCount = ({bottomSheetRef, stationList, setPick}: props) => {
           style={{
             alignItems: 'center',
             justifyContent: 'center',
-            width: _getWidth(149),
-            height: _getHeight(40),
+            width: 149,
+            height: 40,
             borderRadius: 46,
             backgroundColor: 'white',
             zIndex: 1000,
@@ -69,7 +70,7 @@ const StationCount = ({bottomSheetRef, stationList, setPick}: props) => {
           </Text>
         </Pressable>
       </Shadow>
-    </View>
+    </SafeAreaView>
   );
 };
 

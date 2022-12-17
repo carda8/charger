@@ -23,6 +23,8 @@ import {
 } from '@react-native-google-signin/google-signin';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import StorageKeys from 'constants/StorageKeys';
+import appleAuth from '@invertase/react-native-apple-authentication';
+import jwtDecode from 'jwt-decode';
 
 interface props {
   text: string;
@@ -212,6 +214,69 @@ const SnsButton = ({text, snsType, navigation, idx, setLoading}: props) => {
   };
   // ########## google end ##########
 
+  const _AppleLogin = async () => {
+    // performs login request
+    const appleAuthRequestResponse = await appleAuth
+      .performRequest({
+        requestedOperation: appleAuth.Operation.LOGIN,
+        requestedScopes: [appleAuth.Scope.FULL_NAME, appleAuth.Scope.EMAIL],
+      })
+      .finally(() => setLoading(false));
+    // get current authentication state for user
+    // /!\ This method must be tested on a real device. On the iOS simulator it always throws an error.
+    const credentialState = await appleAuth.getCredentialStateForUser(
+      appleAuthRequestResponse.user,
+    );
+    console.log('appleAuthRequestResponse', appleAuthRequestResponse);
+    console.log('credentialState', credentialState);
+
+    // use credentialState response to ensure the user is authenticated
+    if (credentialState === appleAuth.State.AUTHORIZED) {
+      setLoading(false);
+      console.log(
+        'decoded jwt',
+        jwtDecode(appleAuthRequestResponse.identityToken),
+      );
+
+      // {"authorizationCode": "c2483314d589c416ea807b44fa0e50a75.0.ssz.47UrtsJ1FCcwGddLTF9tPA",
+      //"authorizedScopes": [], "email": "xtkshf79yp@privaterelay.appleid.com", "fullName":
+      //{"familyName": "ddd", "givenName": "ddd", "middleName": null, "namePrefix": null, "nameSuffix": null, "nickname": null},
+
+      // decoded jwt {"aud": "com.evsolution.mycharger", "auth_time": 1671279897,
+      //"c_hash": "whYMTQn160O3vQLlpI6kMg", "email": "xtkshf79yp@privaterelay.appleid.com", "email_verified": "true",
+      //"exp": 1671366297, "iat": 1671279897, "is_private_email": "true", "iss": "https://appleid.apple.com", "nonce":
+      let name =
+        appleAuthRequestResponse?.fullName?.familyName +
+        appleAuthRequestResponse?.fullName?.givenName;
+      // if (name) {
+      //   console.log('name1', name);
+      // } else {
+      //   console.log('name2', name);
+      // }
+      const tempName =
+        appleAuthRequestResponse.fullName?.familyName +
+        appleAuthRequestResponse.fullName?.givenName;
+      const tempEmail = appleAuthRequestResponse.email;
+
+      const storageName = await AsyncStorage.getItem(
+        StorageKeys.KEY.APPLE_NAME,
+      );
+      const storageEmail = await AsyncStorage.getItem(
+        StorageKeys.KEY.APPLE_EMAIL,
+      );
+
+      if (!storageName && !storageEmail) {
+        await AsyncStorage.setItem(StorageKeys.KEY.APPLE_NAME, tempName);
+        await AsyncStorage.setItem(StorageKeys.KEY.APPLE_EMAIL, tempEmail);
+        _checkUser('', appleAuthRequestResponse.email, name);
+      } else {
+        _checkUser('', storageEmail, storageName);
+      }
+    } else {
+      setLoading(false);
+    }
+  };
+
   const _onPressLogin = (snsType: string) => {
     setLoading(true);
     switch (snsType) {
@@ -222,8 +287,7 @@ const SnsButton = ({text, snsType, navigation, idx, setLoading}: props) => {
       case SnsList.google:
         return _googleLogin();
       case SnsList.apple:
-        setLoading(false);
-        return;
+        return _AppleLogin();
       default:
         setLoading(false);
         return navigation.navigate('AccountFinish');

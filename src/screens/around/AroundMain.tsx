@@ -6,6 +6,7 @@ import {
   ListRenderItem,
   useWindowDimensions,
   Image,
+  Platform,
 } from 'react-native';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -355,14 +356,14 @@ const AroundMain = () => {
 
   return (
     <SafeAreaView style={{...GlobalStyles.safeAreaStyle}}>
-      <View
+      <SafeAreaView
         style={{
           zIndex: 100,
           alignSelf: 'center',
           position: 'absolute',
           width: layout.width,
         }}>
-        <View style={{marginHorizontal: 10, marginTop: 20}}>
+        <View style={{marginHorizontal: 10, marginTop: 0}}>
           <SearchBox bottomSheetRef={bottomSheetRef} />
         </View>
         <View
@@ -588,7 +589,7 @@ const AroundMain = () => {
             </View>
           </ScrollView>
         </View>
-      </View>
+      </SafeAreaView>
       <NaverMapView
         compass={false}
         scaleBar={false}
@@ -1044,19 +1045,19 @@ const AroundMain = () => {
           setPick={setPick}
         />
       ) : (
-        <View
+        <SafeAreaView
           style={{
             alignSelf: 'center',
             position: 'absolute',
-            bottom: _getHeight(70),
+            bottom: 70,
             // backgroundColor: 'gray',
           }}>
           <Shadow
             distance={4}
             stretch={true}
             style={{
-              width: _getWidth(149),
-              height: _getHeight(40),
+              width: 149,
+              height: 40,
             }}
             containerStyle={{
               flex: 1,
@@ -1069,8 +1070,8 @@ const AroundMain = () => {
               style={{
                 alignItems: 'center',
                 justifyContent: 'center',
-                width: _getWidth(149),
-                height: _getHeight(40),
+                width: 149,
+                height: 40,
                 borderRadius: 46,
                 backgroundColor: '#00239C',
                 zIndex: 1000,
@@ -1086,7 +1087,7 @@ const AroundMain = () => {
               </Text>
             </Pressable>
           </Shadow>
-        </View>
+        </SafeAreaView>
       )}
 
       {/*       
@@ -1133,8 +1134,7 @@ const AroundMain = () => {
       <Loading visible={loading} />
 
       <BottomNav
-        style={{position: 'relative'}}
-        shadowStyle={{position: 'relative'}}
+        // shadowStyle={{position: 'relative'}}
         sheetRef={bottomSheetRef}
       />
     </SafeAreaView>
