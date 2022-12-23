@@ -61,6 +61,7 @@ const SnsButton = ({text, snsType, navigation, idx, setLoading}: props) => {
     userEmail: string,
     userName: string,
   ) => {
+    setLoading(true);
     const data = {
       user_id: userEmail,
     };
