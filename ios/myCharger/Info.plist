@@ -33,6 +33,14 @@
 				<string>kakao88d23f96a850039b90165f95ed67f01b</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.290449804815-qg2v2u1f8rjq6mau3q06eukr3h2ssuri</string>
+			</array>
+		</dict>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>1</string>
@@ -40,6 +48,9 @@
 	<string>88d23f96a850039b90165f95ed67f01b</string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
+		<string>kakaonavi</string>
+		<string>tmap</string>
+		<string>kakaomap</string>
 		<string>naversearchapp</string>
 		<string>naversearchthirdlogin</string>
 	</array>

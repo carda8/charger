@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>290449804815-qg2v2u1f8rjq6mau3q06eukr3h2ssuri.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.290449804815-qg2v2u1f8rjq6mau3q06eukr3h2ssuri</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>290449804815-39nbg53so7gm33k7qu0k1kk9053q95he.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyDd2EoT8u8hv-TIgpB42gsdYJ_Zpm8mcXM</string>
+	<key>GCM_SENDER_ID</key>
+	<string>290449804815</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.evsolution.mycharger</string>
+	<key>PROJECT_ID</key>
+	<string>mycharger-3c913</string>
+	<key>STORAGE_BUCKET</key>
+	<string>mycharger-3c913.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:290449804815:ios:50d6fd9532f52cb4335d7a</string>
+</dict>
+</plist>

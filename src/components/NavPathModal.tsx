@@ -37,11 +37,12 @@ const NavPathModal = ({
   const _getCoor = (target: any) => {
     if (target === 'kakao') {
       if (!startCoor)
+        // return 'kakaonavi://startnavi?sp=37.537229,127.005515&ep=37.4979502,127.0276368&by=CAR';
         return 'kakaomap://route?sp=37.537229,127.005515&ep=37.4979502,127.0276368&by=CAR';
       else
         return `kakaomap://route?sp=${startCoor.latitude},${startCoor.longitude}&ep=${goalCoor.latitude},${goalCoor.longitude}&by=CAR`;
     }
-    if (target === 'tamp') {
+    if (target === 'tmap') {
       if (!startCoor)
         return 'tmap://route?startx=129.0756416&starty=35.1795543&goalx=127.005515&goaly=37.537229';
       else
@@ -90,9 +91,11 @@ const NavPathModal = ({
 
   const handlePress = useCallback(
     async (url: string, index: number) => {
+      console.log('URL :::::', url);
+
       const supported = await Linking.canOpenURL(url);
-      console.log('KAKAO_MAP_SCHEMA', KAKAO_MAP_SCHEMA);
-      console.log('supported', supported);
+      // console.log('KAKAO_MAP_SCHEMA', KAKAO_MAP_SCHEMA);
+      // console.log('supported', supported);
 
       await _postHistory();
       await Linking.openURL(url)
@@ -124,34 +127,39 @@ const NavPathModal = ({
       transparent
       onRequestClose={() => {
         setVisible((prev: any) => ({...prev, visible: false}));
-      }}>
+      }}
+    >
       <Pressable
         onPress={() => setVisible((prev: any) => ({...prev, visible: false}))}
         style={{
           flex: 1,
           backgroundColor: 'rgba(0, 0, 0, 0.7)',
           justifyContent: 'center',
-        }}>
+        }}
+      >
         <View
           style={{
             marginHorizontal: 23,
             borderRadius: 8,
             backgroundColor: 'white',
-          }}>
+          }}
+        >
           <View
             style={{
               justifyContent: 'center',
               alignItems: 'center',
               paddingHorizontal: _getWidth(42),
               marginBottom: 36.5,
-            }}>
+            }}
+          >
             <View style={{marginVertical: 22}}>
               <Text
                 style={{
                   fontFamily: FontList.PretendardBold,
                   fontSize: 18,
                   color: 'black',
-                }}>
+                }}
+              >
                 {title}
               </Text>
             </View>
@@ -160,7 +168,8 @@ const NavPathModal = ({
                 flexDirection: 'row',
                 width: '100%',
                 justifyContent: 'space-between',
-              }}>
+              }}
+            >
               <Pressable onPress={() => onPress(1)}>
                 <Image
                   source={require('@assets/kakao_navi.png')}
@@ -172,7 +181,8 @@ const NavPathModal = ({
               <Pressable
                 onPress={() => {
                   onPress(2);
-                }}>
+                }}
+              >
                 <Image
                   source={require('@assets/t_navi.png')}
                   style={{width: _getWidth(100), height: _getHeight(100)}}

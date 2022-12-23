@@ -114,20 +114,29 @@ const SnsButton = ({text, snsType, navigation, idx, setLoading}: props) => {
   const serviceUrlScheme = 'mycharger';
 
   const loginNaver = async () => {
-    const {failureResponse, successResponse} = await NaverLogin.login({
-      consumerKey,
-      consumerSecret,
-      appName,
-      serviceUrlScheme,
-    });
-    console.log('naver res::', failureResponse, successResponse);
-    if (successResponse?.accessToken) {
-      getNaverProfile(successResponse?.accessToken);
+    try {
+      setLoading(false);
+      const {failureResponse, successResponse} = await NaverLogin.login({
+        consumerKey,
+        consumerSecret,
+        appName,
+        serviceUrlScheme,
+      });
+
+      console.log('naver res::', failureResponse, successResponse);
+      if (successResponse?.accessToken) {
+        getNaverProfile(successResponse?.accessToken);
+      } else {
+      }
+    } catch {
+      console.log(3);
     }
   };
 
   // get user info
   const getNaverProfile = async (accessToken: any) => {
+    console.log('333');
+
     try {
       const profileResult = await NaverLogin.getProfile(accessToken);
       console.log('profileResult', profileResult);
@@ -181,7 +190,8 @@ const SnsButton = ({text, snsType, navigation, idx, setLoading}: props) => {
       // hostedDomain: '', // specifies a hosted domain restriction
       // forceCodeForRefreshToken: true, // [Android] related to `serverAuthCode`, read the docs link below *.
       // accountName: '', // [Android] specifies an account name on the device that should be used
-      // iosClientId: '<FROM DEVELOPER CONSOLE>', // [iOS] if you want to specify the client ID of type iOS (otherwise, it is taken from GoogleService-Info.plist)
+      iosClientId:
+        '290449804815-qg2v2u1f8rjq6mau3q06eukr3h2ssuri.apps.googleusercontent.com', // [iOS] if you want to specify the client ID of type iOS (otherwise, it is taken from GoogleService-Info.plist)
       // googleServicePlistPath: '', // [iOS] if you renamed your GoogleService-Info file, new name here, e.g. GoogleService-Info-Staging
       // openIdRealm: '', // [iOS] The OpenID2 realm of the home web server. This allows Google to include the user's OpenID Identifier in the OpenID Connect ID token.
       // profileImageSize: 120, // [iOS] The desired height (and width) of the profile image. Defaults to 120px
@@ -198,7 +208,7 @@ const SnsButton = ({text, snsType, navigation, idx, setLoading}: props) => {
       setLoading(true);
       _checkUser(userInfo, user.email, userName);
       console.log('userinfo', user, userName);
-    } catch (error: any) {
+    } catch (error) {
       setLoading(false);
       console.log('err', error);
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
@@ -307,7 +317,8 @@ const SnsButton = ({text, snsType, navigation, idx, setLoading}: props) => {
           alignItems: 'center',
           justifyContent: 'center',
           flexDirection: 'row',
-        }}>
+        }}
+      >
         <Image
           source={logo[idx]}
           style={{
@@ -322,7 +333,8 @@ const SnsButton = ({text, snsType, navigation, idx, setLoading}: props) => {
             fontWeight: '400',
             fontSize: 16,
             color: _getColor(snsType),
-          }}>
+          }}
+        >
           {text}
         </Text>
       </Pressable>
