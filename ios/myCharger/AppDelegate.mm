@@ -1,5 +1,9 @@
 #import "AppDelegate.h"
 #import <RNKakaoLogins.h>
+//#import <UIKit/UIKit.h>
+//#import "Firebase.h"
+//#import <FirebaseCore/FirebaseCore.h>
+
 
 #import <React/RCTBridge.h>
 #import <React/RCTBundleURLProvider.h>
@@ -59,6 +63,7 @@ static NSString *const kRNConcurrentRoot = @"concurrentRoot";
   rootViewController.view = rootView;
   self.window.rootViewController = rootViewController;
   [self.window makeKeyAndVisible];
+//  [FIRApp configure];
   return YES;
 }
 

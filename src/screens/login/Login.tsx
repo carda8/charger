@@ -8,6 +8,8 @@ import {
   Alert,
   BackHandler,
   ToastAndroid,
+  ActivityIndicator,
+  useWindowDimensions,
 } from 'react-native';
 import React, {useEffect, useRef, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -55,9 +57,25 @@ const Login = () => {
 
     return () => backHandler.remove();
   }, []);
+  const layout = useWindowDimensions();
 
   return (
     <SafeAreaView style={{...GlobalStyles.safeAreaStyle}}>
+      {modalLoading && (
+        <View
+          style={{
+            width: '100%',
+            height: layout.height,
+            position: 'absolute',
+            zIndex: 100,
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor: 'rgba(0,0,0,0.3)',
+          }}>
+          <ActivityIndicator size={'large'} />
+        </View>
+      )}
+
       <ScrollView>
         <View
           style={{
@@ -111,7 +129,7 @@ const Login = () => {
         title="로그인 실패"
         text="현재 해당 기능을 사용 할 수 없습니다"
       />
-      <Loading visible={modalLoading} />
+      {/* <Loading visible={modalLoading} /> */}
     </SafeAreaView>
   );
 };

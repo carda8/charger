@@ -123,6 +123,8 @@ const SnsButton = ({text, snsType, navigation, idx, setLoading}: props) => {
     console.log('naver res::', failureResponse, successResponse);
     if (successResponse?.accessToken) {
       getNaverProfile(successResponse?.accessToken);
+    } else {
+      setLoading(false);
     }
   };
 
@@ -138,6 +140,7 @@ const SnsButton = ({text, snsType, navigation, idx, setLoading}: props) => {
         // dispatch(setUserInfo({...userInfo, id: id, name: name}));
         // navigation.navigate('AccountFinish');
       }
+      setLoading(false);
       setGetProfileRes(profileResult);
     } catch (e) {
       setGetProfileRes(undefined);
@@ -278,7 +281,7 @@ const SnsButton = ({text, snsType, navigation, idx, setLoading}: props) => {
   };
 
   const _onPressLogin = (snsType: string) => {
-    setLoading(true);
+    // setLoading(true);
     switch (snsType) {
       case SnsList.naver:
         return loginNaver();
